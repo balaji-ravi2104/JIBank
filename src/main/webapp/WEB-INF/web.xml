@@ -1,0 +1,39 @@
+<!-- <?xml version="1.0" encoding="UTF-8"?> <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+	http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1"> 
+	<display-name>JIBank</display-name> <servlet> <servlet-name>MainServlet</servlet-name> 
+	<servlet-class>com.banking.servlet.MainServlet</servlet-class> </servlet> 
+	<servlet-mapping> <servlet-name>MainServlet</servlet-name> <url-pattern>/</url-pattern> 
+	</servlet-mapping> <welcome-file-list> <welcome-file>login.jsp</welcome-file> 
+	</welcome-file-list> </web-app> -->
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	id="WebApp_ID" version="3.1">
+	<display-name>JIBank</display-name>
+
+	<!-- Servlet Mapping for MainServlet -->
+	<servlet>
+		<servlet-name>MainServlet</servlet-name>
+		<servlet-class>com.banking.servlet.MainServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MainServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+
+	<!-- Servlet Mapping for default servlet handling static resources -->
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.css</url-pattern> <!-- Mapping for CSS files -->
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.png</url-pattern> <!-- Mapping for PNG image files -->
+	</servlet-mapping>
+
+	<welcome-file-list>
+		<welcome-file>login.jsp</welcome-file>
+	</welcome-file-list>
+</web-app>
