@@ -705,7 +705,7 @@ body {
 /* Create Customer Styling */
 .container-create-customer {
 	display: flex;
-	margin-top: 165px;
+	margin-top: 180px;
 	padding: 20px;
 }
 
@@ -773,6 +773,20 @@ body {
 	background-color: white;
 }
 
+.customer-form textarea {
+	background-color: white;
+}
+
+.customer-form textarea::placeholder {
+	color: black;
+	font-size: 18px;
+}
+
+.customer-form textarea:focus {
+	outline: none;
+	border-color: #007bff;
+}
+
 input[type="text"], input[type="number"], input[type="date"], input[type="email"],
 	select {
 	font-size: 18px;
@@ -822,6 +836,32 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 
 .branchSelect {
 	margin-left: 50px;
+}
+
+.usercreation-message i {
+	margin-right: 10px;
+}
+
+.usercreation-message {
+	display: flex;
+	align-items: center;
+	padding: 15px 20px;
+	font-size: 22px;
+}
+
+.usercreation-message.success {
+	color: green;
+}
+
+.usercreation-message.failed {
+	color: red;
+}
+
+.customer-form-error {
+	color: red;
+	font-size: 20px;
+	padding: 6px;
+	width: 100%;
 }
 
 /* Customer List Styling */
@@ -882,6 +922,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 .customer-page button:hover {
 	background-color: rgb(64, 123, 255);
 }
+
 
 .invalid-userid-error {
 	display: flex;

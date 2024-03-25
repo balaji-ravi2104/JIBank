@@ -47,6 +47,18 @@
 					alt="Customer Creation Image">
 			</div>
 			<div id="form">
+				<c:if test="${not empty userCreationSuccess}">
+					<div class="usercreation-message success">
+						<i class="fa-solid fa-thumbs-up"></i>
+						<p>${userCreationSuccess}</p>
+					</div>
+				</c:if>
+				<c:if test="${not empty userCreationFailed}">
+					<div class="usercreation-message failed">
+						<i class="fa-solid fa-thumbs-down"></i>
+						<p>${userCreationFailed}</p>
+					</div>
+				</c:if>
 				<form class="customer-form" method="post"
 					action="<%=request.getContextPath()%>/addUser">
 					<div class="form-row">
@@ -73,6 +85,11 @@
 							</select>
 						</div>
 					</div>
+					<c:if test="${not empty invalidEmail}">
+						<div class="customer-form-error">
+							<p>${invalidEmail}</p>
+						</div>
+					</c:if>
 					<div class="form-row">
 						<div class="form-group wider">
 							<label for="contactnumber">Contact Number</label> <input
@@ -81,21 +98,38 @@
 						</div>
 						<div class="form-group">
 							<label for="date of birth">Date of Birth</label> <input
-								type="date" name="date of birth" required>
+								type="date" name="dateofbirth" required>
 						</div>
 					</div>
+					<c:if test="${not empty invalidMobile}">
+						<div class="customer-form-error">
+							<p>${invalidMobile}</p>
+						</div>
+					</c:if>
+					<label for="address">Address</label>
+					<textarea name="address" placeholder="Enter the Address" required></textarea>
 					<c:if test="${customer}">
 						<label for="pannumber">PAN Number</label>
 						<input type="text" name="pannumber"
 							placeholder="Enter the PAN Number" required>
+						<c:if test="${not empty invalidPAN}">
+							<div class="customer-form-error">
+								<p>${invalidPAN}</p>
+							</div>
+						</c:if>
 						<label for="aadharnumber">Aadhar Number</label>
 						<input type="number" name="aadharnumber"
 							placeholder="Enter the Aadhar Number" required>
+						<c:if test="${not empty invalidAadhar}">
+							<div class="customer-form-error">
+								<p>${invalidAadhar}</p>
+							</div>
+						</c:if>
 					</c:if>
 					<c:if test="${employee}">
 						<div class="form-group branchSelect">
 							<label for="branchId">Branch Id</label> <select id="branchId"
-								name="gender" required>
+								name="branchId" required>
 								<option value="3007">3007</option>
 								<option value="3008">3008</option>
 								<option value="3009">3009</option>

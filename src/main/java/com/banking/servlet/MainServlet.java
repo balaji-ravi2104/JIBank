@@ -4,13 +4,11 @@ import java.io.IOException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.banking.controller.UserController;
-import com.banking.model.Customer;
 import com.banking.model.User;
 import com.banking.model.UserType;
 
@@ -35,10 +33,14 @@ public class MainServlet extends HttpServlet {
 		try {
 			switch (action) {
 			case "/getcustomer":
-				int customerId = Integer.parseInt(request.getParameter("userId"));
-				System.out.println(customerId);
 				UserServletHelper.getCustomerDetails(request, response);
 				dispatcher = request.getRequestDispatcher("/employee/customer.jsp");
+				dispatcher.forward(request, response);
+				break;
+			case "/updateCustomer":
+				request.getSession().setAttribute("employee", false);
+				request.getSession().setAttribute("customer", false);
+				dispatcher = request.getRequestDispatcher("/employee/customerForm.jsp");
 				dispatcher.forward(request, response);
 				break;
 			default:
@@ -82,38 +84,23 @@ public class MainServlet extends HttpServlet {
 			response.sendRedirect("login.jsp");
 			break;
 		case "/addCustomer":
-			request.setAttribute("customer", true);
+			request.getSession().setAttribute("customer", true);
+			request.getSession().setAttribute("employee", false);
 			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
 			dispatcher.forward(request, response);
 			break;
+
 		case "/addEmployee":
-			request.setAttribute("employee", true);
+			request.getSession().setAttribute("employee", true);
+			request.getSession().setAttribute("customer", false);
 			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
 			dispatcher.forward(request, response);
 			break;
+
 		case "/addUser":
-			String firstName = request.getParameter("firstname");
-			String lastName = request.getParameter("lastname");
-			String email = request.getParameter("email");
-			String gender = request.getParameter("gender");
-			String contactNumber = request.getParameter("contactnumber");
-			String dateOfBirth = request.getParameter("dateofbirth");
-
-			boolean isCustomer = (request.getParameter("customer") != null);
-			boolean isEmployee = (request.getParameter("employee") != null);
-
-			if (isCustomer) {
-
-				String panNumber = request.getParameter("pannumber");
-				String aadharNumber = request.getParameter("aadharnumber");
-
-			} else if (isEmployee) {
-
-				String branchId = request.getParameter("branchId");
-
-			} else {
-
-			}
+			UserServletHelper.addNewUser(request, response);
+			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
+			dispatcher.forward(request, response);
 			break;
 		}
 	}

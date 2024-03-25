@@ -16,7 +16,7 @@ public class InputValidator {
 
 	private static final Pattern PAN_NUMBER_PATTERN = Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}");
 
-	private static final Pattern AADHAR_NUMBER_PATTERN = Pattern.compile("\\d{4}\\s\\d{4}\\s\\d{4}");
+	private static final Pattern AADHAR_NUMBER_PATTERN = Pattern.compile("^\\d{12}$");
 
 	public static void isNull(Object object, String ErrorMessage) throws CustomException {
 		if (object == null) {

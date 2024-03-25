@@ -70,9 +70,13 @@
 					</div>
 				</c:if>
 			</div>
-			<div class="buttons">
-				<button>Update Customer</button>
-				<button>Remove Customer</button>
+			<div>
+				<button id="updateCustomerButton" type="submit"
+					formaction="<%=request.getContextPath()%>/updateCustomer">Update
+					Customer</button>
+				<button id="removeCustomerButton" type="submit"
+					formaction="<%=request.getContextPath()%>/removeCustomer">Remove
+					Customer</button>
 			</div>
 		</form>
 	</div>

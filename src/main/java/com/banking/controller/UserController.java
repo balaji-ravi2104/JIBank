@@ -52,11 +52,9 @@ public class UserController {
 	}
 
 	public boolean registerNewCustomer(Customer customer) throws CustomException {
+		// System.out.println(customer);
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isRegistred = false;
-		if (!validateUserInput(customer)) {
-			return isRegistred;
-		}
 		try {
 			isRegistred = userDao.addCustomer(customer);
 		} catch (Exception e) {
@@ -105,7 +103,7 @@ public class UserController {
 		}
 		return customerDetails;
 	}
- 
+
 	// For Employee Purpose
 	public Customer getCustomerDetailsById(int userId, int branchId) throws CustomException {
 		Customer customerDetails = null;

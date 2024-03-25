@@ -1,12 +1,3 @@
-<!-- <?xml version="1.0" encoding="UTF-8"?> <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
-	http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1"> 
-	<display-name>JIBank</display-name> <servlet> <servlet-name>MainServlet</servlet-name> 
-	<servlet-class>com.banking.servlet.MainServlet</servlet-class> </servlet> 
-	<servlet-mapping> <servlet-name>MainServlet</servlet-name> <url-pattern>/</url-pattern> 
-	</servlet-mapping> <welcome-file-list> <welcome-file>login.jsp</welcome-file> 
-	</welcome-file-list> </web-app> -->
-
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
@@ -22,6 +13,15 @@
 		<servlet-name>MainServlet</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
+
+	<filter>
+		<filter-name>MainFilter</filter-name>
+		<filter-class>com.banking.servlet.MainFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>MainFilter</filter-name>
+		<url-pattern>/*</url-pattern> <!-- Apply the filter to all requests -->
+	</filter-mapping>
 
 	<!-- Servlet Mapping for default servlet handling static resources -->
 	<servlet-mapping>

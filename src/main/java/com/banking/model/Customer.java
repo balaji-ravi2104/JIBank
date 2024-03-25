@@ -1,8 +1,8 @@
-	package com.banking.model;
+package com.banking.model;
 
 import java.io.Serializable;
 
-public class Customer extends User implements Serializable{
+public class Customer extends User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	String panNumber;
 	String aadharNumber;
