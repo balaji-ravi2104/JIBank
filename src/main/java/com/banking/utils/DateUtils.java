@@ -14,7 +14,7 @@ public class DateUtils {
 	public static String longToDate(long millis) {
 		Instant instant = Instant.ofEpochMilli(millis);
 		ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MMM/dd");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
 		return time.format(formatter);
 	}
@@ -22,7 +22,7 @@ public class DateUtils {
 	public static String formateLongToDate(long millis) {
 		Instant instant = Instant.ofEpochMilli(millis);
 		ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MMM/dd - hh:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd - hh:mm:ss");
 
 		return time.format(formatter);
 	}
@@ -43,5 +43,13 @@ public class DateUtils {
 		InputValidator.isNull(date, "Date Cannot be Null!!");
 		return date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
+	}
+
+	public static String convertToHtmlDateFormat(String dobFromDatabase) {
+		String[] parts = dobFromDatabase.split("/");
+		if (parts.length != 3) {
+			return "";
+		}
+		return parts[0] + "-" + parts[1] + "-" + parts[2];
 	}
 }

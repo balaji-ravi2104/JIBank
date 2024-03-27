@@ -181,6 +181,20 @@ public class UserController {
 		return isExists;
 	}
 
+	public boolean updateCustomer(Customer customer) throws CustomException {
+		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
+		boolean isUpdated = false;
+		if (userCache.get(cachePrefix + customer.getUserId()) != null) {
+			userCache.rem(cachePrefix + customer.getUserId());
+		}
+		try {
+			isUpdated = userDao.updateCustomerDetails(customer);
+		} catch (Exception e) {
+			throw new CustomException("Error while Updation Customer Details", e);
+		}
+		return isUpdated;
+	}
+
 	public boolean updatePassword(int userId, String password) throws CustomException {
 		InputValidator.isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isPasswordUpdated = false;

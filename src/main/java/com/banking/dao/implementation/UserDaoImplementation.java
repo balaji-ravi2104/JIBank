@@ -52,6 +52,8 @@ public class UserDaoImplementation implements UserDao {
 	private static final String CHECK_EMPLOYEE_ID_EXISTS_QUERY = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? AND "
 			+ "u.TypeId = 2;";
 
+	private static final String CHECK_CUSTOMER_EXISTS = "SELECT COUNT(*) FROM Customer WHERE Pan = ?;";
+
 	private static final String GET_EMPLOYEE_DETAILS = "SELECT u.UserId,u.FirstName,u.LastName,u.Gender,u.Email,u.ContactNumber,"
 			+ " u.Address,u.DateOfBirth,u.TypeId,u.StatusId,e.branch_id FROM Users u INNER JOIN Employee e ON u.UserId = e.user_id where "
 			+ "u.UserId = ?";
@@ -63,6 +65,8 @@ public class UserDaoImplementation implements UserDao {
 	private static final String GET_ALL_EMPLOYEE_FROM_ALL_BRANCH = "SELECT u.UserId,u.FirstName,u.LastName,u.Gender,u.Email,"
 			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId,e.branch_id FROM Users u INNER JOIN Employee e ON "
 			+ "u.UserId = e.user_id WHERE u.TypeId = 2 ORDER BY e.branch_id;";
+	private static final String UPDATE_CUSTOMER_DETAILS = "UPDATE Users SET FirstName = ?,LastName = ?,Gender = ?,Email = ?,"
+			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ? WHERE UserId = ?;";
 
 	@Override
 	public User authendicateUser(int userID, String password) throws CustomException {
@@ -192,9 +196,27 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Details", e);
+			throw new CustomException("Error While Checking User Exists", e);
 		}
 		return userIdExists;
+	}
+
+	@Override
+	public boolean isCustomerExists(String panNumber) throws CustomException {
+		boolean userExists = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(CHECK_CUSTOMER_EXISTS)) {
+			preparedStatement.setString(1, panNumber);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					int count = resultSet.getInt(1);
+					userExists = (count > 0);
+				}
+			}
+		} catch (SQLException e) {
+			throw new CustomException("Error While Checking User Exists", e);
+		}
+		return userExists;
 	}
 
 	@Override
@@ -278,6 +300,31 @@ public class UserDaoImplementation implements UserDao {
 			int rowsAffected = preparedStatement.executeUpdate();
 			isUpdated = (rowsAffected > 0);
 		} catch (SQLException e) {
+			throw new CustomException("Error While Updating User Details", e);
+		}
+		return isUpdated;
+	}
+
+	@Override
+	public boolean updateCustomerDetails(Customer customer) throws CustomException {
+		boolean isUpdated = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_CUSTOMER_DETAILS)) {
+
+			preparedStatement.setString(1, customer.getFirstName());
+			preparedStatement.setString(2, customer.getLastName());
+			preparedStatement.setString(3, customer.getGender());
+			preparedStatement.setString(4, customer.getEmail());
+			preparedStatement.setString(5, customer.getContactNumber());
+			preparedStatement.setString(6, customer.getAddress());
+			preparedStatement.setLong(7, customer.getDateOfBirth());
+			preparedStatement.setInt(8, customer.getStatus().getValue());
+			preparedStatement.setInt(9, customer.getUserId());
+
+			int rowsAffected = preparedStatement.executeUpdate();
+
+			isUpdated = (rowsAffected > 0);
+		} catch (Exception e) {
 			throw new CustomException("Error While Updating User Details", e);
 		}
 		return isUpdated;

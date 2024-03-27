@@ -193,7 +193,10 @@ public class MainController {
 					}
 					log.info("Enter the Amount to Deposite");
 					double amountToDeposite = mainView.promptDoubleInput();
-					boolean isAmountDeposited = transactionController.depositAmount(selectedAccount, amountToDeposite);
+					log.info("Enter the description");
+					String description = mainView.promptStringInput();
+					boolean isAmountDeposited = transactionController.depositAmount(selectedAccount, amountToDeposite,
+							description);
 					if (isAmountDeposited) {
 						transactionView.transactionMessages("Amount Deposited Successfully!!");
 					} else {
@@ -208,8 +211,10 @@ public class MainController {
 					}
 					log.info("Enter the Amount to Withdraw");
 					double amountToWithdraw = mainView.promptDoubleInput();
-					boolean isAmountWithdrawed = transactionController.withdrawAmount(selectedAccount,
-							amountToWithdraw);
+					log.info("Enter the description");
+					description = mainView.promptStringInput();
+					boolean isAmountWithdrawed = transactionController.withdrawAmount(selectedAccount, amountToWithdraw,
+							description);
 					if (isAmountWithdrawed) {
 						transactionView.transactionMessages("Amount Withdrawed Successfully!!");
 					} else {
@@ -224,14 +229,12 @@ public class MainController {
 					}
 					log.info("Enter the Account Number to Transfer the Amount");
 					String accountNumber = mainView.promptStringInput();
-					log.info("Enter the Branch Id");
-					int branchId = mainView.promtForIntegerInput();
 					log.info("Enter the Amount to Transfer");
 					double amountToTransfer = mainView.promptDoubleInput();
 					mainView.promptNewLine();
 					log.info("Enter the Small Description");
 					String remark = mainView.promptStringInput();
-					Account accountToTransfer = accountController.getAccountDetails(accountNumber, branchId);
+					Account accountToTransfer = accountController.getAccountDetails(accountNumber);
 					// System.out.println(accountToTransfer);
 					if (accountToTransfer == null) {
 						transactionView.transactionMessages("Transaction Failed!!! Try Again!!");
@@ -379,7 +382,7 @@ public class MainController {
 				log.info("2.Create Account");
 				log.info("3.Update Customer Details");
 				log.info("4.View Particular Customer Details");
-				log.info("5.View Particular Customer All Details Within Branch");	
+				log.info("5.View Particular Customer All Details Within Branch");
 				log.info("6.View Transaction History For a Particular Customer(Account)");
 				log.info("7.View All Transaction of A Customer In Branch");
 				log.info("8.Update Password");
@@ -461,7 +464,7 @@ public class MainController {
 					int userIdToUpdate = mainView.promptForUserID();
 					Map<Field, Object> fieldsToUpdate = new HashMap<>();
 					log.info("Enter the Number Of Field To be Updated");
-					int count = mainView.promtForIntegerInput(); 
+					int count = mainView.promtForIntegerInput();
 					log.info("Please Enter the Field Number to Update");
 					for (int i = 1; i <= count; i++) {
 						log.info("Enter the choice(Number) from the list");
@@ -513,7 +516,7 @@ public class MainController {
 						userView.userViewMessages("Customer Details Reterving Failed!! Please Try Again!!");
 						break;
 					}
-					Account customerAccount = accountController.getAccountDetails(accountNumber, employeeBranchId);
+					Account customerAccount = accountController.getAccountDetails(accountNumber);
 					if (customerAccount == null) {
 						userView.userViewMessages("Customer Account Details Reterving Failed!! Please Try Again!!");
 						break;
@@ -584,15 +587,17 @@ public class MainController {
 					accountNumber = mainView.promptStringInput();
 					log.info("Enter the Amount to Deposite");
 					double amountToDeposite = mainView.promptDoubleInput();
-					Account accountToDeposite = accountController.getAccountDetails(accountNumber, employeeBranchId);
+					log.info("Enter the description");
+					String description = mainView.promptStringInput();
+					Account accountToDeposite = accountController.getAccountDetails(accountNumber);
 					// System.out.println(accountToDeposite);
 					if (accountToDeposite.getAccountStatus() == AccountStatus.INACTIVE) {
 						transactionView
 								.transactionMessages("The Account is INACTIVE!! Please Try With Different Account!!");
 						break;
 					}
-					boolean isAmountDeposited = transactionController.depositAmount(accountToDeposite,
-							amountToDeposite);
+					boolean isAmountDeposited = transactionController.depositAmount(accountToDeposite, amountToDeposite,
+							description);
 					if (isAmountDeposited) {
 						transactionView.transactionMessages("Amount Deposited Successfully!!");
 					} else {
@@ -608,7 +613,7 @@ public class MainController {
 					log.info("Enter the Value to Update");
 					int statusChoice = mainView.promtForIntegerInput();
 					boolean isAccountStatusChanged = accountController.activateDeactivateCustomerAccount(accountNumber,
-							employeeBranchId, statusChoice);
+							statusChoice);
 					if (isAccountStatusChanged) {
 						accountView.accountViewMessages("Bank Account Status Updated SuccessFully!!!");
 					} else {
@@ -805,7 +810,7 @@ public class MainController {
 					log.info("Enter the Value to Update");
 					int statusChoice = mainView.promtForIntegerInput();
 					boolean isAccountStatusChanged = accountController.activateDeactivateCustomerAccount(accountNumber,
-							branchId, statusChoice);
+							statusChoice);
 					if (isAccountStatusChanged) {
 						accountView.accountViewMessages("Bank Account Status Updated SuccessFully!!!");
 					} else {
@@ -823,7 +828,7 @@ public class MainController {
 						userView.userViewMessages("Customer Details Reterving Failed!! Please Try Again!!");
 						break;
 					}
-					Account customerAccount = accountController.getAccountDetails(accountNumber, branchId);
+					Account customerAccount = accountController.getAccountDetails(accountNumber);
 					if (customerAccount == null) {
 						userView.userViewMessages("Customer Account Details Reterving Failed!! Please Try Again!!");
 						break;

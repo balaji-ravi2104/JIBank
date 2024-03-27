@@ -48,10 +48,10 @@ public class AccountController {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		boolean isPrimary = false;
-		if (!userController.validateUser(account.getUserId())
-				|| !branchController.validateBranchId(account.getBranchId()) || validateBalance(account.getBalance())) {
-			return isAccountCreated;
-		}
+//		if (!userController.validateUser(account.getUserId())
+//				|| !branchController.validateBranchId(account.getBranchId()) || validateBalance(account.getBalance())) {
+//			return isAccountCreated;
+//		}
 		synchronized (createAccountLock) {
 			listOfAccounts.rem(listAccountCachePrefix + account.getUserId());
 			if (!accountDao.customerHasAccount(account.getUserId())) {
@@ -80,12 +80,9 @@ public class AccountController {
 		return isAccountExists;
 	}
 
-	public Account getAccountDetails(String accountNumber, int branchId) throws CustomException {
+	public Account getAccountDetails(String accountNumber) throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		Account account = null;
-		if (!validateAccountAndBranch(accountNumber, branchId)) {
-			return account;
-		}
 		synchronized (getAccountDetailsLock) {
 			if (accountCache.get(accountCachePrefix + accountNumber) != null) {
 				// System.out.println("Inside Cache Account Number " + accountNumber);
@@ -122,9 +119,6 @@ public class AccountController {
 
 	public Map<String, Account> getCustomerAccountsInBranch(int userId, int branchId) throws CustomException {
 		Map<String, Account> customerAccounts = null;
-		if (!userController.validateUserIdAndBranchId(userId, branchId)) {
-			return customerAccounts;
-		}
 		try {
 			customerAccounts = accountDao.getCustomerAccounts(userId, branchId);
 		} catch (Exception e) {
@@ -146,19 +140,39 @@ public class AccountController {
 		return customerAccounts;
 	}
 
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int branchId, int status)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status)
 			throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountStatusChanged = false;
-		if (!validateAccountAndBranch(accountNumber, branchId) || validateAccountStatus(status)) {
-			return isAccountStatusChanged;
-		}
+//		if (!validateAccountAndBranch(accountNumber, branchId) || validateAccountStatus(status)) {
+//			return isAccountStatusChanged;
+//		}
 		try {
-			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, branchId, status);
+			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status);
 		} catch (Exception e) {
 			throw new CustomException("Error while Updating Bank Account Status!!", e);
 		}
 		return isAccountStatusChanged;
+	}
+
+	public boolean isUserAlreadyHasAccount(int userId, int accountType, int branchId) throws CustomException {
+		boolean isAccountPresent = false;
+		try {
+			isAccountPresent = accountDao.isCustomerAlreadyHasAccount(userId, accountType, branchId);
+		} catch (Exception e) {
+			throw new CustomException("Error while Checking Bank Account Type Exists!!", e);
+		}
+		return isAccountPresent;
+	}
+
+	public boolean isAccountPresent(String accountNumber) throws CustomException{
+		boolean isAccountPresent = false;
+		try {
+			isAccountPresent = accountDao.isAccountPresent(accountNumber);
+		} catch (Exception e) {
+			throw new CustomException("Error while Checking Bank Account Type Exists!!", e);
+		}
+		return isAccountPresent;
 	}
 
 	private boolean validateAccountStatus(int status) {
@@ -170,14 +184,14 @@ public class AccountController {
 		return isValid;
 	}
 
-	private boolean validateBalance(double balance) {
-		boolean isValid = false;
-		if (InputValidator.validateBalance(balance)) {
-			log.warning("Balance Should Be Greater than Zero!!!");
-			isValid = true;
-		}
-		return isValid;
-	}
+//	private boolean validateBalance(double balance) {
+//		boolean isValid = false;
+//		if (InputValidator.validateBalance(balance)) {
+//			log.warning("Balance Should Be Greater than Zero!!!");
+//			isValid = true;
+//		}
+//		return isValid;
+//	}
 
 	private boolean validateAccountNumber(String accountNumber) throws CustomException {
 		boolean isValid = false;

@@ -116,5 +116,3 @@ function scrollToTop() {
 
 renderPaginationButtons();
 
-
-

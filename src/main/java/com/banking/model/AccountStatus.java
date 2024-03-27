@@ -21,4 +21,13 @@ public enum AccountStatus {
 		}
 		throw new IllegalArgumentException("Invalid AccountStatus value: " + value);
 	}
+	
+	public static AccountStatus fromString(String value) {
+        for (AccountStatus status : AccountStatus.values()) {
+            if (status.name().equalsIgnoreCase(value)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Invalid AccountStatus string: " + value);
+    }
 }

@@ -57,8 +57,9 @@
 			action="<%=request.getContextPath()%>/getcustomer">
 			<div>
 				<div class="search-bar">
-					<input type="text" id="searchCustomer" name="userId" maxlength="4"
-						pattern="\d{1,4}" placeholder="Enter User Id" required>
+					<input type="text" id="searchCustomer" name="userId"
+						maxlength="4" pattern="\d{1,4}" placeholder="Enter User Id"
+						required>
 					<button class="searchButton" type="submit">
 						<i class="fas fa-search"></i>
 					</button>
@@ -73,9 +74,6 @@
 			<div>
 				<button id="updateCustomerButton" type="submit"
 					formaction="<%=request.getContextPath()%>/updateCustomer">Update
-					Customer</button>
-				<button id="removeCustomerButton" type="submit"
-					formaction="<%=request.getContextPath()%>/removeCustomer">Remove
 					Customer</button>
 			</div>
 		</form>
@@ -104,12 +102,31 @@
 						<td>${customerDetails.email}</td>
 						<td>${customerDetails.contactNumber}</td>
 						<td>${customerDetails.address}</td>
-						<td>${customerDetails.dateOfBirth}</td>
+						<td>${DOB}</td>  
 						<td>${customerDetails.status}</td>
 					</tr>
 				</c:if>
 			</tbody>
 		</table>
 	</div>
+	<script>
+		window.onload = function() {
+			var userIdInput = document.getElementById('searchCustomer');
+			var urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('userId')) {
+				userIdInput.value = urlParams.get('userId');
+			}
+
+			document.getElementById("updateCustomerButton").addEventListener(
+					"click",
+					function(event) {
+						if (document.querySelector(".invalid-userid-error")) {
+							document.querySelector(".invalid-userid-error")
+									.remove();
+						}
+					});
+		};
+	</script>
+
 </body>
 </html>

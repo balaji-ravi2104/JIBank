@@ -40,8 +40,13 @@ public class TransactionDaoImplementation implements TransactionDao {
 			+ "t.viewer_account_number = a.account_number WHERE a.user_id = ? AND a.branch_id = ? AND "
 			+ "FROM_UNIXTIME(t.transaction_date / 1000) >= DATE_SUB(CURRENT_DATE(), INTERVAL ? MONTH) ORDER BY t.transaction_id DESC;";
 
+	private static final String GET_TRANSACTIONS = "SELECT  t.transaction_id, t.user_id,t.viewer_account_number, "
+			+ "t.transacted_account_number, t.TypeId, t.transaction_amount,t.balance, t.transaction_date, t.remark, "
+			+ "t.statusId,t.reference_id FROM Transaction t WHERE t.viewer_account_number = ? AND "
+			+ "FROM_UNIXTIME(transaction_date / 1000) BETWEEN ? AND ? ORDER BY t.transaction_id DESC;";
+
 	@Override
-	public boolean deposit(Account account, double amountToDeposit) throws CustomException {
+	public boolean deposit(Account account, double amountToDeposit, String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAmountDepositedAndLoggedInTransaction = false;
 		try (Connection connection = DatabaseConnection.getConnection()) {
@@ -53,7 +58,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 					account.getBalance() + amountToDeposit);
 			if (isBalanceUpdated) {
 				isAmountDepositedAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
-						amountToDeposit, TransactionType.DEPOSIT.name(), TransactionType.DEPOSIT.getValue(),
+						amountToDeposit, description, TransactionType.DEPOSIT.getValue(),
 						account.getUserId() + System.currentTimeMillis());
 				if (isAmountDepositedAndLoggedInTransaction) {
 					connection.commit();
@@ -68,7 +73,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 	}
 
 	@Override
-	public boolean withdraw(Account account, double amountToWithdraw) throws CustomException {
+	public boolean withdraw(Account account, double amountToWithdraw, String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAmountWithdrawnAndLoggedInTransaction = false;
 		try (Connection connection = DatabaseConnection.getConnection()) {
@@ -80,7 +85,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 					account.getBalance() - amountToWithdraw);
 			if (isBalanceUpdated) {
 				isAmountWithdrawnAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
-						amountToWithdraw, TransactionType.WITHDRAW.name(), TransactionType.WITHDRAW.getValue(),
+						amountToWithdraw, description, TransactionType.WITHDRAW.getValue(),
 						account.getUserId() + System.currentTimeMillis());
 				if (isAmountWithdrawnAndLoggedInTransaction) {
 					connection.commit();
@@ -231,6 +236,26 @@ public class TransactionDaoImplementation implements TransactionDao {
 		return transactionMap;
 	}
 
+	@Override
+	public List<Transaction> getCustomerTransactions(String accountNumber, String startDate, String endDate)
+			throws CustomException {
+		List<Transaction> historyList = null;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(GET_TRANSACTIONS)) {
+
+			preparedStatement.setString(1, accountNumber);
+			preparedStatement.setString(2, startDate);
+			preparedStatement.setString(3, endDate);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				historyList = new ArrayList<Transaction>();
+				getCustomerTransactionDetail(resultSet, historyList);
+			}
+		} catch (SQLException e) {
+			throw new CustomException("Error While Reterving Transaction!!!", e);
+		}
+		return historyList;
+	}
+
 	private void getCustomerTransactionDetail(ResultSet resultSet, List<Transaction> historyList) throws SQLException {
 		while (resultSet.next()) {
 			historyList.add(getTransactionDetail(resultSet));
@@ -320,5 +345,4 @@ public class TransactionDaoImplementation implements TransactionDao {
 		}
 		return isBalanceUpdated;
 	}
-
 }

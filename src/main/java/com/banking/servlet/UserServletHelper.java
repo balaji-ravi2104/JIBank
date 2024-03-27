@@ -9,10 +9,11 @@ import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
+import com.banking.utils.DateUtils;
 
 public class UserServletHelper {
 
-	public static UserController userController = new UserController();
+	private static UserController userController = new UserController();
 
 	public static void validateUser(HttpServletRequest request, HttpServletResponse response) {
 		int userId = Integer.parseInt(request.getParameter("userId"));
@@ -39,6 +40,9 @@ public class UserServletHelper {
 			if (customer == null) {
 				request.setAttribute("error", "Invalid Customer Id");
 			} else {
+				String date = DateUtils.longToDate(customer.getDateOfBirth());
+				date = DateUtils.convertToHtmlDateFormat(date);
+				request.setAttribute("DOB", date);
 				request.setAttribute("customerDetails", customer);
 			}
 		} catch (CustomException e) {
@@ -74,6 +78,21 @@ public class UserServletHelper {
 			}
 		} catch (CustomException e) {
 			request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
+		}
+	}	
+
+	static void updateCustomer(HttpServletRequest request, HttpServletResponse response) {
+		Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
+		boolean isUpdated;
+		try {
+			isUpdated = userController.updateCustomer(customer);
+			if (isUpdated) {
+				request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
+			} else {
+				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
+			}
+		} catch (CustomException e) {
+			e.printStackTrace();
 		}
 	}
 

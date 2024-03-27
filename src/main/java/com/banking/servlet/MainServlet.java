@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.banking.controller.UserController;
 import com.banking.model.User;
 import com.banking.model.UserType;
+import com.banking.utils.CustomException;
 
-//@WebServlet("/")
 public class MainServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public UserController userController;
@@ -38,9 +38,21 @@ public class MainServlet extends HttpServlet {
 				dispatcher.forward(request, response);
 				break;
 			case "/updateCustomer":
-				request.getSession().setAttribute("employee", false);
-				request.getSession().setAttribute("customer", false);
-				dispatcher = request.getRequestDispatcher("/employee/customerForm.jsp");
+				UserServletHelper.getCustomerDetails(request, response);
+				if (request.getAttribute("error") != null) {
+					dispatcher = request.getRequestDispatcher("/employee/customer.jsp");
+					dispatcher.forward(request, response);
+				} else {
+					request.getSession().setAttribute("employee", false);
+					request.getSession().setAttribute("customer", false);
+					request.setAttribute("updateAction", request.getContextPath() + "/updateUser");
+					dispatcher = request.getRequestDispatcher("/employee/customerForm.jsp");
+					dispatcher.forward(request, response);
+				}
+				break;
+			case "/getAccounts":
+				AccountServletHelper.getCustomerAccountsr(request, response);
+				dispatcher = request.getRequestDispatcher("/employee/account.jsp");
 				dispatcher.forward(request, response);
 				break;
 			default:
@@ -72,6 +84,16 @@ public class MainServlet extends HttpServlet {
 					dispatcher.forward(request, response);
 					break;
 				case EMPLOYEE:
+					try {
+						int employeeBranchId = userController.getEmployeeBranch(user.getUserId());
+						System.out.println(employeeBranchId);
+						request.getSession().setAttribute("employeeBranchId", employeeBranchId);
+						dispatcher = request.getRequestDispatcher("employee/customer.jsp");
+						dispatcher.forward(request, response);
+					} catch (CustomException e) {
+						e.printStackTrace();
+					}
+					break;
 				case ADMIN:
 					dispatcher = request.getRequestDispatcher("employee/customer.jsp");
 					dispatcher.forward(request, response);
@@ -86,6 +108,7 @@ public class MainServlet extends HttpServlet {
 		case "/addCustomer":
 			request.getSession().setAttribute("customer", true);
 			request.getSession().setAttribute("employee", false);
+			request.setAttribute("createAction", request.getContextPath() + "/addUser");
 			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
 			dispatcher.forward(request, response);
 			break;
@@ -93,6 +116,7 @@ public class MainServlet extends HttpServlet {
 		case "/addEmployee":
 			request.getSession().setAttribute("employee", true);
 			request.getSession().setAttribute("customer", false);
+			request.setAttribute("createAction", request.getContextPath() + "/addUser");
 			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
 			dispatcher.forward(request, response);
 			break;
@@ -100,6 +124,40 @@ public class MainServlet extends HttpServlet {
 		case "/addUser":
 			UserServletHelper.addNewUser(request, response);
 			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/updateUser":
+			UserServletHelper.updateCustomer(request, response);
+			dispatcher = request.getRequestDispatcher("employee/customerForm.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/createAccountPage":
+			dispatcher = request.getRequestDispatcher("employee/accountForm.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/createAccount":
+			AccountServletHelper.addNewAccount(request, response);
+			dispatcher = request.getRequestDispatcher("employee/accountForm.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/getTransactions":
+			TransactionServletHelper.getTransactions(request, response);
+			dispatcher = request.getRequestDispatcher("employee/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/employeeDeposit":
+			TransactionServletHelper.deposit(request, response);
+			dispatcher = request.getRequestDispatcher("employee/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/employeeWithdraw":
+			TransactionServletHelper.withdraw(request, response);
+			dispatcher = request.getRequestDispatcher("employee/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/updateAccountStatus":
+			TransactionServletHelper.updateAccountStatus(request, response);
+			dispatcher = request.getRequestDispatcher("employee/account.jsp");
 			dispatcher.forward(request, response);
 			break;
 		}

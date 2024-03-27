@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,23 +42,52 @@
 	</div>
 
 	<div class="customer-page">
-		<div>
-			<button onclick="window.location.href='accountForm.jsp'">Create
-				Account</button>
-		</div>
-		<form id="searchFormAccount">
-			<div class="search-bar">
-				<input type="text" id="searchAccount" name="accountNumber"
-					maxlength="12" pattern="\d{1,12}"
-					placeholder="Enter Account Number" required>
-				<button class="searchButton">
-					<i class="fas fa-search"></i>
-				</button>
+		<form action="<%=request.getContextPath()%>/createAccountPage"
+			method="post">
+			<button>Create Account</button>
+		</form>
+		<form id="searchFormAccount"
+			action="<%=request.getContextPath()%>/getAccounts" method="get">
+			<div class="accountsearch-bar">
+				<div>
+					<input type="text" id="searchCustomerAccounts" name="userId"
+						maxlength="4" pattern="\d{1,4}" placeholder="Enter User Id"
+						required value="${param.userId}">
+				</div>
+				<div class="branchId-div" id="branchIdDiv" style="display: none;">
+					<select id="branchId" name="branchId" required>
+						<option value="3007" ${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
+						<option value="3008" ${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
+						<option value="3009" ${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
+						<option value="3010" ${param.branchId == '3010' ? 'selected' : ''}>Trichy</option>
+						<option value="3011" ${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
+					</select>
+				</div>
+
+				<div>
+					<button class="searchButton" type="submit">
+						<i class="fas fa-search"></i>
+					</button>
+				</div>
 			</div>
-			<div>
-				<button>Update Account</button>
-				<button>Remove Account</button>
-			</div>
+			<c:if test="${not empty error}">
+				<div class="invalid-userid-error">
+					<i class="fa-solid fa-triangle-exclamation"></i>
+					<p>${error}</p>
+				</div>
+			</c:if>
+			<c:if test="${not empty updatedSuccess}">
+				<div class="usercreation-message success">
+					<i class="fa-solid fa-thumbs-up"></i>
+					<p>${updatedSuccess}</p>
+				</div>
+			</c:if>
+			<c:if test="${not empty updationFailed}">
+				<div class="usercreation-message failed">
+					<i class="fa-solid fa-thumbs-down"></i>
+					<p>${updationFailed}</p>
+				</div>
+			</c:if>
 		</form>
 	</div>
 
@@ -73,21 +103,55 @@
 					<th>Primary Account</th>
 					<th>Account Type</th>
 					<th>Status</th>
+					<th>Action</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>1009</td>
-					<td>4001</td>
-					<td>300700000001</td>
-					<td>3007</td>
-					<td>57500.00</td>
-					<td>Yes</td>
-					<td>Savings</td>
-					<td>Active</td>
-				</tr>
+				<c:forEach var="accountEntry" items="${customerAccounts}">
+					<tr>
+						<c:set var="account" value="${accountEntry.value}" />
+						<td>${account.userId}</td>
+						<td>${account.accountId}</td>
+						<td>${account.accountNumber}</td>
+						<td>${account.branchId}</td>
+						<td>${account.balance}</td>
+						<td>${account.primaryAccount ? 'Yes' : 'No'}</td>
+						<td>${account.accountType}</td>
+						<td>${account.accountStatus}</td>
+						<td>
+							<form action="<%=request.getContextPath()%>/updateAccountStatus"
+								method="post">
+								<input type="hidden" name="userId" value="${account.userId}" />
+								 <input type="hidden" name="branchId" value="${account.branchId}" />
+								<input type="hidden" name="accountNumber"
+									value="${account.accountNumber}" /> <input type="hidden"
+									name="status" value="${account.accountStatus}" />
+								<button type="submit" class="updateButton">Update
+									Status</button>
+							</form>
+						</td>
+					</tr>
+				</c:forEach>
 			</tbody>
 		</table>
 	</div>
+<script>
+    window.onload = function() {
+        var userType = "${user.typeOfUser}";
+        var employeeBranchId = "${employeeBranchId}";
+
+        if (userType === 'EMPLOYEE') {
+            var searchButton = document.getElementById("searchButton");
+            searchButton.addEventListener("click", function() {
+                var userId = document.getElementById("searchCustomerAccounts").value;
+                window.location.href = '<%=request.getContextPath()%>/getAccounts?userId=' + userId + '&branchId=' + employeeBranchId;
+            });
+        } else if (userType === 'ADMIN') {
+            document.getElementById("branchIdDiv").style.display = "block";
+        }
+    };
+</script>
+
+	
 </body>
 </html>

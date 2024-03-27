@@ -65,7 +65,7 @@ public class InputValidator {
 	}
 
 	public static boolean validateBalance(double balance) {
-		return balance < 0;
+		return balance <= 0;
 	}
 
 }

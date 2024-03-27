@@ -37,4 +37,8 @@ public interface UserDao {
 	int getEmployeeBranch(int userId) throws CustomException;
 
 	Customer getCustomerDetailsById(int userId) throws CustomException;
+
+	boolean updateCustomerDetails(Customer customer) throws CustomException;
+
+	boolean isCustomerExists(String panNumber) throws CustomException;
 }

@@ -1,3 +1,4 @@
+<%@page import="com.banking.model.Customer"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
@@ -47,41 +48,56 @@
 					alt="Customer Creation Image">
 			</div>
 			<div id="form">
-				<c:if test="${not empty userCreationSuccess}">
-					<div class="usercreation-message success">
-						<i class="fa-solid fa-thumbs-up"></i>
-						<p>${userCreationSuccess}</p>
-					</div>
-				</c:if>
-				<c:if test="${not empty userCreationFailed}">
-					<div class="usercreation-message failed">
-						<i class="fa-solid fa-thumbs-down"></i>
-						<p>${userCreationFailed}</p>
-					</div>
-				</c:if>
-				<form class="customer-form" method="post"
-					action="<%=request.getContextPath()%>/addUser">
+				<form class="customer-form" id="customerForm" method="post"
+					action="${not empty customerDetails ? updateAction : createAction}">
+					<c:if test="${not empty userCreationSuccess}">
+						<div class="usercreation-message success">
+							<i class="fa-solid fa-thumbs-up"></i>
+							<p>${userCreationSuccess}</p>
+						</div>
+					</c:if>
+					<c:if test="${not empty userCreationFailed}">
+						<div class="usercreation-message failed">
+							<i class="fa-solid fa-thumbs-down"></i>
+							<p>${userCreationFailed}</p>
+						</div>
+					</c:if>
+					<c:if test="${not empty customerExists}">
+						<div class="invalid-userid-error">
+							<i class="fa-solid fa-triangle-exclamation"></i>
+							<p>${customerExists}</p>
+						</div>
+					</c:if>
 					<div class="form-row">
 						<div class="form-group wider">
 							<label for="firstname">First Name</label> <input type="text"
-								name="firstname" placeholder="Enter the First Name" required>
+								name="firstname" placeholder="Enter the First Name"
+								value="${empty param.firstname ? (not empty customerDetails ? customerDetails.firstName : '') : param.firstname}"
+								required>
 						</div>
 						<div class="form-group">
 							<label for="lastname">Last Name</label> <input type="text"
-								name="lastname" placeholder="Enter the Last Name" required>
+								name="lastname" placeholder="Enter the Last Name"
+								value="${empty param.lastname ? (not empty customerDetails ? customerDetails.lastName : '') : param.lastname}"
+								required>
 						</div>
 					</div>
 					<div class="form-row">
 						<div class="form-group wider">
 							<label for="email">Email</label> <input type="email" name="email"
-								placeholder="Enter the Email" required>
+								placeholder="Enter the Email"
+								value="${empty param.email ? (not empty customerDetails ? customerDetails.email : '') : param.email}"
+								required>
 						</div>
 						<div class="form-group">
 							<label for="gender">Gender</label> <select id="gender"
 								name="gender" required>
-								<option value="male">Male</option>
-								<option value="female">Female</option>
-								<option value="other">Other</option>
+								<option value="male"
+									${empty param.gender ? (not empty customerDetails && customerDetails.gender == 'male' ? 'selected' : '') : (param.gender == 'male' ? 'selected' : '')}>Male</option>
+								<option value="female"
+									${empty param.gender ? (not empty customerDetails && customerDetails.gender == 'female' ? 'selected' : '') : (param.gender == 'female' ? 'selected' : '')}>Female</option>
+								<option value="other"
+									${empty param.gender ? (not empty customerDetails && customerDetails.gender == 'other' ? 'selected' : '') : (param.gender == 'other' ? 'selected' : '')}>Other</option>
 							</select>
 						</div>
 					</div>
@@ -94,11 +110,15 @@
 						<div class="form-group wider">
 							<label for="contactnumber">Contact Number</label> <input
 								type="number" name="contactnumber"
-								placeholder="Enter the Contact Number" required>
+								placeholder="Enter the Contact Number"
+								value="${empty param.contactnumber ? (not empty customerDetails ? customerDetails.contactNumber : '') : param.contactnumber}"
+								required>
 						</div>
 						<div class="form-group">
-							<label for="date of birth">Date of Birth</label> <input
-								type="date" name="dateofbirth" required>
+							<label for="dateOfBirth">Date of Birth</label> <input type="date"
+								id="dateOfBirth" name="dateOfBirth"
+								value="${empty param.dateOfBirth ? (not empty customerDetails ? DOB : '') : DOB}"
+								required>
 						</div>
 					</div>
 					<c:if test="${not empty invalidMobile}">
@@ -106,12 +126,35 @@
 							<p>${invalidMobile}</p>
 						</div>
 					</c:if>
+
+					<c:if test="${not empty customerDetails}">
+						<div class="form-row">
+							<div class="form-group wider">
+								<label for="email">User Id</label> <input type="number"
+									name="userId"
+									value="${not empty customerDetails ? customerDetails.userId : ''}"
+									readonly>
+							</div>
+							<div class="form-group">
+								<label for="status">Account Status</label> <select id="gender"
+									name="status" required>
+									<option value="1"
+										${not empty customerDetails && customerDetails.status == 'ACTIVE' ? 'selected' : ''}>Active</option>
+									<option value="2"
+										${not empty customerDetails && customerDetails.status == 'INACTIVE' ? 'selected' : ''}>InActive</option>
+								</select>
+							</div>
+						</div>
+					</c:if>
+
 					<label for="address">Address</label>
-					<textarea name="address" placeholder="Enter the Address" required></textarea>
+					<textarea name="address" placeholder="Enter the Address" rows="2"
+						cols="50" required>${empty param.address ? (not empty customerDetails ? customerDetails.address : '') : param.address}</textarea>
 					<c:if test="${customer}">
-						<label for="pannumber">PAN Number</label>
+						<label for="pannumber">Pan Number</label>
 						<input type="text" name="pannumber"
-							placeholder="Enter the PAN Number" required>
+							placeholder="Enter the PAN Number"
+							value="${empty param.pannumber ? '' : param.pannumber}" required>
 						<c:if test="${not empty invalidPAN}">
 							<div class="customer-form-error">
 								<p>${invalidPAN}</p>
@@ -119,7 +162,9 @@
 						</c:if>
 						<label for="aadharnumber">Aadhar Number</label>
 						<input type="number" name="aadharnumber"
-							placeholder="Enter the Aadhar Number" required>
+							placeholder="Enter the Aadhar Number"
+							value="${empty param.aadharnumber ? '' : param.aadharnumber}"
+							required>
 						<c:if test="${not empty invalidAadhar}">
 							<div class="customer-form-error">
 								<p>${invalidAadhar}</p>
@@ -127,18 +172,23 @@
 						</c:if>
 					</c:if>
 					<c:if test="${employee}">
-						<div class="form-group branchSelect">
-							<label for="branchId">Branch Id</label> <select id="branchId"
-								name="branchId" required>
-								<option value="3007">3007</option>
-								<option value="3008">3008</option>
-								<option value="3009">3009</option>
-								<option value="3010">3010</option>
-								<option value="3011">3011</option>
-							</select>
-						</div>
+						<label for="branchId">Branch</label>
+						<select class="employee-branch" id="branchId" name="branchId" required>
+							<option value="3007"
+								${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
+							<option value="3008"
+								${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
+							<option value="3009"
+								${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
+							<option value="3010"
+								${param.branchId == '3010' ? 'selected' : ''}>Trichy</option>
+							<option value="3011"
+								${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
+						</select>
+
 					</c:if>
-					<input type="submit" value="Create">
+					<input type="submit"
+						value="${not empty customerDetails ? 'Update' : 'Create'}">
 				</form>
 			</div>
 		</div>

@@ -32,12 +32,12 @@ public class TransactionController {
 		this.transactionView = new TransactionView();
 	}
 
-	public boolean depositAmount(Account account, double amountToDeposite) throws CustomException {
+	public boolean depositAmount(Account account, double amountToDeposite,String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isDepositeSuccess = false;
-		if (!validateAmount(amountToDeposite)) {
-			return isDepositeSuccess;
-		}
+		/*
+		 * if (!validateAmount(amountToDeposite)) { return isDepositeSuccess; }
+		 */
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
@@ -47,19 +47,19 @@ public class TransactionController {
 		}
 
 		try {
-			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite);
+			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite,description);
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
 		return isDepositeSuccess;
 	}
 
-	public boolean withdrawAmount(Account account, double amountToWithdraw) throws CustomException {
+	public boolean withdrawAmount(Account account, double amountToWithdraw,String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isWithdrawSuccess = false;
-		if (!validateAmount(amountToWithdraw) || !validateWithdrawAmount(account, amountToWithdraw)) {
-			return isWithdrawSuccess;
-		}
+//		if (!validateAmount(amountToWithdraw) || !validateWithdrawAmount(account, amountToWithdraw)) {
+//			return isWithdrawSuccess;
+//		}
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
@@ -69,7 +69,7 @@ public class TransactionController {
 		}
 
 		try {
-			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw);
+			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw,description);
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
@@ -179,6 +179,17 @@ public class TransactionController {
 		}
 		try {
 			transactions = transactionDao.getAllTransactionHistory(userId, branchId, month);
+		} catch (Exception e) {
+			throw new CustomException("Error while Getting Transaction History!!!", e);
+		}
+		return transactions;
+	}
+
+	public List<Transaction> getTransactions(String accountNumber, String startDate, String endDate)
+			throws CustomException {
+		List<Transaction> transactions = null;
+		try {
+			transactions = transactionDao.getCustomerTransactions(accountNumber, startDate, endDate);
 		} catch (Exception e) {
 			throw new CustomException("Error while Getting Transaction History!!!", e);
 		}

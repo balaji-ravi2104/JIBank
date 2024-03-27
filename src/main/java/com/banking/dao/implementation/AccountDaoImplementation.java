@@ -36,6 +36,10 @@ public class AccountDaoImplementation implements AccountDao {
 
 	private static final String UPDATE_BANK_ACCOUNT_STATUS = "UPDATE Accounts SET StatusId = ? WHERE account_number = ?;";
 
+	private static final String CUSTOMER_ALREADY_HAS_ACCOUNT_TYPE = "SELECT COUNT(*) TypeId FROM Accounts WHERE user_id = ? and branch_id = ? and Typeid = ?;";
+
+	private static final String IS_ACCOUNT_PRESENT = "SELECT COUNT(*) AS account_count FROM Accounts WHERE account_number = ?;";
+
 	@Override
 	public boolean createAccount(Account account, boolean isPrimary) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
@@ -120,6 +124,7 @@ public class AccountDaoImplementation implements AccountDao {
 
 	@Override
 	public Map<String, Account> getCustomerAccounts(int userId, int branchId) throws CustomException {
+		// System.out.println(userId + " " + branchId);
 		Map<String, Account> customerAccounts = null;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(GET_ACCOUNTS_IN_BRANCH)) {
@@ -153,6 +158,50 @@ public class AccountDaoImplementation implements AccountDao {
 			throw new CustomException("Error While Reterving All Account of a Customer!!!", e);
 		}
 		return allAccounts;
+	}
+
+	@Override
+	public boolean isCustomerAlreadyHasAccount(int userId, int accountType, int branchId) throws CustomException {
+		boolean isAccountPresent = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(CUSTOMER_ALREADY_HAS_ACCOUNT_TYPE)) {
+
+			preparedStatement.setInt(1, userId);
+			preparedStatement.setInt(2, branchId);
+			preparedStatement.setInt(3, accountType);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					int count = resultSet.getInt(1);
+					isAccountPresent = (count > 0);
+				}
+			}
+
+		} catch (SQLException e) {
+			throw new CustomException("Error while Checking Bank Account Type Exists!!", e);
+		}
+		return isAccountPresent;
+	}
+
+	@Override
+	public boolean isAccountPresent(String accountNumber) throws CustomException {
+		boolean isAccountPresent = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(IS_ACCOUNT_PRESENT)) {
+
+			preparedStatement.setString(1, accountNumber);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					int count = resultSet.getInt(1);
+					isAccountPresent = (count > 0);
+				}
+			}
+
+		} catch (SQLException e) {
+			throw new CustomException("Error while Checking Bank Account Exists!!", e);
+		}
+		return isAccountPresent;
 	}
 
 	private void getAccountsByBranch(ResultSet resultSet, Map<Integer, Map<String, Account>> allAccounts)
@@ -189,7 +238,7 @@ public class AccountDaoImplementation implements AccountDao {
 	}
 
 	@Override
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int branchId, int status)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status)
 			throws CustomException {
 		boolean isAccountStatusChanged = false;
 		try (Connection connection = DatabaseConnection.getConnection();

@@ -16,11 +16,15 @@ public interface AccountDao {
 
 	List<Account> getAllAccountsOfCustomer(int userId) throws CustomException;
 
-	boolean activateDeactivateCustomerAccount(String accountNumber, int branchId, int status) throws CustomException;
+	boolean activateDeactivateCustomerAccount(String accountNumber, int status) throws CustomException;
 
 	Map<String, Account> getCustomerAccounts(int userId, int branchId) throws CustomException;
 
 	Map<Integer, Map<String, Account>> getCustomersAllAccount(int userId) throws CustomException;
 
 	boolean customerHasAccount(int userId) throws CustomException;
+
+	boolean isCustomerAlreadyHasAccount(int userId, int accountType, int branchId) throws CustomException;
+
+	boolean isAccountPresent(String accountNumber) throws CustomException;
 }

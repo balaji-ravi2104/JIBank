@@ -41,7 +41,7 @@
 					pattern="\d{1,4}" placeholder="Enter Your User Id" maxlength="4"
 					required> <label for="password">Password</label> <input
 					type="password" name="password" placeholder="Enter Your Password"
-					required> <input type="submit" value="Create">
+					required> <input type="submit" value="Login">
 			</form>
 		</div>
 	</div>
