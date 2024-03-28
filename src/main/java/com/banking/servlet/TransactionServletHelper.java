@@ -89,4 +89,41 @@ public class TransactionServletHelper {
 		}
 	}
 
+	public static void transferAmountWithinBank(HttpServletRequest request, HttpServletResponse response) {
+		Account senderAccount = (Account) request.getAttribute("senderAccount");
+		Account receiverAccount = (Account) request.getAttribute("receiverAccount");
+		double amount = Double.parseDouble(request.getParameter("amount"));
+		String remark = request.getParameter("message");
+		try {
+			boolean isAmountTransfered = transactionController.transferWithinBank(senderAccount, receiverAccount,
+					amount, remark);
+			if (isAmountTransfered) {
+				request.setAttribute("success", "Amount Transfered Successfully");
+			} else {
+				request.setAttribute("failed", "Amount Transaction Failed");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public static void transferAmountWithotherBank(HttpServletRequest request, HttpServletResponse response) {
+		String receiverAccountNumber = request.getParameter("accountNumber");
+		Account senderAccount = (Account) request.getAttribute("senderAccount");
+		double amount = Double.parseDouble(request.getParameter("amount"));
+		String remark = request.getParameter("message");
+		try {
+			boolean isAmountTransfered = transactionController.transferWithOtherBank(senderAccount,
+					receiverAccountNumber, amount, remark);
+			if (isAmountTransfered) {
+				request.setAttribute("success", "Amount Transfered Successfully");
+			} else {
+				request.setAttribute("failed", "Amount Transaction Failed");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

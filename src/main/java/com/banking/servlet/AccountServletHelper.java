@@ -1,9 +1,11 @@
 package com.banking.servlet;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.banking.controller.AccountController;
 import com.banking.model.Account;
@@ -31,13 +33,47 @@ public class AccountServletHelper {
 		Account account = (Account) request.getAttribute("accountObject");
 		try {
 			boolean isAccountCreated = accountController.createAccount(account);
-			if(isAccountCreated) {
+			if (isAccountCreated) {
 				request.setAttribute("success", "Account Created Successfully");
-			}else {
+			} else {
 				request.setAttribute("failure", "Account Creation Failed");
 			}
 		} catch (CustomException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public static void getCustomerAccounts(int userId, HttpServletRequest request, HttpServletResponse response) {
+		try {
+			List<Account> accounts = accountController.getAccountsOfCustomer(userId);
+			if (accounts.isEmpty()) {
+				request.setAttribute("noaccounts", "No Account Found");
+			} else {
+				for (Account account : accounts) {
+					if (account.isPrimaryAccount()) {
+						request.getSession(true).setAttribute("currentAccount", account);
+						break;
+					}
+				}
+				request.getSession(true).setAttribute("accountsList", accounts);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void changeAccount(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			String accountNumber = (String) request.getParameter("accountNumber");
+			List<Account> accounts = (List<Account>) session.getAttribute("accountsList");
+			for (Account account : accounts) {
+				if (account.getAccountNumber().equals(accountNumber)) {
+					session.setAttribute("currentAccount", account);
+					break;
+				}
+			}
 		}
 	}
 }

@@ -69,9 +69,9 @@ public class MainFilter implements Filter {
 			}
 			break;
 		case "/JIBank/addUser":
-			HttpSession session = ((HttpServletRequest) request).getSession(false);
-			boolean flag = false;
 			try {
+				HttpSession session = ((HttpServletRequest) request).getSession(false);
+				boolean flag = false;
 				if (session != null) {
 					Boolean isCustomer = (Boolean) session.getAttribute("customer");
 					Boolean isEmployee = (Boolean) session.getAttribute("employee");
@@ -118,8 +118,8 @@ public class MainFilter implements Filter {
 									httpResponse);
 							return;
 						}
-						
-						if(userDao.isCustomerExists(panNumber)) {
+
+						if (userDao.isCustomerExists(panNumber)) {
 							request.setAttribute("customerExists", "Customer Already Exists");
 							httpRequest.getRequestDispatcher("/employee/customerForm.jsp").forward(httpRequest,
 									httpResponse);
@@ -167,7 +167,7 @@ public class MainFilter implements Filter {
 			}
 			break;
 		case "/JIBank/updateUser":
-			flag = false;
+			boolean flag = false;
 			try {
 				customerId = Integer.parseInt(request.getParameter("userId"));
 				String firstName = request.getParameter("firstname");
@@ -371,6 +371,123 @@ public class MainFilter implements Filter {
 				e.printStackTrace();
 			}
 			break;
+		case "/JIBank/customer/transaction.jsp":
+			request.setAttribute("withinBank", ((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
+			break;
+		case "/JIBank/withinBankTransfer":
+			accountNumber = request.getParameter("accountNumber");
+			amount = Double.parseDouble(request.getParameter("amount"));
+			int branchId = Integer.parseInt(request.getParameter("branchId"));
+			flag = false;
+			try {
+				HttpSession session = ((HttpServletRequest) request).getSession(false);
+
+				Account senderAccount = (Account) session.getAttribute("currentAccount");
+
+				if (senderAccount.getAccountStatus() == AccountStatus.INACTIVE) {
+					request.setAttribute("inactiveAccount", "Your Account is InActive");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				if (accountNumber.length() < 12 || accountNumber.length() > 12
+						|| !accountDao.isAccountPresent(accountNumber)) {
+					flag = true;
+					request.setAttribute("invalidAccount", "Invalid Account Number");
+				}
+				if (InputValidator.validateBalance(amount)) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
+				}
+
+				if (flag) {
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				Account receiverAccount = accountDao.getAccountDetail(accountNumber);
+
+				boolean isAccountPresent = accountDao.checkAccountExists(accountNumber, branchId);
+
+				if (!isAccountPresent) {
+					request.setAttribute("inactiveAccount", "Receiver Account not present in this Branch");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
+					request.setAttribute("inactiveAccount", "Receiver Account is InActive");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				if (senderAccount.getBalance() < amount) {
+					request.setAttribute("inactiveAccount", "Insufficent Balance !! Can't Transfer");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				request.setAttribute("receiverAccount", receiverAccount);
+				request.setAttribute("senderAccount", senderAccount);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
+		case "/JIBank/otherBankTransfer":
+			accountNumber = request.getParameter("accountNumber");
+			amount = Double.parseDouble(request.getParameter("amount"));
+			flag = false;
+			try {
+				HttpSession session = ((HttpServletRequest) request).getSession(false);
+
+				Account senderAccount = (Account) session.getAttribute("currentAccount");
+
+				if (senderAccount.getAccountStatus() == AccountStatus.INACTIVE) {
+					request.setAttribute("inactiveAccount", "Your Account is InActive");
+					httpRequest.getRequestDispatcher("/transferOutSideBank").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				if (accountNumber.length() < 12) {
+					flag = true;
+					request.setAttribute("invalidAccount", "Invalid Account Number");
+				}
+				if (InputValidator.validateBalance(amount)) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
+				}
+
+				if (flag) {
+					httpRequest.getRequestDispatcher("/transferOutSideBank").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				if (senderAccount.getBalance() < amount) {
+					request.setAttribute("inactiveAccount", "Insufficent Balance !! Can't Transfer");
+					httpRequest.getRequestDispatcher("/transferOutSideBank").forward(httpRequest, httpResponse);
+					return;
+				}
+				request.setAttribute("senderAccount", senderAccount);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
+		case "/JIBank/getStatements":
+			System.out.println("getStatements inside");
+			fromDate = request.getParameter("fromDate");
+			toDate = request.getParameter("toDate");
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				Date fromDateObj = sdf.parse(fromDate);
+				Date toDateObj = sdf.parse(toDate);
+
+				if (fromDateObj.after(toDateObj)) {
+					request.setAttribute("dateError", "From date should be less then To date");
+					httpRequest.getRequestDispatcher("customer/Statement.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		default:
 			break;
 		}

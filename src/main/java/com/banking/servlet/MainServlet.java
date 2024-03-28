@@ -76,11 +76,12 @@ public class MainServlet extends HttpServlet {
 				dispatcher = request.getRequestDispatcher("/login.jsp");
 				dispatcher.forward(request, response);
 			} else {
-				User user = (User) request.getSession().getAttribute("user");
+				User user = (User) request.getSession(true).getAttribute("user");
 				UserType userType = user.getTypeOfUser();
 				switch (userType) {
 				case CUSTOMER:
-					dispatcher = request.getRequestDispatcher("customer/home.jsp");
+					AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
+					dispatcher = request.getRequestDispatcher("customer/account.jsp");
 					dispatcher.forward(request, response);
 					break;
 				case EMPLOYEE:
@@ -158,6 +159,41 @@ public class MainServlet extends HttpServlet {
 		case "/updateAccountStatus":
 			TransactionServletHelper.updateAccountStatus(request, response);
 			dispatcher = request.getRequestDispatcher("employee/account.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/switchAccount":
+			dispatcher = request.getRequestDispatcher("customer/SwitchAccount.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/changeAccount":
+			AccountServletHelper.changeAccount(request, response);
+			dispatcher = request.getRequestDispatcher("customer/account.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/transferOutSideBank":
+			request.setAttribute("outSideBank", true);
+			request.setAttribute("otherBank", request.getContextPath() + "/otherBankTransfer");
+			dispatcher = request.getRequestDispatcher("customer/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/transferInBank":
+			request.setAttribute("withinBank", request.getContextPath() + "/withinBankTransfer");
+			dispatcher = request.getRequestDispatcher("customer/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/withinBankTransfer":
+			TransactionServletHelper.transferAmountWithinBank(request, response);
+			dispatcher = request.getRequestDispatcher("customer/transaction.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/otherBankTransfer":
+			TransactionServletHelper.transferAmountWithotherBank(request, response);
+			dispatcher = request.getRequestDispatcher("/transferOutSideBank");
+			dispatcher.forward(request, response);
+			break;
+		case "/getStatements":
+			TransactionServletHelper.getTransactions(request, response);
+			dispatcher = request.getRequestDispatcher("customer/Statement.jsp");
 			dispatcher.forward(request, response);
 			break;
 		}

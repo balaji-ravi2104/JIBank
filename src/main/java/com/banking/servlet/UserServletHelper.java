@@ -95,5 +95,4 @@ public class UserServletHelper {
 			e.printStackTrace();
 		}
 	}
-
 }
