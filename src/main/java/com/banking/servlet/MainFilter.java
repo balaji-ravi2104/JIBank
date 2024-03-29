@@ -52,11 +52,14 @@ public class MainFilter implements Filter {
 		System.out.println(requestURI);
 
 		switch (requestURI) {
+		case "/JIBank/":
+			((HttpServletResponse) response).sendRedirect("login.jsp");
+			break;
 		case "/JIBank/login":
 			int userId = Integer.parseInt(request.getParameter("userId"));
 			if (userId <= 1000) {
 				request.setAttribute("error", "Invalid User Id !!!");
-				httpRequest.getRequestDispatcher("/login.jsp").forward(httpRequest, httpResponse);
+				httpRequest.getRequestDispatcher("login.jsp").forward(httpRequest, httpResponse);
 				return;
 			}
 			break;
@@ -371,9 +374,11 @@ public class MainFilter implements Filter {
 				e.printStackTrace();
 			}
 			break;
-		case "/JIBank/customer/transaction.jsp":
-			request.setAttribute("withinBank", ((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
-			break;
+		/*
+		 * case "/JIBank/customer/transaction.jsp": request.setAttribute("withinBank",
+		 * ((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
+		 * break;
+		 */
 		case "/JIBank/withinBankTransfer":
 			accountNumber = request.getParameter("accountNumber");
 			amount = Double.parseDouble(request.getParameter("amount"));
@@ -488,6 +493,35 @@ public class MainFilter implements Filter {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			break;
+		case "/JIBank/updatePassword":
+			String oldPassword = request.getParameter("oldpassword");
+			String newPassword = request.getParameter("newpassword");
+			String confirmPassword = request.getParameter("confirmpassword");
+			userId = Integer.parseInt(request.getParameter("userId"));
+
+			try {
+				String password = userDao.getUserPassword(userId);
+				if (!password.equals(oldPassword)) {
+					request.setAttribute("wrongPassword", "Wrong Password");
+					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+				if (newPassword.length() < 8 || !InputValidator.validatePassword(newPassword)) {
+					request.setAttribute("InvalidPassword",
+							"Password must contain at least 8 characters, including at least one lowercase letter, one uppercase letter, one digit, and one special character");
+					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+				if (!newPassword.equals(confirmPassword)) {
+					request.setAttribute("diffPassword", "New and Confirm Password Must be Same");
+					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
 		default:
 			break;
 		}

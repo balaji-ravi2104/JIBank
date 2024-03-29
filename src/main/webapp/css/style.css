@@ -91,7 +91,7 @@
 .input-form textarea:focus {
 	outline: none;
 	border-color: #007bff;
-} 
+}
 
 .input-form input::placeholder {
 	color: black;
@@ -523,8 +523,10 @@ body {
 
 /* Profile Page Styling */
 .container-profile {
-	margin-top: 100px;
-	margin-right: 100px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
 }
 
 .profile-logo img {
@@ -535,23 +537,22 @@ body {
 }
 
 #profile-details {
-	flex: 1;
 	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
+	width: 70%;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	padding: 20px;
+	margin-top: 120px;
+}
+
+#profile-details img {
+	max-width: 80%;
+	margin-left: 100px;
 }
 
 #profile-details table {
 	text-align: left;
-	font-size: 25px;
-	position: relative;
-	border: 5px;
-	box-shadow: 0 5px 5px rgba(0, 0, 0, 0.6);
-	height: 60vh;
-	width: 80%;
-	padding: 30px;
-	margin-top: -75px;
+	font-size: 23px;
 }
 
 #profile-details table tr th {
@@ -563,20 +564,21 @@ body {
 	padding: 15px;
 }
 
-/* #update-password-button {
-	margin-left: 83%;
-	margin-bottom: 20px;
-	margin-top: -50px;
+.update-button {
+	margin-left: 75.3%;
+	margin-top: -80px;
+}
+
+#update-password-button {
 	background-color: rgb(64, 123, 255);
 	color: #ffffff;
-	padding: 15px 0px;
-	width: 12%;
+	padding: 15px;
 	border: none;
 	border-radius: 5px;
 	cursor: pointer;
 	font-size: 20px;
 	font-weight: 600;
-} */
+}
 
 /* Modal */
 .modal {
@@ -592,9 +594,10 @@ body {
 }
 
 .modal-content {
+	height: 54vh;
 	background-color: #fefefe;
 	margin: 15% auto;
-	padding: 35px;
+	padding: 33px;
 	border: 1px solid #888;
 	max-width: 550px;
 	border-radius: 10px;
@@ -616,22 +619,30 @@ body {
 
 /* Form styling */
 #update-password-form {
-	padding: 30px;
-	/* height: 50vh; */
+	padding: 20px;
+	height: 36vh;
 }
 
 #update-password-form label {
+	color: #007bff;
 	font-size: 22px;
 	font-weight: 600;
 	display: block;
 	margin-bottom: 15px;
-	color: #007bff;
+	font-size: 22px;
 }
 
-#update-password-form input[type="number"], #update-password-form input[type="text"]
-	{
+#update-password-form input[type="password"] {
 	width: 100%;
-	padding: 17px;
+	padding: 15px;
+	margin-bottom: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+
+#update-password-form input {
+	width: 100%;
+	padding: 15px;
 	margin-bottom: 20px;
 	border: 1px solid #ccc;
 	border-radius: 5px;
@@ -651,20 +662,18 @@ body {
 	width: 100%;
 	padding: 15px;
 	font-size: 18px;
-	font-weight: 600;
 	background-color: #007bff;
 	color: white;
 	border: none;
 	border-radius: 5px;
 	cursor: pointer;
-	margin-top: 15px;
+	color: white;
+	margin-top: 20px;
 }
 
 #update-password-form input[type="submit"]:hover {
 	background-color: rgb(64, 123, 255);
 }
-
-;
 
 /* Employee Based Styling Starts */
 
@@ -1010,7 +1019,15 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 	margin-right: 5px;
 }
 
-.transfer{
+.password-font {
+	font-size: 16px;
+}
+
+.password-font i {
+	margin-bottom: 37px;
+}
+
+.transfer {
 	width: 100%;
 	margin-top: 0px;
 }
@@ -1198,7 +1215,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 	justify-content: space-between;
 }
 
-.statement-page{
+.statement-page {
 	justify-content: flex-end;
 }
 
@@ -1290,7 +1307,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 	padding: 45px;
 }
 
-#transfer-container{
+#transfer-container {
 	margin-top: 185px;
 }
 

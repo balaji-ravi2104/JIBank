@@ -14,7 +14,7 @@ import com.banking.utils.CustomException;
 public class AccountServletHelper {
 	private static AccountController accountController = new AccountController();
 
-	public static void getCustomerAccountsr(HttpServletRequest request, HttpServletResponse response) {
+	public static void getCustomerAccountsInBranch(HttpServletRequest request, HttpServletResponse response) {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		int branchId = Integer.parseInt(request.getParameter("branchId"));
 		try {

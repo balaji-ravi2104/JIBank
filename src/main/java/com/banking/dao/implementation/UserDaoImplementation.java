@@ -22,7 +22,7 @@ import com.banking.utils.InputValidator;
 public class UserDaoImplementation implements UserDao {
 
 	private static final String GET_USER = "SELECT  u.userId,u.FirstName,u.LastName,u.Gender,u.Email,"
-			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId FROM Users u WHERE u.userId = ? and u.password = ?";
+			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId FROM Users u WHERE u.userId = ?";
 
 	private static final String GET_EMPLOYEE_BRANCH = "SELECT branch_id FROM Employee WHERE User_id = ?";
 
@@ -67,15 +67,15 @@ public class UserDaoImplementation implements UserDao {
 			+ "u.UserId = e.user_id WHERE u.TypeId = 2 ORDER BY e.branch_id;";
 	private static final String UPDATE_CUSTOMER_DETAILS = "UPDATE Users SET FirstName = ?,LastName = ?,Gender = ?,Email = ?,"
 			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ? WHERE UserId = ?;";
+	
+	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
 	@Override
-	public User authendicateUser(int userID, String password) throws CustomException {
-		InputValidator.isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
+	public User authendicateUser(int userID) throws CustomException {
 		User user = null;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(GET_USER)) {
 			preparedStatement.setInt(1, userID);
-			preparedStatement.setString(2, password);
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
@@ -414,6 +414,26 @@ public class UserDaoImplementation implements UserDao {
 			throw new CustomException("Error While Reterving User Details", e);
 		}
 		return employeeList;
+	}
+
+	@Override
+	public String getUserPassword(int userId) throws CustomException {
+		String password = null;
+		try {
+			try (Connection connection = DatabaseConnection.getConnection();
+					PreparedStatement preparedStatement = connection.prepareStatement(GET_PASSWORD)) {
+				
+				preparedStatement.setInt(1, userId);
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if(resultSet.next()) {
+						password = resultSet.getString(1);
+					}
+				}
+			}
+		}catch (SQLException e) {
+			throw new CustomException("Error While Reterving User Password", e);
+		}
+		return password;
 	}
 
 	private int addCustomerPanAadhar(int userId, Customer customer) throws CustomException {

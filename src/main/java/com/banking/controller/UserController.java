@@ -44,7 +44,11 @@ public class UserController {
 		InputValidator.isNull(password, "Password Cannot be Empty or Null!!!");
 		User user = null;
 		try {
-			user = userDao.authendicateUser(userId, password);
+			String userPassword = userDao.getUserPassword(userId);
+			if(!userPassword.equals(password)) {
+				return user;
+			}
+			user = userDao.authendicateUser(userId);
 		} catch (Exception e) {
 			throw new CustomException("Error while loggin!!", e);
 		}
@@ -198,9 +202,9 @@ public class UserController {
 	public boolean updatePassword(int userId, String password) throws CustomException {
 		InputValidator.isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isPasswordUpdated = false;
-		if (!validatePassword(password)) {
-			return isPasswordUpdated;
-		}
+//		if (!validatePassword(password)) {
+//			return isPasswordUpdated;
+//		}
 		try {
 			isPasswordUpdated = userDao.updatePassword(userId, password);
 		} catch (Exception e) {

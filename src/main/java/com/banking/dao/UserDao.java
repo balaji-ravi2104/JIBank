@@ -9,7 +9,7 @@ import com.banking.utils.CustomException;
 
 public interface UserDao {
 
-	User authendicateUser(int userID, String password) throws CustomException;
+	User authendicateUser(int userID) throws CustomException;
 
 	boolean addCustomer(Customer customer) throws CustomException;
 
@@ -41,4 +41,6 @@ public interface UserDao {
 	boolean updateCustomerDetails(Customer customer) throws CustomException;
 
 	boolean isCustomerExists(String panNumber) throws CustomException;
+
+	String getUserPassword(int userId) throws CustomException;
 }

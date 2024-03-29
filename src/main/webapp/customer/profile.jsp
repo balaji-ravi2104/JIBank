@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="com.banking.utils.DateUtils"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,17 +18,25 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+
+	if (session.getAttribute("user") == null) {
+		response.sendRedirect("../login.jsp");
+	}
+	%>
 	<div class="navbar-home">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/customer/account.jsp">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/account">Accounts</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction.jsp">Transactions</a></li>
+				href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement.jsp">Statements</a></li>
-			<li><a href="<%=request.getContextPath()%>/customer/profile.jsp"
+				href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/profile"
 				class="active">Profile</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
@@ -40,5 +50,137 @@
 			</li>
 		</div>
 	</div>
+	<div class="container-profile">
+		<div id="profile-details">
+			<div>
+				<img src="<%=request.getContextPath()%>/images/profile.png"
+					alt="profile">
+			</div>
+			<table>
+				<tr>
+					<th>User Id</th>
+					<td>${user.userId}</td>
+				</tr>
+				<tr>
+					<th>Name</th>
+					<td>${user.firstName}${user.lastName}</td>
+				</tr>
+				<tr>
+					<th>Gender</th>
+					<td>${user.gender}</td>
+				</tr>
+				<tr>
+					<th>Email</th>
+					<td>${user.email}</td>
+				</tr>
+				<tr>
+					<th>Mobile</th>
+					<td>${user.contactNumber}</td>
+				</tr>
+				<tr>
+					<th>Address</th>
+					<td>${user.address}</td>
+				</tr>
+				<tr>
+					<th>DOB</th>
+					<td>${DateUtils.longToDate(user.dateOfBirth)}</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="modal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<div id="update-password-form">
+					<form id="password-form"
+						action="<%=request.getContextPath()%>/updatePassword"
+						method="post">
+						<c:if test="${not empty success}">
+							<div class="usercreation-message success"
+								id="usercreation-message">
+								<i class="fa-solid fa-thumbs-up"></i>
+								<p>${success}</p>
+							</div>
+						</c:if>
+						<c:if test="${not empty failed}">
+							<div class="usercreation-message failed"
+								id="usercreation-message">
+								<i class="fa-solid fa-thumbs-down"></i>
+								<p>${failed}</p>
+							</div>
+						</c:if>
+						<input type="hidden" id="userId" value="${user.userId}" name="userId">
+						<label for="new-password">Old Password</label> <input
+							type="password" id="old-password" name="oldpassword"
+							value="${param.oldpassword}" placeholder="Enter Old Password"
+							required>
+						<c:if test="${not empty wrongPassword}">
+							<div id="invalid-account-error"
+								class="invalid-accountnumber-error">
+								<i class="fa-solid fa-triangle-exclamation"></i>
+								<p>${wrongPassword}</p>
+							</div>
+						</c:if>
+						<label for="new-password">New Password</label> <input
+							type="password" id="new-password" name="newpassword"
+							value="${param.newpassword}" placeholder="Enter New Password"
+							required>
+						<c:if test="${not empty InvalidPassword}">
+							<div id="invalid-account-error"
+								class="invalid-accountnumber-error password-font">
+								<i class="fa-solid fa-triangle-exclamation"></i>
+								<p>${InvalidPassword}</p>
+							</div>
+						</c:if>
+						<label for="confirm-password">Confirm Password</label> <input
+							type="password" id="confirm-password" name="confirmpassword"
+							value="${param.confirmpassword}"
+							placeholder="Enter Confirm Password" required>
+						<c:if test="${not empty diffPassword}">
+							<div id="invalid-account-error"
+								class="invalid-accountnumber-error">
+								<i class="fa-solid fa-triangle-exclamation"></i>
+								<p>${diffPassword}</p>
+							</div>
+						</c:if>
+						<input type="submit" value="Update">
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="update-button">
+		<button id="update-password-button">Update Password</button>
+	</div>
+	<script>
+		window.onload = function() {
+			var modal = document.getElementById("modal");
+			var invalidAccountError = document
+					.getElementById("invalid-account-error");
+			var messageAboutDeposit = document
+					.getElementById("usercreation-message");
+
+			if ((invalidAccountError && invalidAccountError.innerText.trim() !== "")
+					|| (messageAboutDeposit && messageAboutDeposit.innerText
+							.trim() !== "")) {
+				modal.style.display = "block";
+			}
+		};
+
+		var modal = document.getElementById("modal");
+		var btn = document.getElementById("update-password-button");
+		var span = document.getElementsByClassName("close")[0];
+		btn.onclick = function() {
+			modal.style.display = "block";
+		}
+		span.onclick = function() {
+			modal.style.display = "none";
+		}
+		window.onclick = function(event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
+		}
+	</script>
 </body>
 </html>

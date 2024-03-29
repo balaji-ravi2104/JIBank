@@ -79,7 +79,7 @@ public class UserServletHelper {
 		} catch (CustomException e) {
 			request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
 		}
-	}	
+	}
 
 	static void updateCustomer(HttpServletRequest request, HttpServletResponse response) {
 		Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
@@ -90,6 +90,22 @@ public class UserServletHelper {
 				request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
 			} else {
 				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
+			}
+		} catch (CustomException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void updatePassword(HttpServletRequest request, HttpServletResponse response) {
+		boolean isPasswordUpdated = false;
+		int userId = Integer.parseInt(request.getParameter("userId"));
+		String password = request.getParameter("newpassword");
+		try {
+			isPasswordUpdated = userController.updatePassword(userId,password);
+			if(isPasswordUpdated) {
+				request.setAttribute("success", "Password Updated Successfully");
+			}else {
+				request.setAttribute("failed", "Password Updation Failed");
 			}
 		} catch (CustomException e) {
 			e.printStackTrace();

@@ -18,18 +18,26 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+
+	if (session.getAttribute("user") == null) {
+		response.sendRedirect("../login.jsp");
+	}
+	%>
 	<div class="navbar-home">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/customer/account.jsp">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/account">Accounts</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction.jsp">Transactions</a></li>
+				href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement.jsp"
+				href="<%=request.getContextPath()%>/customer/Statement"
 				class="active">Statements</a></li>
-			<li><a href="<%=request.getContextPath()%>/customer/profile.jsp">Profile</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/profile">Profile</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">
