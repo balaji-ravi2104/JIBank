@@ -31,11 +31,9 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/customer.jsp">Customer</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account.jsp">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction.jsp"
+			<li><a href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/transaction"
 				class="active">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
@@ -124,8 +122,8 @@
 						<td>${transaction.viewerAccount}</td>
 						<td>${transaction.transactedAccount}</td>
 						<td>${transaction.transactionType}</td>
-						<td>${transaction.transactedAmount}</td>
-						<td>${transaction.balance}</td>
+						<td>₹.${transaction.transactedAmount}</td>
+						<td>₹.${transaction.balance}</td>
 						<%-- <td>${transaction.dateOfTransaction}</td> --%>
 						<td>${DateUtils.formateLongToDate(transaction.dateOfTransaction)}</td>
 						<td>${transaction.remark}</td>
@@ -163,11 +161,20 @@
 								<p>${failed}</p>
 							</div>
 						</c:if>
-						<label for="accountNumber">Account Number</label> <input
-							type="text" id="accountNumber" name="transactionaccountNumber"
-							pattern="\d{12}" maxlength="12"
-							placeholder="Enter the AccountNumber"
-							value="${param.transactionaccountNumber}" required>
+						<label for="accountNumber">Account Number</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="text" id="accountNumber"
+									name="transactionaccountNumber" pattern="\d{12}" maxlength="12"
+									placeholder="Enter the AccountNumber" value="" required>
+							</c:when>
+							<c:otherwise>
+								<input type="text" id="accountNumber"
+									name="transactionaccountNumber" pattern="\d{12}" maxlength="12"
+									placeholder="Enter the AccountNumber"
+									value="${param.transactionaccountNumber}" required>
+							</c:otherwise>
+						</c:choose>
 						<c:if test="${not empty invalidAccount}">
 							<div id="invalid-account-error"
 								class="invalid-accountnumber-error">
@@ -175,9 +182,17 @@
 								<p>${invalidAccount}</p>
 							</div>
 						</c:if>
-						<label id="amount-label" for="amount">${transactionType}</label> <input
-							type="number" id="amount" name="amount" value="${param.amount}"
-							placeholder="Enter the Amount" required>
+						<label id="amount-label" for="amount">${transactionType}</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="number" id="amount" name="amount" value=""
+									placeholder="Enter the Amount" required>
+							</c:when>
+							<c:otherwise>
+								<input type="number" id="amount" name="amount"
+									value="${param.amount}" placeholder="Enter the Amount" required>
+							</c:otherwise>
+						</c:choose>
 						<c:if test="${not empty invalidBalance}">
 							<div id="invalid-account-error"
 								class="invalid-accountnumber-error">
@@ -185,10 +200,21 @@
 								<p>${invalidBalance}</p>
 							</div>
 						</c:if>
-						<label for="description">Description</label> <input type="text"
-							name="description" value="${param.description}"
-							placeholder="Enter Small Description" required> <input
-							type="submit" id="submit" value="${submitType}">
+						<label for="description">Description</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="text" name="description"
+									value=""
+									placeholder="Enter Small Description" required>
+								<input type="submit" id="submit" value="${submitType}">
+							</c:when>
+							<c:otherwise>
+								<input type="text" name="description"
+									value="${param.description}"
+									placeholder="Enter Small Description" required>
+								<input type="submit" id="submit" value="${submitType}">
+							</c:otherwise>
+						</c:choose>
 					</form>
 				</div>
 			</div>

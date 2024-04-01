@@ -30,12 +30,10 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/customer.jsp">Customer</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account.jsp"
+			<li><a href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/account"
 				class="active">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction.jsp">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">
@@ -76,19 +74,22 @@
 							<p>${failure}</p>
 						</div>
 					</c:if>
-					<label for="UserId">User Id</label> <input type="number"
-						name="userId" placeholder="Enter the User Id"
-						value="${param.userId}" required>
+					<label for="UserId">User Id</label>
+					<c:choose>
+						<c:when test="${not empty success}">
+							<input type="number" name="userId"
+								placeholder="Enter the User Id" value="" required>
+						</c:when>
+						<c:otherwise>
+							<input type="number" name="userId"
+								placeholder="Enter the User Id" value="${param.userId}" required>
+						</c:otherwise>
+					</c:choose>
 					<c:if test="${not empty error}">
 						<p class="message-error">${error}</p>
 					</c:if>
 					<label for="branch-id">Branch</label> <select name="branchId"
 						class="account-type" id="branch-id" class="account-form">
-						<%-- <option value="3007" ${param.branchId == '3007' ? 'selected' : ''}>3007</option>
-						<option value="3008" ${param.branchId == '3008' ? 'selected' : ''}>3008</option>
-						<option value="3009" ${param.branchId == '3009' ? 'selected' : ''}>3009</option>
-						<option value="3010" ${param.branchId == '3010' ? 'selected' : ''}>3010</option>
-						<option value="3011" ${param.branchId == '3011' ? 'selected' : ''}>3011</option> --%>
 						<option value="3007" ${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
 						<option value="3008" ${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
 						<option value="3009" ${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
@@ -101,9 +102,18 @@
 						<option value="2" ${param.accountType == '2' ? 'selected' : ''}>Savings</option>
 						<option value="3" ${param.accountType == '3' ? 'selected' : ''}>Salary</option>
 						<option value="4" ${param.accountType == '4' ? 'selected' : ''}>Business</option>
-					</select> <label for="balance">Balance</label> <input type="number"
-						name="balance" placeholder="Enter the Balance"
-						value="${param.balance}" required>
+					</select> <label for="balance">Balance</label>
+					<c:choose>
+						<c:when test="${not empty success}">
+							<input type="number" name="balance"
+								placeholder="Enter the Balance" value="" required>
+						</c:when>
+						<c:otherwise>
+							<input type="number" name="balance"
+								placeholder="Enter the Balance" value="${param.balance}"
+								required>
+						</c:otherwise>
+					</c:choose>
 					<c:if test="${not empty invalidBalance}">
 						<p class="message-error">${invalidBalance}</p>
 					</c:if>

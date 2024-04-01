@@ -31,11 +31,11 @@
 		</div>
 		<div>
 			<li><a
-				href="<%=request.getContextPath()%>/employee/customer.jsp">Customer</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account.jsp"
+				href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/account"
 				class="active">Accounts</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction.jsp">Transactions</a></li>
+				href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">

@@ -53,7 +53,7 @@ public class MainFilter implements Filter {
 
 		switch (requestURI) {
 		case "/JIBank/":
-			((HttpServletResponse) response).sendRedirect("login.jsp");
+			httpRequest.getRequestDispatcher("login.jsp").forward(httpRequest, httpResponse);
 			break;
 		case "/JIBank/login":
 			int userId = Integer.parseInt(request.getParameter("userId"));
@@ -404,6 +404,10 @@ public class MainFilter implements Filter {
 					flag = true;
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
+				if (amount > 10000000) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be Less than 10000000");
+				}
 
 				if (flag) {
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
@@ -459,6 +463,11 @@ public class MainFilter implements Filter {
 				if (InputValidator.validateBalance(amount)) {
 					flag = true;
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
+				}
+
+				if (amount > 10000000) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be Less than 10000000");
 				}
 
 				if (flag) {
@@ -521,8 +530,6 @@ public class MainFilter implements Filter {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			break;
-		default:
 			break;
 		}
 		chain.doFilter(request, response);

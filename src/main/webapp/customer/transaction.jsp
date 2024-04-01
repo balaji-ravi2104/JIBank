@@ -31,11 +31,9 @@
 		</div>
 		<div>
 			<li><a href="<%=request.getContextPath()%>/customer/account">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction"
+			<li><a href="<%=request.getContextPath()%>/customer/transaction"
 				class="active">Transactions</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
 			<li><a href="<%=request.getContextPath()%>/customer/profile">Profile</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
@@ -78,10 +76,18 @@
 							<p>${failed}</p>
 						</div>
 					</c:if>
-					<label for="account-number">Account Number</label> <input
-						type="number" name="accountNumber"
-						placeholder="Enter the Account Number"
-						value="${param.accountNumber}" required>
+					<label for="account-number">Account Number</label>
+					<c:choose>
+						<c:when test="${not empty success}">
+							<input type="number" name="accountNumber"
+								placeholder="Enter the Account Number" value="" required>
+						</c:when>
+						<c:otherwise>
+							<input type="number" name="accountNumber"
+								placeholder="Enter the Account Number"
+								value="${param.accountNumber}" required>
+						</c:otherwise>
+					</c:choose>
 					<c:if test="${not empty invalidAccount}">
 						<div id="invalid-account-error"
 							class="invalid-accountnumber-error transfer">
@@ -105,9 +111,18 @@
 								${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
 						</select>
 					</c:if>
-					<label for="amount">Transfer Amount</label> <input type="number"
-						name="amount" step="0.01" placeholder="Enter Amount to Transfer"
-						value="${param.amount}" required>
+					<label for="amount">Transfer Amount</label>
+					<c:choose>
+						<c:when test="${not empty success}">
+							<input type="number" name="amount" step="0.01"
+								placeholder="Enter Amount to Transfer" value="" required>
+						</c:when>
+						<c:otherwise>
+							<input type="number" name="amount" step="0.01"
+								placeholder="Enter Amount to Transfer" value="${param.amount}"
+								required>
+						</c:otherwise>
+					</c:choose>
 					<c:if test="${not empty invalidBalance}">
 						<div id="invalid-account-error"
 							class="invalid-accountnumber-error transfer">
@@ -116,8 +131,16 @@
 						</div>
 					</c:if>
 					<label for="description">Small Description</label>
-					<textarea id="message" name="message" rows="2" cols="50"
-						placeholder="Enter Your  Description" required>${param.message}</textarea>
+					<c:choose>
+						<c:when test="${not empty success}">
+							<textarea id="message" name="message" rows="2" cols="50"
+								placeholder="Enter Your  Description" required></textarea>
+						</c:when>
+						<c:otherwise>
+							<textarea id="message" name="message" rows="2" cols="50"
+								placeholder="Enter Your  Description" required>${param.message}</textarea>
+						</c:otherwise>
+					</c:choose>
 					<input type="submit" value="Transfer">
 				</form>
 			</div>

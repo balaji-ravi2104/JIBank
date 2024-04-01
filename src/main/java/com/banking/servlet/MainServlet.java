@@ -28,16 +28,17 @@ public class MainServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		String action = request.getServletPath();
-		RequestDispatcher dispatcher;
 		try {
+			String action = request.getServletPath();
+			RequestDispatcher dispatcher;
 			switch (action) {
 			case "/customer/account":
 				dispatcher = request.getRequestDispatcher("/customer/account.jsp");
 				dispatcher.forward(request, response);
 				break;
 			case "/customer/transaction":
-				request.setAttribute("withinBank", ((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
+				request.setAttribute("withinBank",
+						((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
 				dispatcher = request.getRequestDispatcher("/customer/transaction.jsp");
 				dispatcher.forward(request, response);
 				break;
@@ -47,6 +48,18 @@ public class MainServlet extends HttpServlet {
 				break;
 			case "/customer/profile":
 				dispatcher = request.getRequestDispatcher("/customer/profile.jsp");
+				dispatcher.forward(request, response);
+				break;
+			case "/employee/customer":
+				dispatcher = request.getRequestDispatcher("/employee/customer.jsp");
+				dispatcher.forward(request, response);
+				break;
+			case "/employee/account":
+				dispatcher = request.getRequestDispatcher("/employee/account.jsp");
+				dispatcher.forward(request, response);
+				break;
+			case "/employee/transaction":
+				dispatcher = request.getRequestDispatcher("/employee/transaction.jsp");
 				dispatcher.forward(request, response);
 				break;
 			case "/getcustomer":
@@ -73,6 +86,7 @@ public class MainServlet extends HttpServlet {
 				dispatcher.forward(request, response);
 				break;
 			default:
+				response.sendRedirect("404.jsp");
 				break;
 			}
 		} catch (Exception e) {
@@ -101,21 +115,28 @@ public class MainServlet extends HttpServlet {
 					 * dispatcher = request.getRequestDispatcher("customer/account.jsp");
 					 * dispatcher.forward(request, response); break;
 					 */
-					response.sendRedirect(request.getContextPath()+"/customer/account");
+					response.sendRedirect(request.getContextPath() + "/customer/account");
 					break;
 				case EMPLOYEE:
 					try {
-						int employeeBranchId = userController.getEmployeeBranch(user.getUserId());
-						request.getSession().setAttribute("employeeBranchId", employeeBranchId);
-						dispatcher = request.getRequestDispatcher("employee/customer.jsp");
-						dispatcher.forward(request, response);
+						// int employeeBranchId = userController.getEmployeeBranch(user.getUserId());
+						request.getSession().setAttribute("employeeBranchId",
+								userController.getEmployeeBranch(user.getUserId()));
+						/*
+						 * dispatcher = request.getRequestDispatcher("employee/customer.jsp");
+						 * dispatcher.forward(request, response);
+						 */
+						response.sendRedirect(request.getContextPath() + "/employee/customer");
 					} catch (CustomException e) {
 						e.printStackTrace();
 					}
 					break;
 				case ADMIN:
-					dispatcher = request.getRequestDispatcher("employee/customer.jsp");
-					dispatcher.forward(request, response);
+					/*
+					 * dispatcher = request.getRequestDispatcher("employee/customer.jsp");
+					 * dispatcher.forward(request, response);
+					 */
+					response.sendRedirect(request.getContextPath() + "/employee/customer");
 					break;
 				}
 			}
@@ -185,11 +206,10 @@ public class MainServlet extends HttpServlet {
 			break;
 		case "/changeAccount":
 			AccountServletHelper.changeAccount(request, response);
-			/*
-			 * dispatcher = request.getRequestDispatcher("customer/account.jsp");
-			 * dispatcher.forward(request, response);
-			 */
-			response.sendRedirect(request.getContextPath()+"/customer/account");
+//			dispatcher = request.getRequestDispatcher("customer/account.jsp");
+//			dispatcher.forward(request, response);
+
+			response.sendRedirect(request.getContextPath() + "/customer/account");
 			break;
 		case "/transferOutSideBank":
 			request.setAttribute("outSideBank", true);
@@ -204,7 +224,7 @@ public class MainServlet extends HttpServlet {
 			break;
 		case "/withinBankTransfer":
 			TransactionServletHelper.transferAmountWithinBank(request, response);
-			dispatcher = request.getRequestDispatcher("customer/transaction.jsp");
+			dispatcher = request.getRequestDispatcher("/transferInBank");
 			dispatcher.forward(request, response);
 			break;
 		case "/otherBankTransfer":
@@ -221,6 +241,9 @@ public class MainServlet extends HttpServlet {
 			UserServletHelper.updatePassword(request, response);
 			dispatcher = request.getRequestDispatcher("customer/profile.jsp");
 			dispatcher.forward(request, response);
+			break;
+		default:
+			response.sendRedirect("404.jsp");
 			break;
 		}
 	}

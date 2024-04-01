@@ -30,12 +30,10 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/customer.jsp"
+			<li><a href="<%=request.getContextPath()%>/employee/customer"
 				class="active">Customer</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account.jsp">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction.jsp">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">
@@ -78,24 +76,50 @@
 					</c:if>
 					<div class="form-row">
 						<div class="form-group wider">
-							<label for="firstname">First Name</label> <input type="text"
-								name="firstname" placeholder="Enter the First Name"
-								value="${empty param.firstname ? (not empty customerDetails ? customerDetails.firstName : '') : param.firstname}"
-								required>
+							<label for="firstname">First Name</label>
+							<c:choose>
+								<c:when test="${not empty userCreationSuccess}">
+									<input type="text" name="firstname"
+										placeholder="Enter the First Name" value="" required>
+								</c:when>
+								<c:otherwise>
+									<input type="text" name="firstname"
+										placeholder="Enter the First Name"
+										value="${empty param.firstname ? (not empty customerDetails ? customerDetails.firstName : '') : param.firstname}"
+										required>
+								</c:otherwise>
+							</c:choose>
 						</div>
 						<div class="form-group">
-							<label for="lastname">Last Name</label> <input type="text"
-								name="lastname" placeholder="Enter the Last Name"
-								value="${empty param.lastname ? (not empty customerDetails ? customerDetails.lastName : '') : param.lastname}"
-								required>
+							<label for="lastname">Last Name</label>
+							<c:choose>
+								<c:when test="${not empty userCreationSuccess}">
+									<input type="text" name="lastname"
+										placeholder="Enter the Last Name" value="" required>
+								</c:when>
+								<c:otherwise>
+									<input type="text" name="lastname"
+										placeholder="Enter the Last Name"
+										value="${empty param.lastname ? (not empty customerDetails ? customerDetails.lastName : '') : param.lastname}"
+										required>
+								</c:otherwise>
+							</c:choose>
 						</div>
 					</div>
 					<div class="form-row">
 						<div class="form-group wider">
-							<label for="email">Email</label> <input type="email" name="email"
-								placeholder="Enter the Email"
-								value="${empty param.email ? (not empty customerDetails ? customerDetails.email : '') : param.email}"
-								required>
+							<label for="email">Email</label>
+							<c:choose>
+								<c:when test="${not empty userCreationSuccess}">
+									<input type="email" name="email" placeholder="Enter the Email"
+										value="" required>
+								</c:when>
+								<c:otherwise>
+									<input type="email" name="email" placeholder="Enter the Email"
+										value="${empty param.email ? (not empty customerDetails ? customerDetails.email : '') : param.email}"
+										required>
+								</c:otherwise>
+							</c:choose>
 						</div>
 						<div class="form-group">
 							<label for="gender">Gender</label> <select id="gender"
@@ -116,17 +140,33 @@
 					</c:if>
 					<div class="form-row">
 						<div class="form-group wider">
-							<label for="contactnumber">Contact Number</label> <input
-								type="number" name="contactnumber"
-								placeholder="Enter the Contact Number"
-								value="${empty param.contactnumber ? (not empty customerDetails ? customerDetails.contactNumber : '') : param.contactnumber}"
-								required>
+							<label for="contactnumber">Contact Number</label>
+							<c:choose>
+								<c:when test="${not empty userCreationSuccess}">
+									<input type="number" name="contactnumber"
+										placeholder="Enter the Contact Number" value="" required>
+								</c:when>
+								<c:otherwise>
+									<input type="number" name="contactnumber"
+										placeholder="Enter the Contact Number"
+										value="${empty param.contactnumber ? (not empty customerDetails ? customerDetails.contactNumber : '') : param.contactnumber}"
+										required>
+								</c:otherwise>
+							</c:choose>
 						</div>
 						<div class="form-group">
-							<label for="dateOfBirth">Date of Birth</label> <input type="date"
-								id="dateOfBirth" name="dateOfBirth"
-								value="${empty param.dateOfBirth ? (not empty customerDetails ? DOB : '') : DOB}"
-								required>
+							<label for="dateOfBirth">Date of Birth</label>
+							<c:choose>
+								<c:when test="${not empty userCreationSuccess}">
+									<input type="date" id="dateOfBirth" name="dateOfBirth" value=""
+										required>
+								</c:when>
+								<c:otherwise>
+									<input type="date" id="dateOfBirth" name="dateOfBirth"
+										value="${empty param.dateOfBirth ? (not empty customerDetails ? DOB : '') : DOB}"
+										required>
+								</c:otherwise>
+							</c:choose>
 						</div>
 					</div>
 					<c:if test="${not empty invalidMobile}">
@@ -156,13 +196,23 @@
 					</c:if>
 
 					<label for="address">Address</label>
-					<textarea name="address" placeholder="Enter the Address" rows="2"
-						cols="50" required>${empty param.address ? (not empty customerDetails ? customerDetails.address : '') : param.address}</textarea>
+					<c:choose>
+						<c:when test="${not empty userCreationSuccess}">
+							<textarea name="address" placeholder="Enter the Address" rows="2"
+								cols="50" required style="text-align: left;"></textarea>
+						</c:when>
+						<c:otherwise>
+							<textarea name="address" placeholder="Enter the Address" rows="2"
+								cols="50" required style="text-align: left;">${empty param.address ? (not empty customerDetails ? customerDetails.address : '') : param.address}</textarea>
+						</c:otherwise>
+					</c:choose>
+
 					<c:if test="${customer}">
 						<label for="pannumber">Pan Number</label>
 						<input type="text" name="pannumber"
 							placeholder="Enter the PAN Number"
-							value="${empty param.pannumber ? '' : param.pannumber}" required>
+							value="<c:choose><c:when test='${not empty userCreationSuccess}'>${''}</c:when><c:otherwise>${empty param.pannumber ? '' : param.pannumber}</c:otherwise></c:choose>"
+							required>
 						<c:if test="${not empty invalidPAN}">
 							<div class="customer-form-error">
 								<p>${invalidPAN}</p>
@@ -170,8 +220,11 @@
 						</c:if>
 						<label for="aadharnumber">Aadhar Number</label>
 						<input type="number" name="aadharnumber"
-							placeholder="Enter the Aadhar Number"
-							value="${empty param.aadharnumber ? '' : param.aadharnumber}"
+							placeholder="Enter the Aadhar Number" pattern="\d{12}"
+							value="<c:choose>
+                      <c:when test='${not empty userCreationSuccess}'>${''}</c:when>
+                      <c:otherwise>${empty param.aadharnumber ? '' : param.aadharnumber}</c:otherwise>
+                   </c:choose>"
 							required>
 						<c:if test="${not empty invalidAadhar}">
 							<div class="customer-form-error">
@@ -181,7 +234,8 @@
 					</c:if>
 					<c:if test="${employee}">
 						<label for="branchId">Branch</label>
-						<select class="employee-branch" id="branchId" name="branchId" required>
+						<select class="employee-branch" id="branchId" name="branchId"
+							required>
 							<option value="3007"
 								${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
 							<option value="3008"
