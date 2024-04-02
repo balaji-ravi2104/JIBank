@@ -421,7 +421,12 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				Account receiverAccount = AccountDao.getAccountDetail(accountNumber);
+				Account receiverAccount = AccountServletHelper.isReceiverIsSame(accountNumber, httpRequest,
+						httpResponse);
+
+				if (receiverAccount == null) {
+					receiverAccount = AccountDao.getAccountDetail(accountNumber);
+				}
 
 				boolean isAccountPresent = AccountDao.checkAccountExists(accountNumber, branchId);
 
@@ -438,6 +443,12 @@ public class MainFilter implements Filter {
 
 				if (senderAccount.getBalance() < amount) {
 					request.setAttribute("inactiveAccount", "Insufficent Balance !! Can't Transfer");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+
+				if (senderAccount.getAccountNumber().equals(receiverAccount.getAccountNumber())) {
+					request.setAttribute("inactiveAccount", "Self Account Transfer Not Allowed");
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}

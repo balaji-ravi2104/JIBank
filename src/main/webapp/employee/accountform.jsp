@@ -30,7 +30,7 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/customer">Customers</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account"
 				class="active">Accounts</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>

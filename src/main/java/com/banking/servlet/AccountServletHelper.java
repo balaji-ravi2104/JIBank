@@ -76,4 +76,19 @@ public class AccountServletHelper {
 			}
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public static Account isReceiverIsSame(String accountNumber, HttpServletRequest request,
+			HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			List<Account> accounts = (List<Account>) session.getAttribute("accountsList");
+			for (Account account : accounts) {
+				if (account.getAccountNumber().equals(accountNumber)) {
+					return account;
+				}
+			}
+		}
+		return null;
+	}
 }

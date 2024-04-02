@@ -220,6 +220,7 @@ public class MainServlet extends HttpServlet {
 			break;
 		case "/withinBankTransfer":
 			TransactionServletHelper.transferAmountWithinBank(request, response);
+			//AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
 			dispatcher = request.getRequestDispatcher("/transferInBank");
 			dispatcher.forward(request, response);
 			break;

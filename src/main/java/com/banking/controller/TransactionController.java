@@ -82,13 +82,13 @@ public class TransactionController {
 		InputValidator.isNull(accountToTransfer, ErrorMessages.INPUT_NULL_MESSAGE);
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
-		if (!validateAmount(amountToTransfer) || !validateWithdrawAmount(accountFromTransfer, amountToTransfer)) {
-			return isTransactionSuccess;
-		}
-		if (accountToTransfer.getAccountStatus() == AccountStatus.INACTIVE) {
-			transactionView.transactionMessages("The Account is INACTIVE!! Please Try With Different Account!!");
-			return isTransactionSuccess;
-		}
+//		if (!validateAmount(amountToTransfer) || !validateWithdrawAmount(accountFromTransfer, amountToTransfer)) {
+//			return isTransactionSuccess;
+//		}
+//		if (accountToTransfer.getAccountStatus() == AccountStatus.INACTIVE) {
+//			transactionView.transactionMessages("The Account is INACTIVE!! Please Try With Different Account!!");
+//			return isTransactionSuccess;
+//		}
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache

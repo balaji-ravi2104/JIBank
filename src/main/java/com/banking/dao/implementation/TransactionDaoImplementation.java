@@ -54,8 +54,8 @@ public class TransactionDaoImplementation implements TransactionDao {
 			if (amountToDeposit <= 0) {
 				throw new CustomException("Amount to be Deposited Should be Greater than ZERO!!!");
 			}
-			boolean isBalanceUpdated = updateAccountBalance(connection, account,
-					account.getBalance() + amountToDeposit);
+			double newBalance = account.getBalance() + amountToDeposit;
+			boolean isBalanceUpdated = updateAccountBalance(connection, account, newBalance);
 			if (isBalanceUpdated) {
 				isAmountDepositedAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
 						amountToDeposit, description, TransactionType.DEPOSIT.getValue(),
@@ -81,8 +81,8 @@ public class TransactionDaoImplementation implements TransactionDao {
 			if (account.getBalance() < amountToWithdraw) {
 				throw new CustomException("Insufficient Balance");
 			}
-			boolean isBalanceUpdated = updateAccountBalance(connection, account,
-					account.getBalance() - amountToWithdraw);
+			double newBalance = account.getBalance() - amountToWithdraw;
+			boolean isBalanceUpdated = updateAccountBalance(connection, account, newBalance);
 			if (isBalanceUpdated) {
 				isAmountWithdrawnAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
 						amountToWithdraw, description, TransactionType.WITHDRAW.getValue(),
@@ -168,6 +168,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				isTransferSuccess = logTransaction(accountFromTransfer, accountNumberToTransfer,
 						amountToTransferWithOtherBank, remark, TransactionType.WITHDRAW.getValue(),
 						accountFromTransfer.getUserId() + System.currentTimeMillis());
+				accountFromTransfer.setBalance(newBalanceOfFromAccount);
 				if (isTransferSuccess) {
 					connection.commit();
 				} else {
