@@ -10,6 +10,7 @@ import com.banking.controller.TransactionController;
 import com.banking.model.Account;
 import com.banking.model.AccountStatus;
 import com.banking.model.Transaction;
+import com.banking.utils.CustomException;
 
 public class TransactionServletHelper {
 
@@ -28,8 +29,9 @@ public class TransactionServletHelper {
 			} else {
 				request.setAttribute("transactionList", transactions);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (CustomException e) {
+			//e.printStackTrace();
+			request.setAttribute("message", "An Error Occured, Try Again");
 		}
 	}
 
@@ -45,7 +47,7 @@ public class TransactionServletHelper {
 				request.setAttribute("failed", "Amount Deposit Failed");
 			}
 		} catch (Exception e) {
-
+			request.setAttribute("failed", "Amount Deposit Failed");
 		}
 	}
 
@@ -61,7 +63,8 @@ public class TransactionServletHelper {
 				request.setAttribute("failed", "Amount Withdraw Failed");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			request.setAttribute("failed", "Amount Withdraw Failed");
 		}
 	}
 
@@ -78,14 +81,13 @@ public class TransactionServletHelper {
 		try {
 			boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value);
 			if (isUpdated) {
-				request.setAttribute("userId", request.getAttribute("userId"));
-				request.setAttribute("branchId", request.getAttribute("branchId"));
 				request.setAttribute("updatedSuccess", "Account Status Updated");
 			} else {
 				request.setAttribute("updationFailed", "Account Updation Failed");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
+			request.setAttribute("updationFailed", "Account Updation Failed");
 		}
 	}
 
@@ -103,7 +105,8 @@ public class TransactionServletHelper {
 				request.setAttribute("failed", "Amount Transaction Failed");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			request.setAttribute("failed", "Amount Transaction Failed");
+			//e.printStackTrace();
 		}
 
 	}
@@ -122,7 +125,8 @@ public class TransactionServletHelper {
 				request.setAttribute("failed", "Amount Transaction Failed");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			request.setAttribute("failed", "Amount Transaction Failed");
+			//e.printStackTrace();
 		}
 	}
 

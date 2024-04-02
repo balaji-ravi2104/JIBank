@@ -23,7 +23,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -32,10 +32,8 @@
 		</div>
 		<div>
 			<li><a href="<%=request.getContextPath()%>/customer/account">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement"
+			<li><a href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/Statement"
 				class="active">Statements</a></li>
 			<li><a href="<%=request.getContextPath()%>/customer/profile">Profile</a></li>
 			<li>
@@ -81,22 +79,24 @@
 
 	<div class="customerlist-container">
 		<table id="table">
-			<thead>
-				<tr>
-					<th>S.No</th>
-					<th>Trans Id</th>
-					<th>User Id</th>
-					<th>Viewer Account</th>
-					<th>Transacted Account</th>
-					<th>Type</th>
-					<th>Amount</th>
-					<th>Balance</th>
-					<th>Date</th>
-					<th>Remark</th>
-					<th>Status</th>
-					<th>Reference Id</th>
-				</tr>
-			</thead>
+			<c:if test="${not empty transactionList}">
+				<thead>
+					<tr>
+						<th>S.No</th>
+						<th>Trans Id</th>
+						<th>User Id</th>
+						<th>Viewer Account</th>
+						<th>Transacted Account</th>
+						<th>Type</th>
+						<th>Amount</th>
+						<th>Balance</th>
+						<th>Date</th>
+						<th>Remark</th>
+						<th>Status</th>
+						<th>Reference Id</th>
+					</tr>
+				</thead>
+			</c:if>
 			<tbody>
 				<c:set var="serialNumber" value="1" />
 				<c:forEach var="transaction" items="${transactionList}">
@@ -107,8 +107,8 @@
 						<td>${transaction.viewerAccount}</td>
 						<td>${transaction.transactedAccount}</td>
 						<td>${transaction.transactionType}</td>
-						<td>${transaction.transactedAmount}</td>
-						<td>${transaction.balance}</td>
+						<td>₹${transaction.transactedAmount}</td>
+						<td>₹${transaction.balance}</td>
 						<td>${DateUtils.formateLongToDate(transaction.dateOfTransaction)}</td>
 						<td>${transaction.remark}</td>
 						<td>${transaction.status}</td>

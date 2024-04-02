@@ -30,7 +30,7 @@
 		</div>
 		<div id="form">
 			<c:if test="${not empty error}">
-				<div class="error-message">
+				<div class="usercreation-message failed login-error">
 					<i class="fa-solid fa-triangle-exclamation"></i>
 					<p>${error}</p>
 				</div>

@@ -12,7 +12,7 @@ public class InputValidator {
 	private static final Pattern MOBILE_NUMBER_PATTERN = Pattern.compile("^[7-9]{1}[0-9]{9}$");
 
 	private static final Pattern DATE_OF_BIRTH_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
-	String dobPattern = "^\\d{4}-\\d{2}-\\d{2}$";
+//	String dobPattern = "^\\d{4}-\\d{2}-\\d{2}$";
 
 	private static final Pattern PAN_NUMBER_PATTERN = Pattern.compile("[A-Z]{5}[0-9]{4}[A-Z]{1}");
 

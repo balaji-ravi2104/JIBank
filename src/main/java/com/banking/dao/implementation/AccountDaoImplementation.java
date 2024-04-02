@@ -186,6 +186,7 @@ public class AccountDaoImplementation implements AccountDao {
 	@Override
 	public boolean isAccountPresent(String accountNumber) throws CustomException {
 		boolean isAccountPresent = false;
+		//System.out.println(accountNumber);
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(IS_ACCOUNT_PRESENT)) {
 

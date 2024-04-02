@@ -308,9 +308,6 @@ body {
 	background-color: rgb(64, 123, 255);
 }
 
-.switch-account-form {
-	
-}
 
 .switch-account-form button {
 	background-color: #007bff;
@@ -529,30 +526,23 @@ body {
 	height: 100vh;
 }
 
-.profile-logo img {
-	width: 160px;
-	border-radius: 50%;
-	position: relative;
-	padding: 30px;
-}
-
 #profile-details {
 	display: flex;
 	width: 70%;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 	box-sizing: border-box;
 	padding: 20px;
-	margin-top: 120px;
+	margin-top: 180px;
 }
 
 #profile-details img {
-	max-width: 80%;
-	margin-left: 100px;
+	max-width: 80%
 }
 
 #profile-details table {
 	text-align: left;
-	font-size: 23px;
+	font-size: 25px;
+	margin-right: 100px;
 }
 
 #profile-details table tr th {
@@ -578,7 +568,10 @@ body {
 	cursor: pointer;
 	font-size: 20px;
 	font-weight: 600;
+	margin-left: 30%;
 }
+
+
 
 /* Modal */
 .modal {
@@ -831,7 +824,7 @@ body {
 	background-color: white;
 }
 
-input[type="text"], input[type="number"], input[type="date"], input[type="email"],
+input[type="text"], input[type="number"], input[type="date"], input[type="email"],input[type="password"],
 	select {
 	font-size: 18px;
 }
@@ -913,6 +906,10 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 	font-size: 20px;
 	padding: 6px;
 	width: 100%;
+}
+
+.login-error{
+	padding: 25px 20px;
 }
 
 .employee-branch {
@@ -1338,4 +1335,30 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 
 .transfer-change-button button:hover {
 	background-color: rgb(64, 123, 255);
+}
+
+.home-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	background-color: #f0f0f0;
+	align-items: center;
+	height: 55vh;
+}
+
+.home-container p {
+	font-size: 35px;
+	padding: 30px;
+}
+
+.home-container a {
+	text-decoration: none;
+	background-color: #007bff;
+	color: #fff;
+	font-size: 18px;
+	font-weight: 600;
+	padding: 15px 25px;
+	border-radius: 3px;
+	font-weight: bold;
+	transition: background-color 0.3s ease;
 }

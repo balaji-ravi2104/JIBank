@@ -30,11 +30,11 @@ import com.banking.utils.PasswordGenerator;
 public class MainFilter implements Filter {
 
 	UserDao userDao;
-	AccountDao accountDao;
+	AccountDao AccountDao;
 
 	public void init(FilterConfig fConfig) throws ServletException {
 		this.userDao = new UserDaoImplementation();
-		this.accountDao = new AccountDaoImplementation();
+		this.AccountDao = new AccountDaoImplementation();
 	}
 
 	public void destroy() {
@@ -47,35 +47,24 @@ public class MainFilter implements Filter {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-		String requestURI = httpRequest.getRequestURI();
+		String action = httpRequest.getServletPath();
 
-		System.out.println(requestURI);
+		System.out.println(action);
 
-		switch (requestURI) {
-		case "/JIBank/":
-			httpRequest.getRequestDispatcher("login.jsp").forward(httpRequest, httpResponse);
-			break;
-		case "/JIBank/login":
-			int userId = Integer.parseInt(request.getParameter("userId"));
-			if (userId <= 1000) {
-				request.setAttribute("error", "Invalid User Id !!!");
-				httpRequest.getRequestDispatcher("login.jsp").forward(httpRequest, httpResponse);
-				return;
-			}
-			break;
-		case "/JIBank/getcustomer":
-			int customerId = Integer.parseInt(request.getParameter("userId"));
-			if (customerId <= 1000) {
+		switch (action) {
+		case "/getCustomer":
+			int CustomerId = Integer.parseInt(request.getParameter("userId"));
+			if (CustomerId <= 1000) {
 				request.setAttribute("error", "Invalid Customer Id");
 				httpRequest.getRequestDispatcher("/employee/customer.jsp").forward(httpRequest, httpResponse);
 				return;
 			}
 			break;
-		case "/JIBank/addUser":
+		case "/addUser":
 			try {
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
-				boolean flag = false;
 				if (session != null) {
+					boolean flag = false;
 					Boolean isCustomer = (Boolean) session.getAttribute("customer");
 					Boolean isEmployee = (Boolean) session.getAttribute("employee");
 
@@ -98,6 +87,10 @@ public class MainFilter implements Filter {
 						request.setAttribute("invalidMobile", "Invalid Contact Number");
 					}
 
+					String date = DateUtils.longToDate(dateOfBirth);
+					date = DateUtils.convertToHtmlDateFormat(date);
+					request.setAttribute("DOB", date);
+
 					if (isCustomer != null && isCustomer) {
 						String panNumber = request.getParameter("pannumber");
 						String aadharNumber = request.getParameter("aadharnumber");
@@ -112,19 +105,15 @@ public class MainFilter implements Filter {
 							request.setAttribute("invalidAadhar", "Invalid Aadhar Number");
 						}
 
-						String date = DateUtils.longToDate(dateOfBirth);
-						date = DateUtils.convertToHtmlDateFormat(date);
-						request.setAttribute("DOB", date);
-
 						if (flag) {
-							httpRequest.getRequestDispatcher("/employee/customerForm.jsp").forward(httpRequest,
+							httpRequest.getRequestDispatcher("/employee/customerform.jsp").forward(httpRequest,
 									httpResponse);
 							return;
 						}
 
 						if (userDao.isCustomerExists(panNumber)) {
 							request.setAttribute("customerExists", "Customer Already Exists");
-							httpRequest.getRequestDispatcher("/employee/customerForm.jsp").forward(httpRequest,
+							httpRequest.getRequestDispatcher("/employee/customerform.jsp").forward(httpRequest,
 									httpResponse);
 							return;
 						}
@@ -147,7 +136,7 @@ public class MainFilter implements Filter {
 					} else if (isEmployee != null && isEmployee) {
 						int branchId = Integer.parseInt(request.getParameter("branchId"));
 						if (flag) {
-							httpRequest.getRequestDispatcher("/employee/customerForm.jsp").forward(httpRequest,
+							httpRequest.getRequestDispatcher("/employee/customerform.jsp").forward(httpRequest,
 									httpResponse);
 							return;
 						}
@@ -166,13 +155,14 @@ public class MainFilter implements Filter {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
 			}
 			break;
-		case "/JIBank/updateUser":
-			boolean flag = false;
+		case "/updateUser":
 			try {
-				customerId = Integer.parseInt(request.getParameter("userId"));
+				boolean flag = false;
+				int customerId = Integer.parseInt(request.getParameter("userId"));
 				String firstName = request.getParameter("firstname");
 				String lastName = request.getParameter("lastname");
 				String email = request.getParameter("email");
@@ -181,7 +171,6 @@ public class MainFilter implements Filter {
 				String address = request.getParameter("address");
 				int status = Integer.parseInt(request.getParameter("status"));
 				String dob = request.getParameter("dateOfBirth");
-				long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
 
 				if (!InputValidator.validateEmail(email)) {
 					flag = true;
@@ -192,6 +181,13 @@ public class MainFilter implements Filter {
 					flag = true;
 					request.setAttribute("invalidMobile", "Invalid Contact Number");
 				}
+
+				if (!InputValidator.validateDateOfBirth(dob)) {
+					flag = true;
+					request.setAttribute("invalidDOB", "Invalid Date of Birth");
+				}
+
+				long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
 
 				Customer customer = new Customer();
 				customer.setUserId(customerId);
@@ -211,37 +207,38 @@ public class MainFilter implements Filter {
 				request.setAttribute("customerDetails", customer);
 
 				if (flag) {
-					httpRequest.getRequestDispatcher("/employee/customerForm.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/employee/customerform.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
 				request.setAttribute("updatedCustomerObject", customer);
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 			}
 			break;
-		case "/JIBank/getAccounts":
-			userId = Integer.parseInt(request.getParameter("userId"));
+		case "/account/getAccounts":
 			try {
+				int userId = Integer.parseInt(request.getParameter("userId"));
 				if (userId <= 1000 || !userDao.checkUserIdExists(userId)) {
 					request.setAttribute("error", "Invalid Customer Id");
 					httpRequest.getRequestDispatcher("/employee/account.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				request.setAttribute("error", "An Error Occured, Try Again");
 			}
 			break;
-		case "/JIBank/createAccount":
-			flag = false;
+		case "/createAccount":
 			try {
-				customerId = Integer.parseInt(request.getParameter("userId"));
+				boolean flag = false;
+				CustomerId = Integer.parseInt(request.getParameter("userId"));
 				int branchId = Integer.parseInt(request.getParameter("branchId"));
 				int accountType = Integer.parseInt(request.getParameter("accountType"));
 				double balance = Double.parseDouble(request.getParameter("balance"));
 
-				if (customerId <= 1000 || !userDao.checkUserIdExists(customerId)) {
+				if (CustomerId <= 1000 || !userDao.checkUserIdExists(CustomerId)) {
 					flag = true;
 					request.setAttribute("error", "Invalid Customer Id");
 				}
@@ -252,18 +249,18 @@ public class MainFilter implements Filter {
 				}
 
 				if (flag) {
-					httpRequest.getRequestDispatcher("/employee/accountForm.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/employee/accountform.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				if (accountDao.isCustomerAlreadyHasAccount(customerId, accountType, branchId)) {
+				if (AccountDao.isCustomerAlreadyHasAccount(CustomerId, accountType, branchId)) {
 					request.setAttribute("accountExists", "Account Already Present in the Branch");
-					httpRequest.getRequestDispatcher("/employee/accountForm.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/employee/accountform.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
 				Account account = new Account();
-				account.setUserId(customerId);
+				account.setUserId(CustomerId);
 				account.setBranchId(branchId);
 				account.setAccountType(accountType);
 				account.setBalance(balance);
@@ -271,17 +268,17 @@ public class MainFilter implements Filter {
 				request.setAttribute("accountObject", account);
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				request.setAttribute("failure", "Account Creation Failed");
 			}
 			break;
-		case "/JIBank/getTransactions":
-			String accountNumber = request.getParameter("accountNumber");
-			String fromDate = request.getParameter("fromDate");
-			String toDate = request.getParameter("toDate");
-			long accountNum = Long.parseLong(accountNumber);
-
+		case "/getTransactions":
 			try {
-				if (accountNumber.length() < 12 || accountNum <= 0 || !accountDao.isAccountPresent(accountNumber)) {
+				String accountNumber = request.getParameter("accountNumber");
+				String fromDate = request.getParameter("fromDate");
+				String toDate = request.getParameter("toDate");
+
+				if (accountNumber.length() < 12 || accountNumber.length() > 12
+						|| !AccountDao.isAccountPresent(accountNumber)) {
 					request.setAttribute("error", "Invalid Account Number");
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
@@ -297,17 +294,19 @@ public class MainFilter implements Filter {
 					return;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("message", "An Error Occured, Try Again");
 			}
 			break;
-		case "/JIBank/employeeDeposit":
-			accountNumber = request.getParameter("transactionaccountNumber");
-			double amount = Double.parseDouble(request.getParameter("amount"));
-			request.setAttribute("transactionType", "Deposit Amount");
-			request.setAttribute("submitType", "Deposit");
-			flag = false;
+		case "/employeeDeposit":
 			try {
-				if (accountNumber.length() < 12 || !accountDao.isAccountPresent(accountNumber)) {
+				String accountNumber = request.getParameter("transactionaccountNumber");
+				double amount = Double.parseDouble(request.getParameter("amount"));
+				request.setAttribute("transactionType", "Deposit Amount");
+				request.setAttribute("submitType", "Deposit");
+				boolean flag = false;
+				if (accountNumber.length() < 12 || accountNumber.length() > 12
+						|| !AccountDao.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -316,32 +315,39 @@ public class MainFilter implements Filter {
 					request.setAttribute("invalidBalance", "Balance Should be Greater than Zero");
 				}
 
+				if (amount > 10000000) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be less than 10000000");
+				}
+
 				if (flag) {
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				Account account = accountDao.getAccountDetail(accountNumber);
+				Account Account = AccountDao.getAccountDetail(accountNumber);
 
-				if (account.getAccountStatus() == AccountStatus.INACTIVE) {
+				if (Account.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "The Account is InActive");
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				request.setAttribute("account", account);
+				request.setAttribute("account", Account);
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("failed", "Amount Deposit Failed");
 			}
 			break;
-		case "/JIBank/employeeWithdraw":
-			accountNumber = request.getParameter("transactionaccountNumber");
-			amount = Double.parseDouble(request.getParameter("amount"));
-			request.setAttribute("transactionType", "Withdraw Amount");
-			request.setAttribute("submitType", "Withdraw");
-			flag = false;
+		case "/employeeWithdraw":
 			try {
-				if (accountNumber.length() < 12 || !accountDao.isAccountPresent(accountNumber)) {
+				String accountNumber = request.getParameter("transactionaccountNumber");
+				double amount = Double.parseDouble(request.getParameter("amount"));
+				request.setAttribute("transactionType", "Withdraw Amount");
+				request.setAttribute("submitType", "Withdraw");
+				boolean flag = false;
+				if (accountNumber.length() < 12 || accountNumber.length() > 12
+						|| !AccountDao.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -350,41 +356,42 @@ public class MainFilter implements Filter {
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
 
+				if (amount > 10000000) {
+					flag = true;
+					request.setAttribute("invalidBalance", "Amount Should be less than 10000000");
+				}
+
 				if (flag) {
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				Account account = accountDao.getAccountDetail(accountNumber);
+				Account Account = AccountDao.getAccountDetail(accountNumber);
 
-				if (account.getAccountStatus() == AccountStatus.INACTIVE) {
+				if (Account.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "The Account is InActive");
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				if (account.getBalance() < amount) {
+				if (Account.getBalance() < amount) {
 					request.setAttribute("inactiveAccount", "Insufficient Balance");
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
-				request.setAttribute("account", account);
+				request.setAttribute("account", Account);
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("failed", "Amount Withdraw Failed");
 			}
 			break;
-		/*
-		 * case "/JIBank/customer/transaction.jsp": request.setAttribute("withinBank",
-		 * ((HttpServletRequest) request).getContextPath() + "/withinBankTransfer");
-		 * break;
-		 */
-		case "/JIBank/withinBankTransfer":
-			accountNumber = request.getParameter("accountNumber");
-			amount = Double.parseDouble(request.getParameter("amount"));
-			int branchId = Integer.parseInt(request.getParameter("branchId"));
-			flag = false;
+		case "/withinBankTransfer":
 			try {
+				String accountNumber = request.getParameter("accountNumber");
+				double amount = Double.parseDouble(request.getParameter("amount"));
+				int branchId = Integer.parseInt(request.getParameter("branchId"));
+				boolean flag = false;
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
@@ -396,7 +403,7 @@ public class MainFilter implements Filter {
 				}
 
 				if (accountNumber.length() < 12 || accountNumber.length() > 12
-						|| !accountDao.isAccountPresent(accountNumber)) {
+						|| !AccountDao.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -414,9 +421,9 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				Account receiverAccount = accountDao.getAccountDetail(accountNumber);
+				Account receiverAccount = AccountDao.getAccountDetail(accountNumber);
 
-				boolean isAccountPresent = accountDao.checkAccountExists(accountNumber, branchId);
+				boolean isAccountPresent = AccountDao.checkAccountExists(accountNumber, branchId);
 
 				if (!isAccountPresent) {
 					request.setAttribute("inactiveAccount", "Receiver Account not present in this Branch");
@@ -438,14 +445,15 @@ public class MainFilter implements Filter {
 				request.setAttribute("receiverAccount", receiverAccount);
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
-				e.printStackTrace();
+				request.setAttribute("failed", "Amount Transaction Failed");
+				// e.printStackTrace();
 			}
 			break;
-		case "/JIBank/otherBankTransfer":
-			accountNumber = request.getParameter("accountNumber");
-			amount = Double.parseDouble(request.getParameter("amount"));
-			flag = false;
+		case "/otherBankTransfer":
 			try {
+				String accountNumber = request.getParameter("accountNumber");
+				double amount = Double.parseDouble(request.getParameter("amount"));
+				boolean flag = false;
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
@@ -482,35 +490,37 @@ public class MainFilter implements Filter {
 				}
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
-				e.printStackTrace();
+				request.setAttribute("failed", "Amount Transaction Failed");
+				// e.printStackTrace();
 			}
 			break;
-		case "/JIBank/getStatements":
-			System.out.println("getStatements inside");
-			fromDate = request.getParameter("fromDate");
-			toDate = request.getParameter("toDate");
+		case "/getStatements":
 			try {
+				String fromDate = request.getParameter("fromDate");
+				String toDate = request.getParameter("toDate");
+
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 				Date fromDateObj = sdf.parse(fromDate);
 				Date toDateObj = sdf.parse(toDate);
 
 				if (fromDateObj.after(toDateObj)) {
 					request.setAttribute("dateError", "From date should be less then To date");
-					httpRequest.getRequestDispatcher("customer/Statement.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("customer/statement.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
+				request.setAttribute("message", "An Error Occured, Try Again");
 			}
 			break;
-		case "/JIBank/updatePassword":
-			String oldPassword = request.getParameter("oldpassword");
-			String newPassword = request.getParameter("newpassword");
-			String confirmPassword = request.getParameter("confirmpassword");
-			userId = Integer.parseInt(request.getParameter("userId"));
-
+		case "/updatePassword":
 			try {
+				String oldPassword = request.getParameter("oldpassword");
+				String newPassword = request.getParameter("newpassword");
+				String confirmPassword = request.getParameter("confirmpassword");
+				int userId = Integer.parseInt(request.getParameter("userId"));
 				String password = userDao.getUserPassword(userId);
+
 				if (!password.equals(oldPassword)) {
 					request.setAttribute("wrongPassword", "Wrong Password");
 					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
@@ -528,7 +538,8 @@ public class MainFilter implements Filter {
 					return;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				request.setAttribute("failed", "Password Updation Failed");
+				// e.printStackTrace();
 			}
 			break;
 		}

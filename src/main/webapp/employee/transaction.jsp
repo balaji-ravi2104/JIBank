@@ -23,7 +23,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -51,19 +51,19 @@
 	<div class="transaction-page">
 		<div class="search-bar">
 			<div>
-				<button id="deposit-button">Deposit</button>
+				<button id="deposit-button" onclick="clearSuccessAttribute()">Deposit</button>
 			</div>
 			<div>
-				<button id="withdraw-button">Withdraw</button>
+				<button id="withdraw-button" onclick="clearSuccessAttribute()">Withdraw</button>
 			</div>
 		</div>
 		<form id="searchFormTransaction"
 			action="<%=request.getContextPath()%>/getTransactions" method="post">
 			<div class="transaction-search">
 				<div>
-					<input type="number" id="searchTransaction" name="accountNumber"
-						placeholder="Enter Account Number" value="${param.accountNumber}"
-						required>
+					<input type="text" id="searchTransaction" name="accountNumber"
+						pattern="\d{12}" maxlength="12" placeholder="Enter Account Number"
+						value="${param.accountNumber}" required>
 					<c:if test="${not empty error}">
 						<div class="invalid-userid-error">
 							<i class="fa-solid fa-triangle-exclamation"></i>
@@ -96,22 +96,24 @@
 
 	<div class="customerlist-container">
 		<table id="table">
-			<thead>
-				<tr>
-					<th>S.No</th>
-					<th>Trans Id</th>
-					<th>User Id</th>
-					<th>Viewer Account</th>
-					<th>Transacted Account</th>
-					<th>Type</th>
-					<th>Amount</th>
-					<th>Balance</th>
-					<th>Date</th>
-					<th>Remark</th>
-					<th>Status</th>
-					<th>Reference Id</th>
-				</tr>
-			</thead>
+			<c:if test="${not empty transactionList}">
+				<thead>
+					<tr>
+						<th>S.No</th>
+						<th>Trans Id</th>
+						<th>User Id</th>
+						<th>Viewer Account</th>
+						<th>Transacted Account</th>
+						<th>Type</th>
+						<th>Amount</th>
+						<th>Balance</th>
+						<th>Date</th>
+						<th>Remark</th>
+						<th>Status</th>
+						<th>Reference Id</th>
+					</tr>
+				</thead>
+			</c:if>
 			<tbody>
 				<c:set var="serialNumber" value="1" />
 				<c:forEach var="transaction" items="${transactionList}">
@@ -122,9 +124,8 @@
 						<td>${transaction.viewerAccount}</td>
 						<td>${transaction.transactedAccount}</td>
 						<td>${transaction.transactionType}</td>
-						<td>₹.${transaction.transactedAmount}</td>
-						<td>₹.${transaction.balance}</td>
-						<%-- <td>${transaction.dateOfTransaction}</td> --%>
+						<td>₹${transaction.transactedAmount}</td>
+						<td>₹${transaction.balance}</td>
 						<td>${DateUtils.formateLongToDate(transaction.dateOfTransaction)}</td>
 						<td>${transaction.remark}</td>
 						<td>${transaction.status}</td>
@@ -203,18 +204,16 @@
 						<label for="description">Description</label>
 						<c:choose>
 							<c:when test="${not empty success}">
-								<input type="text" name="description"
-									value=""
+								<input type="text" name="description" value=""
 									placeholder="Enter Small Description" required>
-								<input type="submit" id="submit" value="${submitType}">
 							</c:when>
 							<c:otherwise>
 								<input type="text" name="description"
 									value="${param.description}"
 									placeholder="Enter Small Description" required>
-								<input type="submit" id="submit" value="${submitType}">
 							</c:otherwise>
 						</c:choose>
+						<input type="submit" id="submit" value="${submitType}">
 					</form>
 				</div>
 			</div>
@@ -222,13 +221,21 @@
 	</div>
 	<div class="pagination" id="pagination"></div>
 	<script>
- 
+ 	
+	document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("deposit-button").addEventListener("click", clearSuccessMessage);
+        document.getElementById("withdraw-button").addEventListener("click", clearSuccessMessage);
+
+        function clearSuccessMessage() {
+            document.querySelector('.usercreation-message.success').innerHTML = '';
+        }
+    });
+	
     window.onload = function() {
         var modal = document.getElementById("modal");
         var invalidAccountError = document.getElementById("invalid-account-error");
         var messageAboutDeposit = document.getElementById("usercreation-message");
         
-        // Check if either of the conditions is met to show the modal
         if ((invalidAccountError && invalidAccountError.innerText.trim() !== "") ||
             (messageAboutDeposit && messageAboutDeposit.innerText.trim() !== "")) {
             modal.style.display = "block";

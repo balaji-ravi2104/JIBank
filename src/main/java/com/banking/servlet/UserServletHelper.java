@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.banking.controller.UserController;
+import com.banking.model.AccountStatus;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
@@ -15,7 +16,7 @@ public class UserServletHelper {
 
 	private static UserController userController = new UserController();
 
-	public static void validateUser(HttpServletRequest request, HttpServletResponse response) {
+	public static void loginUser(HttpServletRequest request, HttpServletResponse response) {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		String password = request.getParameter("password");
 
@@ -23,18 +24,20 @@ public class UserServletHelper {
 			User user = userController.login(userId, password);
 			// System.out.println(user);
 			if (user == null) {
-				request.setAttribute("error", "Invalid User Id or Password!!");
+				request.setAttribute("error", "Invalid User Id or Password");
+			} else if (user.getStatus() == AccountStatus.INACTIVE) {
+				request.setAttribute("error", "Your Account is InActive");
 			} else {
 				request.getSession(true).setAttribute("user", user);
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			request.setAttribute("error", "A problem occured, Try after sometime");
+			// e.printStackTrace();
 		}
 	}
 
 	public static void getCustomerDetails(HttpServletRequest request, HttpServletResponse response) {
 		int customerId = Integer.parseInt(request.getParameter("userId"));
-//		System.out.println(customerId);
 		try {
 			Customer customer = userController.getCustomerDetailsById(customerId);
 			if (customer == null) {
@@ -92,7 +95,8 @@ public class UserServletHelper {
 				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
+			request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 		}
 	}
 
@@ -101,14 +105,15 @@ public class UserServletHelper {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		String password = request.getParameter("newpassword");
 		try {
-			isPasswordUpdated = userController.updatePassword(userId,password);
-			if(isPasswordUpdated) {
+			isPasswordUpdated = userController.updatePassword(userId, password);
+			if (isPasswordUpdated) {
 				request.setAttribute("success", "Password Updated Successfully");
-			}else {
+			} else {
 				request.setAttribute("failed", "Password Updation Failed");
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			request.setAttribute("failed", "Password Updation Failed");
+			// e.printStackTrace();
 		}
 	}
 }

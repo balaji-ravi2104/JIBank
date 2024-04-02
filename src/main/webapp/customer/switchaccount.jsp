@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath()+"/login");
 	}
 	%>
 	<div class="navbar-home">

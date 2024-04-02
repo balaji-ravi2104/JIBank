@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,12 +30,10 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/customer"
+			<li><a href="<%=request.getContextPath()%>/employee/customer"
 				class="active">Customer</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">
@@ -61,13 +59,12 @@
 				</form>
 			</c:if>
 		</div>
-		<form id="searchFormCustomer" method="get"
-			action="<%=request.getContextPath()%>/getcustomer">
+		<form id="searchFormCustomer" method="post"
+			action="<%=request.getContextPath()%>/getCustomer">
 			<div>
 				<div class="search-bar">
-					<input type="text" id="searchCustomer" name="userId"
-						maxlength="4" pattern="\d{1,4}" placeholder="Enter User Id"
-						required>
+					<input type="text" id="searchCustomer" name="userId" maxlength="4"
+						value="${param.userId}" pattern="\d{1,4}" placeholder="Enter User Id" required>
 					<button class="searchButton" type="submit">
 						<i class="fas fa-search"></i>
 					</button>
@@ -89,18 +86,20 @@
 
 	<div class="customerlist-container">
 		<table id="table">
-			<thead>
-				<tr>
-					<th>User Id</th>
-					<th>Name</th>
-					<th>Gender</th>
-					<th>Email</th>
-					<th>Mobile</th>
-					<th>Address</th>
-					<th>DOB</th>
-					<th>Status</th>
-				</tr>
-			</thead>
+			<c:if test="${not empty customerDetails}">
+				<thead>
+					<tr>
+						<th>User Id</th>
+						<th>Name</th>
+						<th>Gender</th>
+						<th>Email</th>
+						<th>Mobile</th>
+						<th>Address</th>
+						<th>DOB</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+			</c:if>
 			<tbody>
 				<c:if test="${not empty customerDetails}">
 					<tr>
@@ -110,7 +109,7 @@
 						<td>${customerDetails.email}</td>
 						<td>${customerDetails.contactNumber}</td>
 						<td>${customerDetails.address}</td>
-						<td>${DOB}</td>  
+						<td>${DOB}</td>
 						<td>${customerDetails.status}</td>
 					</tr>
 				</c:if>

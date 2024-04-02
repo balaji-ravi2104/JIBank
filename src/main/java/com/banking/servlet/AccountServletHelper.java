@@ -25,7 +25,7 @@ public class AccountServletHelper {
 				request.setAttribute("customerAccounts", customerAccounts);
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			request.setAttribute("error", "An Error Occured, Try Again");
 		}
 	}
 
@@ -39,7 +39,7 @@ public class AccountServletHelper {
 				request.setAttribute("failure", "Account Creation Failed");
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			request.setAttribute("failure", "Account Creation Failed");
 		}
 	}
 

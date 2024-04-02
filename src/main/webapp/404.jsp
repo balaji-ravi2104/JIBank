@@ -65,7 +65,7 @@ button:hover {
 	<div class="error-container">
 		<h1>404</h1>
 		<p>Oops! The page you're looking for is not found</p>
-		<form action="<%=request.getContextPath()%>/home" method="get">
+		<form action="<%=request.getContextPath()%>/home" method="post">
 			<button type="submit">Home</button>
 		</form>
 	</div>

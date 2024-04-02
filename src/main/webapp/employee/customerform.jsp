@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -163,7 +163,8 @@
 								</c:when>
 								<c:otherwise>
 									<input type="date" id="dateOfBirth" name="dateOfBirth"
-										value="${empty param.dateOfBirth ? (not empty customerDetails ? DOB : '') : DOB}"
+										<%-- value="${empty param.dateOfBirth ? (not empty customerDetails ? DOB : '') : DOB}" --%>
+										value="${DOB}"
 										required>
 								</c:otherwise>
 							</c:choose>
@@ -174,7 +175,11 @@
 							<p>${invalidMobile}</p>
 						</div>
 					</c:if>
-
+					<c:if test="${not empty invalidDOB}">
+						<div class="customer-form-error">
+							<p>${invalidDOB}</p>
+						</div>
+					</c:if>
 					<c:if test="${not empty customerDetails}">
 						<div class="form-row">
 							<div class="form-group wider">
@@ -219,12 +224,9 @@
 							</div>
 						</c:if>
 						<label for="aadharnumber">Aadhar Number</label>
-						<input type="number" name="aadharnumber"
-							placeholder="Enter the Aadhar Number" pattern="\d{12}"
-							value="<c:choose>
-                      <c:when test='${not empty userCreationSuccess}'>${''}</c:when>
-                      <c:otherwise>${empty param.aadharnumber ? '' : param.aadharnumber}</c:otherwise>
-                   </c:choose>"
+						<input type="text" name="aadharnumber" 
+							placeholder="Enter the Aadhar Number" pattern="\d{12}" maxlength="12"
+							value="<c:choose><c:when test='${not empty userCreationSuccess}'>${''}</c:when><c:otherwise>${empty param.aadharnumber ? '' : param.aadharnumber}</c:otherwise></c:choose>"
 							required>
 						<c:if test="${not empty invalidAadhar}">
 							<div class="customer-form-error">

@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,12 +30,10 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/customer">Customer</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account"
 				class="active">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
 					method="post">
@@ -50,27 +48,38 @@
 	</div>
 
 	<div class="customer-page">
-		<form action="<%=request.getContextPath()%>/createAccountPage"
+		<form action="<%=request.getContextPath()%>/createaccount"
 			method="post">
 			<button>Create Account</button>
 		</form>
 		<form id="searchFormAccount"
-			action="<%=request.getContextPath()%>/getAccounts" method="get">
+			action="<%=request.getContextPath()%>/account/getAccounts"
+			method="post">
 			<div class="accountsearch-bar">
 				<div>
 					<input type="text" id="searchCustomerAccounts" name="userId"
 						maxlength="4" pattern="\d{1,4}" placeholder="Enter User Id"
 						required value="${param.userId}">
 				</div>
-				<div class="branchId-div" id="branchIdDiv" style="display: none;">
-					<select id="branchId" name="branchId" required>
-						<option value="3007" ${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
-						<option value="3008" ${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
-						<option value="3009" ${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
-						<option value="3010" ${param.branchId == '3010' ? 'selected' : ''}>Trichy</option>
-						<option value="3011" ${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
-					</select>
-				</div>
+				<c:if test="${user.typeOfUser eq 'EMPLOYEE'}">
+					<input type="hidden" value="${employeeBranchId}" name="branchId">
+				</c:if>
+				<c:if test="${user.typeOfUser eq 'ADMIN'}">
+					<div class="branchId-div" id="branchIdDiv">
+						<select id="branchId" name="branchId" required>
+							<option value="3007"
+								${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
+							<option value="3008"
+								${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
+							<option value="3009"
+								${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
+							<option value="3010"
+								${param.branchId == '3010' ? 'selected' : ''}>Trichy</option>
+							<option value="3011"
+								${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
+						</select>
+					</div>
+				</c:if>
 
 				<div>
 					<button class="searchButton" type="submit">
@@ -101,19 +110,21 @@
 
 	<div class="customerlist-container">
 		<table id="table">
-			<thead>
-				<tr>
-					<th>User Id</th>
-					<th>Account Id</th>
-					<th>Account Number</th>
-					<th>Branch Id</th>
-					<th>Balance</th>
-					<th>Primary Account</th>
-					<th>Account Type</th>
-					<th>Status</th>
-					<th>Action</th>
-				</tr>
-			</thead>
+			<c:if test="${not empty customerAccounts}">
+				<thead>
+					<tr>
+						<th>User Id</th>
+						<th>Account Id</th>
+						<th>Account Number</th>
+						<th>Branch Id</th>
+						<th>Balance</th>
+						<th>Primary Account</th>
+						<th>Account Type</th>
+						<th>Status</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+			</c:if>
 			<tbody>
 				<c:forEach var="accountEntry" items="${customerAccounts}">
 					<tr>
@@ -122,7 +133,7 @@
 						<td>${account.accountId}</td>
 						<td>${account.accountNumber}</td>
 						<td>${account.branchId}</td>
-						<td>${account.balance}</td>
+						<td>₹${account.balance}</td>
 						<td>${account.primaryAccount ? 'Yes' : 'No'}</td>
 						<td>${account.accountType}</td>
 						<td>${account.accountStatus}</td>
@@ -130,7 +141,7 @@
 							<form action="<%=request.getContextPath()%>/updateAccountStatus"
 								method="post">
 								<input type="hidden" name="userId" value="${account.userId}" />
-								 <input type="hidden" name="branchId" value="${account.branchId}" />
+								<input type="hidden" name="branchId" value="${account.branchId}" />
 								<input type="hidden" name="accountNumber"
 									value="${account.accountNumber}" /> <input type="hidden"
 									name="status" value="${account.accountStatus}" />
@@ -143,23 +154,5 @@
 			</tbody>
 		</table>
 	</div>
-<script>
-    window.onload = function() {
-        var userType = "${user.typeOfUser}";
-        var employeeBranchId = "${employeeBranchId}";
-
-        if (userType === 'EMPLOYEE') {
-            var searchButton = document.getElementById("searchButton");
-            searchButton.addEventListener("click", function() {
-                var userId = document.getElementById("searchCustomerAccounts").value;
-                window.location.href = '<%=request.getContextPath()%>/getAccounts?userId=' + userId + '&branchId=' + employeeBranchId;
-            });
-        } else if (userType === 'ADMIN') {
-            document.getElementById("branchIdDiv").style.display = "block";
-        }
-    };
-</script>
-
-	
 </body>
 </html>

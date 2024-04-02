@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath()+"/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -133,12 +133,6 @@
 				branchHiddenInput.value = employeeBranchId;
 				branchSelect.disabled = true;
 				branchSelect.classList.add("removeDropdown");
-			}
-
-			var successMessage = "${success}";
-			var failureMessage = "${failure}";
-			if (successMessage || failureMessage) {
-				document.getElementById('form').reset();
 			}
 		};
 	</script>

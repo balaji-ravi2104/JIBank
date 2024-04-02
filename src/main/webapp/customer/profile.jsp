@@ -23,7 +23,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -32,10 +32,8 @@
 		</div>
 		<div>
 			<li><a href="<%=request.getContextPath()%>/customer/account">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
 			<li><a href="<%=request.getContextPath()%>/customer/profile"
 				class="active">Profile</a></li>
 			<li>
@@ -63,7 +61,7 @@
 				</tr>
 				<tr>
 					<th>Name</th>
-					<td>${user.firstName}${user.lastName}</td>
+					<td>${user.firstName} ${user.lastName}</td>
 				</tr>
 				<tr>
 					<th>Gender</th>
@@ -78,12 +76,17 @@
 					<td>${user.contactNumber}</td>
 				</tr>
 				<tr>
-					<th>Address</th>
-					<td>${user.address}</td>
-				</tr>
-				<tr>
 					<th>DOB</th>
 					<td>${DateUtils.longToDate(user.dateOfBirth)}</td>
+				</tr>
+				<tr>
+					<th>Address</th>
+					<td class="address">${user.address}</td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><button id="update-password-button">Update
+							Password</button></td>
 				</tr>
 			</table>
 		</div>
@@ -109,11 +112,20 @@
 								<p>${failed}</p>
 							</div>
 						</c:if>
-						<input type="hidden" id="userId" value="${user.userId}" name="userId">
-						<label for="new-password">Old Password</label> <input
-							type="password" id="old-password" name="oldpassword"
-							value="${param.oldpassword}" placeholder="Enter Old Password"
-							required>
+						<input type="hidden" id="userId" value="${user.userId}"
+							name="userId"> <label for="new-password">Old
+							Password</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="password" id="old-password" name="oldpassword"
+									value="" placeholder="Enter Old Password" required>
+							</c:when>
+							<c:otherwise>
+								<input type="password" id="old-password" name="oldpassword"
+									value="${param.oldpassword}" placeholder="Enter Old Password"
+									required>
+							</c:otherwise>
+						</c:choose>
 						<c:if test="${not empty wrongPassword}">
 							<div id="invalid-account-error"
 								class="invalid-accountnumber-error">
@@ -121,10 +133,18 @@
 								<p>${wrongPassword}</p>
 							</div>
 						</c:if>
-						<label for="new-password">New Password</label> <input
-							type="password" id="new-password" name="newpassword"
-							value="${param.newpassword}" placeholder="Enter New Password"
-							required>
+						<label for="new-password">New Password</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="password" id="new-password" name="newpassword"
+									value="" placeholder="Enter New Password" required>
+							</c:when>
+							<c:otherwise>
+								<input type="password" id="new-password" name="newpassword"
+									value="${param.newpassword}" placeholder="Enter New Password"
+									required>
+							</c:otherwise>
+						</c:choose>
 						<c:if test="${not empty InvalidPassword}">
 							<div id="invalid-account-error"
 								class="invalid-accountnumber-error password-font">
@@ -132,10 +152,19 @@
 								<p>${InvalidPassword}</p>
 							</div>
 						</c:if>
-						<label for="confirm-password">Confirm Password</label> <input
-							type="password" id="confirm-password" name="confirmpassword"
-							value="${param.confirmpassword}"
-							placeholder="Enter Confirm Password" required>
+						<label for="confirm-password">Confirm Password</label>
+						<c:choose>
+							<c:when test="${not empty success}">
+								<input type="password" id="confirm-password"
+									name="confirmpassword" value=""
+									placeholder="Enter Confirm Password" required>
+							</c:when>
+							<c:otherwise>
+								<input type="password" id="confirm-password"
+									name="confirmpassword" value="${param.confirmpassword}"
+									placeholder="Enter Confirm Password" required>
+							</c:otherwise>
+						</c:choose>
 						<c:if test="${not empty diffPassword}">
 							<div id="invalid-account-error"
 								class="invalid-accountnumber-error">
@@ -149,10 +178,20 @@
 			</div>
 		</div>
 	</div>
-	<div class="update-button">
-		<button id="update-password-button">Update Password</button>
-	</div>
 	<script>
+		document
+				.addEventListener(
+						"DOMContentLoaded",
+						function() {
+							document.getElementById("update-password-button")
+									.addEventListener("click",
+											clearSuccessMessage);
+							function clearSuccessMessage() {
+								document
+										.querySelector('.usercreation-message.success').innerHTML = '';
+							}
+						});
+
 		window.onload = function() {
 			var modal = document.getElementById("modal");
 			var invalidAccountError = document

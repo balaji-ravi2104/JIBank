@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect("../login.jsp");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -79,11 +79,11 @@
 					<label for="account-number">Account Number</label>
 					<c:choose>
 						<c:when test="${not empty success}">
-							<input type="number" name="accountNumber"
+							<input type="text" name="accountNumber" pattern="\d{12}" maxlength="12"
 								placeholder="Enter the Account Number" value="" required>
 						</c:when>
 						<c:otherwise>
-							<input type="number" name="accountNumber"
+							<input type="text" name="accountNumber" pattern="\d{12}" maxlength="12"
 								placeholder="Enter the Account Number"
 								value="${param.accountNumber}" required>
 						</c:otherwise>
