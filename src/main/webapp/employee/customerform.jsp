@@ -183,7 +183,7 @@
 					<c:if test="${not empty customerDetails}">
 						<div class="form-row">
 							<div class="form-group wider">
-								<label for="email">User Id</label> <input type="number"
+								<label for="userId">User Id</label> <input type="number"
 									name="userId"
 									value="${not empty customerDetails ? customerDetails.userId : ''}"
 									readonly>
