@@ -29,12 +29,11 @@ public class UserDaoImplementation implements UserDao {
 	private static final String CREATE_EMPLOYEE = "INSERT INTO Employee (User_id,branch_id) Values (?,?);";
 
 	private static final String CREATE_NEW_USER = "INSERT INTO Users (Password, FirstName, LastName, Gender, Email, "
-			+ "ContactNumber, Address, DateOfBirth, TypeId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			+ "ContactNumber, Address, DateOfBirth, TypeId,CreatedBy,ModifiedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);";
 
 	private static final String CREATE_CUSTOMER = "INSERT INTO Customer (User_id, Pan, Aadhar) VALUES (?, ?, ?);";
 
-	private static final String CHECK_USER_ID_EXISTS = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? "
-			+ "AND u.TypeId = 1;";
+	private static final String CHECK_USER_ID_EXISTS = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? ;";
 
 	private static final String CHECK_CUSTOMER_ID_EXISTS_QUERY_IN_BRANCH = "SELECT COUNT(*) FROM Users u JOIN "
 			+ "Accounts a ON u.UserId = a.user_id WHERE u.UserId = ? AND a.branch_id = ? AND u.TypeId = 1;";
@@ -44,8 +43,7 @@ public class UserDaoImplementation implements UserDao {
 			+ "JOIN Customer c ON u.UserId = c.User_id JOIN Accounts a ON u.UserId = a.User_id WHERE a.account_number = ?";
 
 	private static final String GET_CUSTOMER_DETAIL_BY_ID = "SELECT u.UserId, u.FirstName, u.LastName, u.Gender, "
-			+ "u.Email,u.ContactNumber,u.Address,u.DateOfBirth,u.StatusId,c.Pan, c.Aadhar FROM Users u "
-			+ "JOIN Customer c ON u.UserId = c.User_id WHERE u.UserId = ?";
+			+ "u.Email,u.ContactNumber,u.Address,u.DateOfBirth,u.StatusId,u.TypeId From Users u WHERE u.UserId = ?";
 
 	private static final String UPDATE_PASSWORD = "UPDATE Users SET Password = ? WHERE UserId = ?;";
 
@@ -66,7 +64,7 @@ public class UserDaoImplementation implements UserDao {
 			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId,e.branch_id FROM Users u INNER JOIN Employee e ON "
 			+ "u.UserId = e.user_id WHERE u.TypeId = 2 ORDER BY e.branch_id;";
 	private static final String UPDATE_CUSTOMER_DETAILS = "UPDATE Users SET FirstName = ?,LastName = ?,Gender = ?,Email = ?,"
-			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ? WHERE UserId = ?;";
+			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ?,UpdatedBy = ?,ModifiedBy = ? WHERE UserId = ?;";
 	
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
@@ -91,7 +89,7 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean addCustomer(Customer customer) throws CustomException {
+	public boolean addCustomer(Customer customer,int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isCustomerCreated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
@@ -106,6 +104,8 @@ public class UserDaoImplementation implements UserDao {
 			createUserStatement.setString(7, customer.getAddress());
 			createUserStatement.setLong(8, customer.getDateOfBirth());
 			createUserStatement.setInt(9, customer.getTypeOfUser().getValue());
+			createUserStatement.setLong(10, System.currentTimeMillis());
+			createUserStatement.setInt(11, creatingUserId);
 
 			int rowsAffected = createUserStatement.executeUpdate();
 			if (rowsAffected > 0) {
@@ -129,7 +129,7 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean addEmployee(Employee newEmployee) throws CustomException {
+	public boolean addEmployee(Employee newEmployee,int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isCustomerCreated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
@@ -144,6 +144,8 @@ public class UserDaoImplementation implements UserDao {
 			createUserStatement.setString(7, newEmployee.getAddress());
 			createUserStatement.setLong(8, newEmployee.getDateOfBirth());
 			createUserStatement.setInt(9, newEmployee.getTypeOfUser().getValue());
+			createUserStatement.setLong(10, System.currentTimeMillis());
+			createUserStatement.setInt(11, creatingUserId);
 
 			int rowsAffected = createUserStatement.executeUpdate();
 			if (rowsAffected > 0) {
@@ -306,7 +308,7 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean updateCustomerDetails(Customer customer) throws CustomException {
+	public boolean updateCustomerDetails(Customer customer,int updatingUserId) throws CustomException {
 		boolean isUpdated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_CUSTOMER_DETAILS)) {
@@ -319,7 +321,9 @@ public class UserDaoImplementation implements UserDao {
 			preparedStatement.setString(6, customer.getAddress());
 			preparedStatement.setLong(7, customer.getDateOfBirth());
 			preparedStatement.setInt(8, customer.getStatus().getValue());
-			preparedStatement.setInt(9, customer.getUserId());
+			preparedStatement.setLong(9, System.currentTimeMillis());
+			preparedStatement.setInt(10, updatingUserId);
+			preparedStatement.setInt(11, customer.getUserId());
 
 			int rowsAffected = preparedStatement.executeUpdate();
 
@@ -530,8 +534,7 @@ public class UserDaoImplementation implements UserDao {
 		customerDetails.setAddress(resultSet.getString(7));
 		customerDetails.setDateOfBirth(resultSet.getLong(8));
 		customerDetails.setStatus(resultSet.getInt(9));
-		customerDetails.setPanNumber(resultSet.getString(10));
-		customerDetails.setAadharNumber(resultSet.getString(11));
+		customerDetails.setTypeOfUser(resultSet.getInt(10));
 		return customerDetails;
 	}
 
@@ -547,19 +550,4 @@ public class UserDaoImplementation implements UserDao {
 		user.setTypeOfUser(resultSet.getInt(9));
 		user.setStatus(resultSet.getInt(10));
 	}
-
-//	private void getCustomerPanAndAadhar(int userID, User user) throws CustomException {
-//	try (Connection connection = DatabaseConnection.getConnection();
-//			PreparedStatement preparedStatement = connection.prepareStatement(GET_CUSTOMER_QUERY)) {
-//		preparedStatement.setInt(1, userID);
-//		try (ResultSet resultSet = preparedStatement.executeQuery()) {
-//			if (resultSet.next()) {
-//				user.setPanNumber(resultSet.getString(1));
-//				user.setAadharNumber(resultSet.getString(2));
-//			}
-//		}
-//	} catch (SQLException e) {
-//		throw new CustomException("Error While Reterving Customer Details", e);
-//	}
-//}
 }

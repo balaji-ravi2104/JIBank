@@ -100,7 +100,6 @@ public class MainServlet extends HttpServlet {
 				case EMPLOYEE:
 					try {
 						int branchId = userController.getEmployeeBranch(user.getUserId());
-						System.out.println(branchId);
 						request.getSession().setAttribute("employeeBranchId", branchId);
 						response.sendRedirect(request.getContextPath() + "/employee/customer");
 					} catch (CustomException e) {
@@ -195,7 +194,7 @@ public class MainServlet extends HttpServlet {
 			dispatcher.forward(request, response);
 			break;
 		case "/updateAccountStatus":
-			TransactionServletHelper.updateAccountStatus(request, response);
+			AccountServletHelper.updateAccountStatus(request, response);
 			dispatcher = request.getRequestDispatcher("employee/account.jsp");
 			dispatcher.forward(request, response);
 			break;
@@ -220,7 +219,6 @@ public class MainServlet extends HttpServlet {
 			break;
 		case "/withinBankTransfer":
 			TransactionServletHelper.transferAmountWithinBank(request, response);
-			//AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
 			dispatcher = request.getRequestDispatcher("/transferInBank");
 			dispatcher.forward(request, response);
 			break;

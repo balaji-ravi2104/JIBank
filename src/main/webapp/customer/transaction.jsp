@@ -47,7 +47,21 @@
 			</li>
 		</div>
 	</div>
-	<div class="container-deposit" id="transfer-container">
+	<div class="transfer-change-button">
+		<c:if test="${not outSideBank}">
+			<form action="<%=request.getContextPath()%>/transferOutSideBank"
+				method="post">
+				<button>Transfer Out Side Bank</button>
+			</form>
+		</c:if>
+		<c:if test="${outSideBank}">
+			<form action="<%=request.getContextPath()%>/transferInBank"
+				method="post">
+				<button>Transfer With in Bank</button>
+			</form>
+		</c:if>
+	</div>
+	<div id="transfer-container">
 		<div class="deposit-content" id="transfer-content">
 			<div class="deposit-image">
 				<img src="<%=request.getContextPath()%>/images/Payment.png"
@@ -79,12 +93,13 @@
 					<label for="account-number">Account Number</label>
 					<c:choose>
 						<c:when test="${not empty success}">
-							<input type="text" name="accountNumber" pattern="\d{12}" maxlength="12"
-								placeholder="Enter the Account Number" value="" required>
+							<input type="text" name="accountNumber" pattern="\d{12}"
+								maxlength="12" placeholder="Enter the Account Number" value=""
+								required>
 						</c:when>
 						<c:otherwise>
-							<input type="text" name="accountNumber" pattern="\d{12}" maxlength="12"
-								placeholder="Enter the Account Number"
+							<input type="text" name="accountNumber" pattern="\d{12}"
+								maxlength="12" placeholder="Enter the Account Number"
 								value="${param.accountNumber}" required>
 						</c:otherwise>
 					</c:choose>
@@ -95,21 +110,9 @@
 							<p>${invalidAccount}</p>
 						</div>
 					</c:if>
-					<c:if test="${not outSideBank}">
-						<label for="branch-id">Branch</label>
-						<select name="branchId" class="account-type" id="branch-id"
-							class="account-form">
-							<option value="3007"
-								${param.branchId == '3007' ? 'selected' : ''}>Coimbatore</option>
-							<option value="3008"
-								${param.branchId == '3008' ? 'selected' : ''}>Chennai</option>
-							<option value="3009"
-								${param.branchId == '3009' ? 'selected' : ''}>Madurai</option>
-							<option value="3010"
-								${param.branchId == '3010' ? 'selected' : ''}>Trichy</option>
-							<option value="3011"
-								${param.branchId == '3011' ? 'selected' : ''}>Salem</option>
-						</select>
+					<c:if test="${outSideBank}">
+						<label for="ifsc">IFSC Code</label>
+						<input type="text" name="ifsc" placeholder="Enter the IFSC Code" required>
 					</c:if>
 					<label for="amount">Transfer Amount</label>
 					<c:choose>
@@ -146,7 +149,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="transfer-change-button">
+	<%-- <div class="transfer-change-button">
 		<c:if test="${not outSideBank}">
 			<form action="<%=request.getContextPath()%>/transferOutSideBank"
 				method="post">
@@ -159,6 +162,6 @@
 				<button>Transfer With in Bank</button>
 			</form>
 		</c:if>
-	</div>
+	</div> --%>
 </body>
 </html>

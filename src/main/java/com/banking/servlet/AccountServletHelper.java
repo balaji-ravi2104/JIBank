@@ -9,6 +9,7 @@ import javax.servlet.http.HttpSession;
 
 import com.banking.controller.AccountController;
 import com.banking.model.Account;
+import com.banking.model.AccountStatus;
 import com.banking.utils.CustomException;
 
 public class AccountServletHelper {
@@ -30,13 +31,17 @@ public class AccountServletHelper {
 	}
 
 	public static void addNewAccount(HttpServletRequest request, HttpServletResponse response) {
-		Account account = (Account) request.getAttribute("accountObject");
+		HttpSession session = request.getSession(false);
 		try {
-			boolean isAccountCreated = accountController.createAccount(account);
-			if (isAccountCreated) {
-				request.setAttribute("success", "Account Created Successfully");
-			} else {
-				request.setAttribute("failure", "Account Creation Failed");
+			if (session != null) {
+				Account account = (Account) request.getAttribute("accountObject");
+				int creatingUserId = (int) request.getSession().getAttribute("currentUserId");
+				boolean isAccountCreated = accountController.createAccount(account, creatingUserId);
+				if (isAccountCreated) {
+					request.setAttribute("success", "Account Created Successfully");
+				} else {
+					request.setAttribute("failure", "Account Creation Failed");
+				}
 			}
 		} catch (CustomException e) {
 			request.setAttribute("failure", "Account Creation Failed");
@@ -59,6 +64,32 @@ public class AccountServletHelper {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public static void updateAccountStatus(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
+
+		try {
+			if (session != null) {
+				String accountNumber = request.getParameter("accountNumber");
+				String status = request.getParameter("status");
+
+				String oppositeStatus = status.equalsIgnoreCase("ACTIVE") ? AccountStatus.INACTIVE.name()
+						: AccountStatus.ACTIVE.name();
+
+				AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
+				int value = accountStatus.getValue();
+				int updatingUserId  = (int) session.getAttribute("currentUserId");
+				boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value,updatingUserId);
+				if (isUpdated) {
+					request.setAttribute("updatedSuccess", "Account Status Updated");
+				} else {
+					request.setAttribute("updationFailed", "Account Updation Failed");
+				}
+			}
+		} catch (Exception e) {
+			request.setAttribute("updationFailed", "Account Updation Failed");
 		}
 	}
 

@@ -390,7 +390,7 @@ public class MainFilter implements Filter {
 			try {
 				String accountNumber = request.getParameter("accountNumber");
 				double amount = Double.parseDouble(request.getParameter("amount"));
-				int branchId = Integer.parseInt(request.getParameter("branchId"));
+				//int branchId = Integer.parseInt(request.getParameter("branchId"));
 				boolean flag = false;
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
@@ -428,13 +428,14 @@ public class MainFilter implements Filter {
 					receiverAccount = AccountDao.getAccountDetail(accountNumber);
 				}
 
-				boolean isAccountPresent = AccountDao.checkAccountExists(accountNumber, branchId);
+				//boolean isAccountPresent = AccountDao.checkAccountExists(accountNumber, branchId);
 
-				if (!isAccountPresent) {
-					request.setAttribute("inactiveAccount", "Receiver Account not present in this Branch");
-					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
-					return;
-				}
+//				if (!isAccountPresent) {
+//					request.setAttribute("inactiveAccount", "Receiver Account not present in this Branch");
+//					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+//					return;
+//				}
+				
 				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Receiver Account is InActive");
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);

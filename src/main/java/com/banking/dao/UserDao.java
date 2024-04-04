@@ -11,9 +11,9 @@ public interface UserDao {
 
 	User authendicateUser(int userID) throws CustomException;
 
-	boolean addCustomer(Customer customer) throws CustomException;
+	boolean addCustomer(Customer customer,int creatingUserId) throws CustomException;
 
-	boolean addEmployee(Employee newEmployee) throws CustomException;
+	boolean addEmployee(Employee newEmployee,int creatingUserId) throws CustomException;
 
 	boolean checkUserIdExists(int userId) throws CustomException;
 
@@ -38,7 +38,7 @@ public interface UserDao {
 
 	Customer getCustomerDetailsById(int userId) throws CustomException;
 
-	boolean updateCustomerDetails(Customer customer) throws CustomException;
+	boolean updateCustomerDetails(Customer customer,int updatingUserId) throws CustomException;
 
 	boolean isCustomerExists(String panNumber) throws CustomException;
 

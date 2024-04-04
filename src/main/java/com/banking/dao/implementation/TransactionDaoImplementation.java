@@ -25,7 +25,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 
 	private static final String TRANSACTION_LOG = "INSERT INTO Transaction (user_id, viewer_account_number, "
 			+ "transacted_account_number, TypeId, transaction_amount, balance, transaction_date, "
-			+ "remark, StatusId,reference_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?);";
+			+ "remark, StatusId,reference_id,CreatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);";
 
 	private static final String GET_STATEMENT = "SELECT transaction_date, TypeId,transaction_amount, "
 			+ "balance FROM Transaction WHERE viewer_account_number = ? AND FROM_UNIXTIME(transaction_date / 1000) >= "
@@ -316,6 +316,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 			preparedStatement.setString(8, remark);
 			preparedStatement.setInt(9, TransactionStatus.SUCCESS.getValue());
 			preparedStatement.setLong(10, referenceId);
+			preparedStatement.setLong(11, System.currentTimeMillis());
 
 			int rowsAffected = preparedStatement.executeUpdate();
 

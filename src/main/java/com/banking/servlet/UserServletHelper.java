@@ -9,6 +9,7 @@ import com.banking.model.AccountStatus;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
+import com.banking.model.UserType;
 import com.banking.utils.CustomException;
 import com.banking.utils.DateUtils;
 
@@ -22,12 +23,12 @@ public class UserServletHelper {
 
 		try {
 			User user = userController.login(userId, password);
-			// System.out.println(user);
 			if (user == null) {
 				request.setAttribute("error", "Invalid User Id or Password");
 			} else if (user.getStatus() == AccountStatus.INACTIVE) {
 				request.setAttribute("error", "Your Account is InActive");
 			} else {
+				request.getSession(true).setAttribute("currentUserId", user.getUserId());
 				request.getSession(true).setAttribute("user", user);
 			}
 		} catch (CustomException e) {
@@ -40,7 +41,7 @@ public class UserServletHelper {
 		int customerId = Integer.parseInt(request.getParameter("userId"));
 		try {
 			Customer customer = userController.getCustomerDetailsById(customerId);
-			if (customer == null) {
+			if (customer == null || customer.getTypeOfUser() == UserType.ADMIN) {
 				request.setAttribute("error", "Invalid Customer Id");
 			} else {
 				String date = DateUtils.longToDate(customer.getDateOfBirth());
@@ -49,7 +50,7 @@ public class UserServletHelper {
 				request.setAttribute("customerDetails", customer);
 			}
 		} catch (CustomException e) {
-			e.printStackTrace();
+			request.setAttribute("error", "An Error Occured, Try Again");
 		}
 	}
 
@@ -59,10 +60,11 @@ public class UserServletHelper {
 			if (session != null) {
 				Boolean isCustomer = (Boolean) session.getAttribute("customer");
 				Boolean isEmployee = (Boolean) session.getAttribute("employee");
+				int creatingUserId  = (int) session.getAttribute("currentUserId");
 
 				if (isCustomer != null && isCustomer) {
 					Customer customer = (Customer) request.getAttribute("customerObject");
-					boolean isCreated = userController.registerNewCustomer(customer);
+					boolean isCreated = userController.registerNewCustomer(customer, creatingUserId);
 					if (isCreated) {
 						request.setAttribute("userCreationSuccess", "User Created Successfully!!!");
 					} else {
@@ -71,7 +73,7 @@ public class UserServletHelper {
 
 				} else if (isEmployee != null && isEmployee) {
 					Employee employee = (Employee) request.getAttribute("employeeObject");
-					boolean isCreated = userController.registerNewEmployee(employee);
+					boolean isCreated = userController.registerNewEmployee(employee, creatingUserId);
 					if (isCreated) {
 						request.setAttribute("userCreationSuccess", "Employee Created Successfully!!!");
 					} else {
@@ -85,14 +87,18 @@ public class UserServletHelper {
 	}
 
 	static void updateCustomer(HttpServletRequest request, HttpServletResponse response) {
-		Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
-		boolean isUpdated;
+		HttpSession session = request.getSession(false);
 		try {
-			isUpdated = userController.updateCustomer(customer);
-			if (isUpdated) {
-				request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
-			} else {
-				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
+			boolean isUpdated;
+			if (session != null) {
+				int updatingUserId  = (int) session.getAttribute("currentUserId");
+				Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
+				isUpdated = userController.updateCustomer(customer, updatingUserId);
+				if (isUpdated) {
+					request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
+				} else {
+					request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
+				}
 			}
 		} catch (CustomException e) {
 			// e.printStackTrace();

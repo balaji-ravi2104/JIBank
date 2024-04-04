@@ -10,7 +10,6 @@ import com.banking.cache.RedisCache;
 import com.banking.dao.AccountDao;
 import com.banking.dao.implementation.AccountDaoImplementation;
 import com.banking.model.Account;
-import com.banking.model.AccountStatus;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
@@ -19,7 +18,6 @@ public class AccountController {
 
 	private static final Logger log = Logger.getLogger(MainController.class.getName());
 	private AccountDao accountDao = new AccountDaoImplementation();
-	private UserController userController;
 	private BranchController branchController = new BranchController();
 	public static final String accountCachePrefix = "Account";
 	public static final String listAccountCachePrefix = "ListAccount";
@@ -37,28 +35,20 @@ public class AccountController {
 	public static final Cache<Integer, List<Account>> listOfAccounts = new RedisCache<Integer, List<Account>>(6379,
 			listAccountCachePrefix);
 
-	public AccountController(UserController userController) {
-		this.userController = userController;
-	}
-
 	public AccountController() {
 	}
 
-	public boolean createAccount(Account account) throws CustomException {
+	public boolean createAccount(Account account,int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		boolean isPrimary = false;
-//		if (!userController.validateUser(account.getUserId())
-//				|| !branchController.validateBranchId(account.getBranchId()) || validateBalance(account.getBalance())) {
-//			return isAccountCreated;
-//		}
 		synchronized (createAccountLock) {
 			listOfAccounts.rem(listAccountCachePrefix + account.getUserId());
 			if (!accountDao.customerHasAccount(account.getUserId())) {
 				isPrimary = true;
 			}
 			try {
-				isAccountCreated = accountDao.createAccount(account, isPrimary);
+				isAccountCreated = accountDao.createAccount(account, isPrimary,creatingUserId);
 			} catch (Exception e) {
 				throw new CustomException("Erroe While Creating Account!!", e);
 			}
@@ -85,7 +75,6 @@ public class AccountController {
 		Account account = null;
 		synchronized (getAccountDetailsLock) {
 			if (accountCache.get(accountCachePrefix + accountNumber) != null) {
-				// System.out.println("Inside Cache Account Number " + accountNumber);
 				return accountCache.get(accountCachePrefix + accountNumber);
 			}
 			try {
@@ -104,7 +93,6 @@ public class AccountController {
 		List<Account> accounts = null;
 		synchronized (getAccountsOfCustomerLock) {
 			if (listOfAccounts.get(listAccountCachePrefix + userId) != null) {
-				// System.out.println("List Of Accounts From Inside Cache");
 				return listOfAccounts.get(listAccountCachePrefix + (userId));
 			}
 			try {
@@ -129,9 +117,6 @@ public class AccountController {
 
 	public Map<Integer, Map<String, Account>> getCustomerAccountsInAllBranch(int userId) throws CustomException {
 		Map<Integer, Map<String, Account>> customerAccounts = null;
-		if (!userController.validateUser(userId)) {
-			return customerAccounts;
-		}
 		try {
 			customerAccounts = accountDao.getCustomersAllAccount(userId);
 		} catch (Exception e) {
@@ -140,15 +125,12 @@ public class AccountController {
 		return customerAccounts;
 	}
 
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status,int updatingUserId)
 			throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountStatusChanged = false;
-//		if (!validateAccountAndBranch(accountNumber, branchId) || validateAccountStatus(status)) {
-//			return isAccountStatusChanged;
-//		}
 		try {
-			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status);
+			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status,updatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Updating Bank Account Status!!", e);
 		}
@@ -174,24 +156,6 @@ public class AccountController {
 		}
 		return isAccountPresent;
 	}
-
-	private boolean validateAccountStatus(int status) {
-		boolean isValid = false;
-		if (status <= 0 || status > AccountStatus.values().length) {
-			log.warning("Invalid Account Status Updation Choice!!");
-			isValid = true;
-		}
-		return isValid;
-	}
-
-//	private boolean validateBalance(double balance) {
-//		boolean isValid = false;
-//		if (InputValidator.validateBalance(balance)) {
-//			log.warning("Balance Should Be Greater than Zero!!!");
-//			isValid = true;
-//		}
-//		return isValid;
-//	}
 
 	private boolean validateAccountNumber(String accountNumber) throws CustomException {
 		boolean isValid = false;

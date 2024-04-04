@@ -19,7 +19,7 @@ import com.banking.utils.InputValidator;
 public class AccountDaoImplementation implements AccountDao {
 
 	private static final String CREATE_NEW_ACCOUNT = "INSERT INTO Accounts (user_id, account_number, "
-			+ "branch_id,balance,primaryAccount,TypeId) VALUES (?,?,?,?,?,?);";
+			+ "branch_id,balance,primaryAccount,TypeId,CreatedBy,ModifiedBy) VALUES (?,?,?,?,?,?,?,?);";
 
 	private static final String GET_ACCOUNT_COUNT = "SELECT COUNT(*) FROM Accounts WHERE user_id = ?;";
 
@@ -34,14 +34,14 @@ public class AccountDaoImplementation implements AccountDao {
 	private static final String CHECK_CUSTOMER_ACCOUNT_EXISTS_IN_BRANCH = "SELECT COUNT(*) FROM Accounts "
 			+ "WHERE account_number = ? and branch_id = ?;";
 
-	private static final String UPDATE_BANK_ACCOUNT_STATUS = "UPDATE Accounts SET StatusId = ? WHERE account_number = ?;";
+	private static final String UPDATE_BANK_ACCOUNT_STATUS = "UPDATE Accounts SET StatusId = ?,UpdatedBy = ?,ModifiedBy = ? WHERE account_number = ?;";
 
 	private static final String CUSTOMER_ALREADY_HAS_ACCOUNT_TYPE = "SELECT COUNT(*) TypeId FROM Accounts WHERE user_id = ? and branch_id = ? and Typeid = ?;";
 
 	private static final String IS_ACCOUNT_PRESENT = "SELECT COUNT(*) AS account_count FROM Accounts WHERE account_number = ?;";
 
 	@Override
-	public boolean createAccount(Account account, boolean isPrimary) throws CustomException {
+	public boolean createAccount(Account account, boolean isPrimary,int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		String accountNumber = String.format("%04d%08d", account.getBranchId(),
@@ -54,6 +54,8 @@ public class AccountDaoImplementation implements AccountDao {
 			preparedStatement.setDouble(4, account.getBalance());
 			preparedStatement.setBoolean(5, isPrimary);
 			preparedStatement.setInt(6, account.getAccountType().getValue());
+			preparedStatement.setLong(7, System.currentTimeMillis());
+			preparedStatement.setInt(8, creatingUserId);
 
 			int rowsAffected = preparedStatement.executeUpdate();
 			isAccountCreated = rowsAffected > 0;
@@ -239,13 +241,15 @@ public class AccountDaoImplementation implements AccountDao {
 	}
 
 	@Override
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status,int updatingUserId)
 			throws CustomException {
 		boolean isAccountStatusChanged = false;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_BANK_ACCOUNT_STATUS)) {
 			preparedStatement.setInt(1, status);
-			preparedStatement.setString(2, accountNumber);
+			preparedStatement.setLong(2, System.currentTimeMillis());
+			preparedStatement.setInt(3, updatingUserId);
+			preparedStatement.setString(4, accountNumber);
 			int rowsAffected = preparedStatement.executeUpdate();
 			isAccountStatusChanged = (rowsAffected > 0);
 		} catch (SQLException e) {

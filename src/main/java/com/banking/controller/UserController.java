@@ -1,10 +1,7 @@
 package com.banking.controller;
 
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.PatternSyntaxException;
 
 import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
@@ -13,7 +10,6 @@ import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
-import com.banking.utils.CommonUtils.Field;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
@@ -44,8 +40,12 @@ public class UserController {
 		InputValidator.isNull(password, "Password Cannot be Empty or Null!!!");
 		User user = null;
 		try {
-			String userPassword = userDao.getUserPassword(userId);
-			if(!userPassword.equals(password)) {
+			if (isUserExists(userId)) {
+				String userPassword = userDao.getUserPassword(userId);
+				if (!userPassword.equals(password)) {
+					return user;
+				}
+			}else {
 				return user;
 			}
 			user = userDao.authendicateUser(userId);
@@ -55,23 +55,22 @@ public class UserController {
 		return user;
 	}
 
-	public boolean registerNewCustomer(Customer customer) throws CustomException {
-		// System.out.println(customer);
+	public boolean registerNewCustomer(Customer customer,int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isRegistred = false;
 		try {
-			isRegistred = userDao.addCustomer(customer);
+			isRegistred = userDao.addCustomer(customer,creatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
 		return isRegistred;
 	}
 
-	public boolean registerNewEmployee(Employee newEmployee) throws CustomException {
+	public boolean registerNewEmployee(Employee newEmployee,int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isRegistred = false;
 		try {
-			isRegistred = userDao.addEmployee(newEmployee);
+			isRegistred = userDao.addEmployee(newEmployee,creatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
@@ -134,9 +133,6 @@ public class UserController {
 	// For Admin Purpose
 	public Customer getCustomerDetailsById(int userId) throws CustomException {
 		Customer customerDetails = null;
-		if (!validateUser(userId)) {
-			return customerDetails;
-		}
 		synchronized (userCacheLock) {
 			if (userCache.get(cachePrefix + userId) != null) {
 				System.out.println("Inside Cache(Admin Purpose) User Id : " + userId);
@@ -158,9 +154,6 @@ public class UserController {
 			throws CustomException {
 		InputValidator.isNull(fieldsToUpdate, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isCustomerUpdated = false;
-		if (!validateUser(userIdToUpdate) || !validateFieldAndValuesToUpdate(fieldsToUpdate)) {
-			return isCustomerUpdated;
-		}
 		try {
 			isCustomerUpdated = userDao.updateCustomerDetails(userIdToUpdate, fieldsToUpdate);
 		} catch (Exception e) {
@@ -171,12 +164,6 @@ public class UserController {
 
 	public boolean isUserExistsInTheBranch(int userId, int branchId) throws CustomException {
 		boolean isExists = false;
-		if (!validateUser(userId)) {
-			return isExists;
-		}
-		if (!branchController.validateBranchId(branchId)) {
-			return isExists;
-		}
 		try {
 			isExists = userDao.checkCustomerIdPresentInBranch(userId, branchId);
 		} catch (Exception e) {
@@ -185,14 +172,14 @@ public class UserController {
 		return isExists;
 	}
 
-	public boolean updateCustomer(Customer customer) throws CustomException {
+	public boolean updateCustomer(Customer customer,int updatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isUpdated = false;
 		if (userCache.get(cachePrefix + customer.getUserId()) != null) {
 			userCache.rem(cachePrefix + customer.getUserId());
 		}
 		try {
-			isUpdated = userDao.updateCustomerDetails(customer);
+			isUpdated = userDao.updateCustomerDetails(customer,updatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Updation Customer Details", e);
 		}
@@ -202,9 +189,6 @@ public class UserController {
 	public boolean updatePassword(int userId, String password) throws CustomException {
 		InputValidator.isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isPasswordUpdated = false;
-//		if (!validatePassword(password)) {
-//			return isPasswordUpdated;
-//		}
 		try {
 			isPasswordUpdated = userDao.updatePassword(userId, password);
 		} catch (Exception e) {
@@ -248,50 +232,6 @@ public class UserController {
 		}
 	}
 
-	private boolean validateUserInput(Customer user) throws CustomException {
-		boolean isValid = true;
-		if (InputValidator.validateString(user.getFirstName().trim())) {
-			log.log(Level.WARNING, "First Name Cannot be Empty");
-			isValid = false;
-		}
-		if (InputValidator.validateString(user.getLastName().trim())) {
-			log.log(Level.WARNING, "Last Name Cannot be Empty");
-			isValid = false;
-		}
-		if (InputValidator.validateString(user.getGender())) {
-			log.log(Level.WARNING, "Gender Cannot be Empty");
-			isValid = false;
-		}
-		if (!InputValidator.validateEmail(user.getEmail())) {
-			log.log(Level.WARNING, "Invalid Email Address");
-			isValid = false;
-		}
-		if (!InputValidator.validateMobileNumber(user.getContactNumber())) {
-			log.log(Level.WARNING, "Invalid Mobile Number");
-			isValid = false;
-		}
-		if (InputValidator.validateString(user.getAddress())) {
-			log.log(Level.WARNING, "Address Cannot be Empty");
-			isValid = false;
-		}
-		if (!InputValidator.validateAadharNumber(user.getAadharNumber())) {
-			log.log(Level.WARNING, "Invalid Aadhar Number!!");
-			isValid = false;
-		}
-		if (!InputValidator.validatePanNumber(user.getPanNumber())) {
-			log.log(Level.WARNING, "Invalid Pan Number!!");
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	public boolean validateUser(int userId) throws CustomException {
-		boolean isUserIdPresent = isUserExists(userId);
-		if (!isUserIdPresent) {
-			log.warning("Invalid User Id!!!");
-		}
-		return isUserIdPresent;
-	}
 
 	public boolean validateUserIdAndBranchId(int userId, int branchId) throws CustomException {
 		boolean isValidId = isUserExistsInTheBranch(userId, branchId);
@@ -299,16 +239,6 @@ public class UserController {
 			log.warning("UserID is Not present in this Branch!!");
 		}
 		return isValidId;
-	}
-
-	private boolean validatePassword(String password) throws PatternSyntaxException, CustomException {
-		boolean isValid = true;
-		if (!InputValidator.validatePassword(password)) {
-			isValid = false;
-			log.warning(
-					"Invalid Password Choosen!! Password Must Contains Atleast, One Captial,One Small,One Special Case,One Number and 8 digits!!!");
-		}
-		return isValid;
 	}
 
 	private boolean isEmployeeExists(int employeeId) throws CustomException {
@@ -319,79 +249,5 @@ public class UserController {
 			throw new CustomException("Error while Checking Employee Exists!!", e);
 		}
 		return isExixts;
-	}
-
-	private <K, V> boolean validateFieldAndValuesToUpdate(Map<K, V> fieldsToUpdate)
-			throws PatternSyntaxException, CustomException {
-		boolean isValid = true;
-		for (Entry<K, V> entry : fieldsToUpdate.entrySet()) {
-			Field fieldName = (Field) entry.getKey();
-			if (Field.DateOfBirth.name().equals(fieldName.name())) {
-				continue;
-			}
-			String fieldValue = (String) entry.getValue();
-			switch (fieldName) {
-			case FirstName:
-				if (InputValidator.validateString(fieldValue)) {
-					userView.userViewMessages("First Name Cannot be Empty");
-					isValid = false;
-				}
-				break;
-			case LastName:
-				if (InputValidator.validateString(fieldValue)) {
-					userView.userViewMessages("Last Name Cannot be Empty");
-					isValid = false;
-				}
-				break;
-			case Gender:
-				if (InputValidator.validateString(fieldValue)) {
-					userView.userViewMessages("Gender Cannot be Empty");
-					isValid = false;
-				}
-				break;
-			case Email:
-				if (!InputValidator.validateEmail(fieldValue)) {
-					userView.userViewMessages("Invalid Email Address");
-					isValid = false;
-				}
-				break;
-			case ContactNumber:
-				if (!InputValidator.validateMobileNumber(fieldValue)) {
-					userView.userViewMessages("Invalid Mobile Number");
-					isValid = false;
-				}
-				break;
-			case Address:
-				if (InputValidator.validateString(fieldValue)) {
-					userView.userViewMessages("Address Cannot be Empty");
-					isValid = false;
-				}
-				break;
-			case Pan:
-				if (!InputValidator.validatePanNumber(fieldValue)) {
-					userView.userViewMessages("Invalid PAN Number!! Please Provide Valid PAN Number");
-					isValid = false;
-				}
-				break;
-			case Aadhar:
-				if (!InputValidator.validateAadharNumber(fieldValue)) {
-					userView.userViewMessages("Invalid Aadhar Number!! Please Provide Valid Aadhar Number");
-					isValid = false;
-				}
-				break;
-			case Status:
-				if (InputValidator.validateAccountStatus(fieldValue)) {
-					userView.userViewMessages("First Name Cannot be Empty");
-					log.log(Level.WARNING, "Account Status Cannot be Empty!!!");
-					isValid = false;
-				}
-				break;
-			default:
-				log.log(Level.WARNING, "Unknown field: " + fieldName);
-				isValid = false;
-				break;
-			}
-		}
-		return isValid;
 	}
 }

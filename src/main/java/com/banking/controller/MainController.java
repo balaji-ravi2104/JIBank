@@ -45,7 +45,6 @@ public class MainController {
 		this.accountView = new AccountView();
 		this.transactionView = new TransactionView();
 		this.userController = new UserController(new AccountController());
-		this.accountController = new AccountController(new UserController());
 		this.branchController = new BranchController();
 		this.transactionController = new TransactionController();
 		this.isLoggedIn = false;
@@ -427,7 +426,7 @@ public class MainController {
 					newCustomer.setTypeOfUser(UserType.CUSTOMER.getValue());
 					newCustomer.setPanNumber(panNumber);
 					newCustomer.setAadharNumber(aadharNumber);
-					boolean isUserCreated = userController.registerNewCustomer(newCustomer);
+					boolean isUserCreated = userController.registerNewCustomer(newCustomer,user.getUserId());
 					if (isUserCreated) {
 						userView.userViewMessages("User Created Successfully!!");
 					} else {
@@ -449,7 +448,7 @@ public class MainController {
 					account.setBranchId(employeeBranchId);
 					account.setAccountType(type);
 					account.setBalance(balance);
-					boolean isAccountCreated = accountController.createAccount(account);
+					boolean isAccountCreated = accountController.createAccount(account,user.getUserId());
 					if (isAccountCreated) {
 						accountView.accountViewMessages("Account Created Successfully!!!");
 					} else {
@@ -613,7 +612,7 @@ public class MainController {
 					log.info("Enter the Value to Update");
 					int statusChoice = mainView.promtForIntegerInput();
 					boolean isAccountStatusChanged = accountController.activateDeactivateCustomerAccount(accountNumber,
-							statusChoice);
+							statusChoice,user.getUserId());
 					if (isAccountStatusChanged) {
 						accountView.accountViewMessages("Bank Account Status Updated SuccessFully!!!");
 					} else {
@@ -695,7 +694,7 @@ public class MainController {
 					newEmployee.setDateOfBirth(dateOfBirth);
 					newEmployee.setTypeOfUser(UserType.EMPLOYEE.getValue());
 					newEmployee.setBranchId(branchId);
-					boolean isEmployeeCreated = userController.registerNewEmployee(newEmployee);
+					boolean isEmployeeCreated = userController.registerNewEmployee(newEmployee,user.getUserId());
 					if (isEmployeeCreated) {
 						userView.userViewMessages("User Created Successfully!!");
 					} else {
@@ -768,7 +767,7 @@ public class MainController {
 					newCustomer.setTypeOfUser(UserType.CUSTOMER.getValue());
 					newCustomer.setPanNumber(panNumber);
 					newCustomer.setAadharNumber(aadharNumber);
-					boolean isUserCreated = userController.registerNewCustomer(newCustomer);
+					boolean isUserCreated = userController.registerNewCustomer(newCustomer,user.getUserId());
 					if (isUserCreated) {
 						userView.userViewMessages("User Created Successfully!!");
 					} else {
@@ -792,7 +791,7 @@ public class MainController {
 					account.setBranchId(branchId);
 					account.setAccountType(type);
 					account.setBalance(balance);
-					boolean isAccountCreated = accountController.createAccount(account);
+					boolean isAccountCreated = accountController.createAccount(account,user.getUserId());
 					if (isAccountCreated) {
 						accountView.accountViewMessages("Account Created Successfully!!!");
 					} else {
@@ -810,7 +809,7 @@ public class MainController {
 					log.info("Enter the Value to Update");
 					int statusChoice = mainView.promtForIntegerInput();
 					boolean isAccountStatusChanged = accountController.activateDeactivateCustomerAccount(accountNumber,
-							statusChoice);
+							statusChoice,user.getUserId());
 					if (isAccountStatusChanged) {
 						accountView.accountViewMessages("Bank Account Status Updated SuccessFully!!!");
 					} else {

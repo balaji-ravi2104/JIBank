@@ -31,7 +31,7 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer">Customers</a></li>
+			<li><a href="<%=request.getContextPath()%>/employee/customer">Users</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/transaction"
 				class="active">Transactions</a></li>
@@ -100,17 +100,14 @@
 				<thead>
 					<tr>
 						<th>S.No</th>
-						<th>Trans Id</th>
-						<th>User Id</th>
-						<th>Viewer Account</th>
-						<th>Transacted Account</th>
+						<th>Transaction Id</th>
+						<th>Date</th>
+						<th>To Account</th>
 						<th>Type</th>
 						<th>Amount</th>
 						<th>Balance</th>
-						<th>Date</th>
 						<th>Remark</th>
 						<th>Status</th>
-						<th>Reference Id</th>
 					</tr>
 				</thead>
 			</c:if>
@@ -119,17 +116,14 @@
 				<c:forEach var="transaction" items="${transactionList}">
 					<tr>
 						<td>${serialNumber}</td>
-						<td>${transaction.transactionId}</td>
-						<td>${transaction.userId}</td>
-						<td>${transaction.viewerAccount}</td>
+						<td>${transaction.referenceId}</td>
+						<td>${DateUtils.formateLongToDate(transaction.dateOfTransaction)}</td>
 						<td>${transaction.transactedAccount}</td>
 						<td>${transaction.transactionType}</td>
 						<td>₹${transaction.transactedAmount}</td>
 						<td>₹${transaction.balance}</td>
-						<td>${DateUtils.formateLongToDate(transaction.dateOfTransaction)}</td>
 						<td>${transaction.remark}</td>
 						<td>${transaction.status}</td>
-						<td>${transaction.referenceId}</td>
 					</tr>
 					<c:set var="serialNumber" value="${serialNumber + 1}" />
 				</c:forEach>

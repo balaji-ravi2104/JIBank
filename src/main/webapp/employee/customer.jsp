@@ -1,3 +1,4 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
@@ -31,7 +32,7 @@
 		</div>
 		<div>
 			<li><a href="<%=request.getContextPath()%>/employee/customer"
-				class="active">Customers</a></li>
+				class="active">Users</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>
@@ -64,7 +65,8 @@
 			<div>
 				<div class="search-bar">
 					<input type="text" id="searchCustomer" name="userId" maxlength="4"
-						value="${param.userId}" pattern="\d{1,4}" placeholder="Enter User Id" required>
+						value="${param.userId}" pattern="\d{1,4}"
+						placeholder="Enter User Id" required>
 					<button class="searchButton" type="submit">
 						<i class="fas fa-search"></i>
 					</button>
@@ -79,7 +81,7 @@
 			<div>
 				<button id="updateCustomerButton" type="submit"
 					formaction="<%=request.getContextPath()%>/updateCustomer">Update
-					Customer</button>
+					User</button>
 			</div>
 		</form>
 	</div>

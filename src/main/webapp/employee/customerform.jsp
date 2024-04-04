@@ -31,7 +31,7 @@
 		</div>
 		<div>
 			<li><a href="<%=request.getContextPath()%>/employee/customer"
-				class="active">Customers</a></li>
+				class="active">Users</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
 			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
 			<li>

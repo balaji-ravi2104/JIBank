@@ -6,7 +6,6 @@ import java.util.Map;
 import com.banking.dao.TransactionDao;
 import com.banking.dao.implementation.TransactionDaoImplementation;
 import com.banking.model.Account;
-import com.banking.model.AccountStatus;
 import com.banking.model.Transaction;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
@@ -35,9 +34,6 @@ public class TransactionController {
 	public boolean depositAmount(Account account, double amountToDeposite,String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isDepositeSuccess = false;
-		/*
-		 * if (!validateAmount(amountToDeposite)) { return isDepositeSuccess; }
-		 */
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
@@ -57,9 +53,6 @@ public class TransactionController {
 	public boolean withdrawAmount(Account account, double amountToWithdraw,String description) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isWithdrawSuccess = false;
-//		if (!validateAmount(amountToWithdraw) || !validateWithdrawAmount(account, amountToWithdraw)) {
-//			return isWithdrawSuccess;
-//		}
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
@@ -82,13 +75,6 @@ public class TransactionController {
 		InputValidator.isNull(accountToTransfer, ErrorMessages.INPUT_NULL_MESSAGE);
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
-//		if (!validateAmount(amountToTransfer) || !validateWithdrawAmount(accountFromTransfer, amountToTransfer)) {
-//			return isTransactionSuccess;
-//		}
-//		if (accountToTransfer.getAccountStatus() == AccountStatus.INACTIVE) {
-//			transactionView.transactionMessages("The Account is INACTIVE!! Please Try With Different Account!!");
-//			return isTransactionSuccess;
-//		}
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache

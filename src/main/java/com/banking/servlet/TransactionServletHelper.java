@@ -5,18 +5,14 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.banking.controller.AccountController;
 import com.banking.controller.TransactionController;
 import com.banking.model.Account;
-import com.banking.model.AccountStatus;
 import com.banking.model.Transaction;
 import com.banking.utils.CustomException;
 
 public class TransactionServletHelper {
 
 	private static final TransactionController transactionController = new TransactionController();
-	private static final AccountController accountController = new AccountController();
-
 	public static void getTransactions(HttpServletRequest request, HttpServletResponse response) {
 		String accountNumber = request.getParameter("accountNumber");
 		String fromDate = request.getParameter("fromDate");
@@ -30,7 +26,7 @@ public class TransactionServletHelper {
 				request.setAttribute("transactionList", transactions);
 			}
 		} catch (CustomException e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			request.setAttribute("message", "An Error Occured, Try Again");
 		}
 	}
@@ -63,31 +59,8 @@ public class TransactionServletHelper {
 				request.setAttribute("failed", "Amount Withdraw Failed");
 			}
 		} catch (Exception e) {
-			//e.printStackTrace();
+			// e.printStackTrace();
 			request.setAttribute("failed", "Amount Withdraw Failed");
-		}
-	}
-
-	public static void updateAccountStatus(HttpServletRequest request, HttpServletResponse response) {
-		String accountNumber = request.getParameter("accountNumber");
-		String status = request.getParameter("status");
-
-		String oppositeStatus = status.equalsIgnoreCase("ACTIVE") ? AccountStatus.INACTIVE.name()
-				: AccountStatus.ACTIVE.name();
-
-		AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
-		int value = accountStatus.getValue();
-
-		try {
-			boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value);
-			if (isUpdated) {
-				request.setAttribute("updatedSuccess", "Account Status Updated");
-			} else {
-				request.setAttribute("updationFailed", "Account Updation Failed");
-			}
-		} catch (Exception e) {
-			//e.printStackTrace();
-			request.setAttribute("updationFailed", "Account Updation Failed");
 		}
 	}
 
@@ -106,7 +79,7 @@ public class TransactionServletHelper {
 			}
 		} catch (Exception e) {
 			request.setAttribute("failed", "Amount Transaction Failed");
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 	}
@@ -126,7 +99,7 @@ public class TransactionServletHelper {
 			}
 		} catch (Exception e) {
 			request.setAttribute("failed", "Amount Transaction Failed");
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 
