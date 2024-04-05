@@ -8,6 +8,7 @@ import com.banking.controller.UserController;
 import com.banking.model.AccountStatus;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
+import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.model.UserType;
 import com.banking.utils.CustomException;
@@ -28,13 +29,41 @@ public class UserServletHelper {
 			} else if (user.getStatus() == AccountStatus.INACTIVE) {
 				request.setAttribute("error", "Your Account is InActive");
 			} else {
-				request.getSession(true).setAttribute("currentUserId", user.getUserId());
-				request.getSession(true).setAttribute("user", user);
+				HttpSession session = request.getSession(true);
+				session.setAttribute("currentUserId", user.getUserId());
+				session.setAttribute("user", user);
+				boolean isSessionLogged = userController.logSessionData(getSessionObject(session,user.getUserId(),request));
+				if (!isSessionLogged) {
+					request.setAttribute("error", "A problem occured, Try after sometime");
+				}
 			}
 		} catch (CustomException e) {
+			System.out.println("In Exception");
 			request.setAttribute("error", "A problem occured, Try after sometime");
-			// e.printStackTrace();
 		}
+	}
+
+	private static SessionDetails getSessionObject(HttpSession session, int userId, HttpServletRequest request) {
+		SessionDetails sessionDetails = new SessionDetails();
+		sessionDetails.setSessionId(session.getId());
+		sessionDetails.setUserId(userId);
+		sessionDetails.setUserAgent(request.getHeader("User-Agent"));
+		sessionDetails.setLoginTime(System.currentTimeMillis());
+		return sessionDetails;
+	}
+
+	public static boolean updateLogoutSession(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
+		boolean isUpdated = false;
+		try {
+			if (session != null) {
+				int userId = (int) session.getAttribute("currentUserId");
+				isUpdated = userController.updateLogoutSession(session.getId(), userId);
+			}
+		} catch (Exception e) {
+			request.setAttribute("logoutError", "An problem occured while logout");
+		}
+		return isUpdated;
 	}
 
 	public static void getCustomerDetails(HttpServletRequest request, HttpServletResponse response) {
@@ -60,7 +89,7 @@ public class UserServletHelper {
 			if (session != null) {
 				Boolean isCustomer = (Boolean) session.getAttribute("customer");
 				Boolean isEmployee = (Boolean) session.getAttribute("employee");
-				int creatingUserId  = (int) session.getAttribute("currentUserId");
+				int creatingUserId = (int) session.getAttribute("currentUserId");
 
 				if (isCustomer != null && isCustomer) {
 					Customer customer = (Customer) request.getAttribute("customerObject");
@@ -91,7 +120,7 @@ public class UserServletHelper {
 		try {
 			boolean isUpdated;
 			if (session != null) {
-				int updatingUserId  = (int) session.getAttribute("currentUserId");
+				int updatingUserId = (int) session.getAttribute("currentUserId");
 				Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
 				isUpdated = userController.updateCustomer(customer, updatingUserId);
 				if (isUpdated) {
@@ -101,7 +130,6 @@ public class UserServletHelper {
 				}
 			}
 		} catch (CustomException e) {
-			// e.printStackTrace();
 			request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 		}
 	}
@@ -119,7 +147,20 @@ public class UserServletHelper {
 			}
 		} catch (CustomException e) {
 			request.setAttribute("failed", "Password Updation Failed");
-			// e.printStackTrace();
 		}
 	}
+
+	public static void getEmployeeBranch(HttpServletRequest request, HttpServletResponse response, int userId) {
+		try {
+			int branchId = userController.getEmployeeBranch(userId);
+			if (branchId != 0) {
+				request.getSession().setAttribute("employeeBranchId", branchId);
+			} else {
+				request.setAttribute("error", "A problem occured, Try after sometime");
+			}
+		} catch (Exception e) {
+			request.setAttribute("error", "A problem occured, Try after sometime");
+		}
+	}
+
 }

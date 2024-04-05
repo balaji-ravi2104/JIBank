@@ -155,7 +155,6 @@ public class MainFilter implements Filter {
 					}
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
 			}
 			break;
@@ -214,7 +213,6 @@ public class MainFilter implements Filter {
 				request.setAttribute("updatedCustomerObject", customer);
 
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 			}
 			break;
@@ -294,7 +292,6 @@ public class MainFilter implements Filter {
 					return;
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("message", "An Error Occured, Try Again");
 			}
 			break;
@@ -335,7 +332,6 @@ public class MainFilter implements Filter {
 
 				request.setAttribute("account", Account);
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("failed", "Amount Deposit Failed");
 			}
 			break;
@@ -382,7 +378,6 @@ public class MainFilter implements Filter {
 
 				request.setAttribute("account", Account);
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("failed", "Amount Withdraw Failed");
 			}
 			break;
@@ -427,14 +422,6 @@ public class MainFilter implements Filter {
 				if (receiverAccount == null) {
 					receiverAccount = AccountDao.getAccountDetail(accountNumber);
 				}
-
-				//boolean isAccountPresent = AccountDao.checkAccountExists(accountNumber, branchId);
-
-//				if (!isAccountPresent) {
-//					request.setAttribute("inactiveAccount", "Receiver Account not present in this Branch");
-//					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
-//					return;
-//				}
 				
 				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Receiver Account is InActive");
@@ -458,7 +445,6 @@ public class MainFilter implements Filter {
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
 				request.setAttribute("failed", "Amount Transaction Failed");
-				// e.printStackTrace();
 			}
 			break;
 		case "/otherBankTransfer":
@@ -503,7 +489,6 @@ public class MainFilter implements Filter {
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
 				request.setAttribute("failed", "Amount Transaction Failed");
-				// e.printStackTrace();
 			}
 			break;
 		case "/getStatements":
@@ -521,7 +506,6 @@ public class MainFilter implements Filter {
 					return;
 				}
 			} catch (Exception e) {
-				// e.printStackTrace();
 				request.setAttribute("message", "An Error Occured, Try Again");
 			}
 			break;
@@ -551,7 +535,6 @@ public class MainFilter implements Filter {
 				}
 			} catch (Exception e) {
 				request.setAttribute("failed", "Password Updation Failed");
-				// e.printStackTrace();
 			}
 			break;
 		}

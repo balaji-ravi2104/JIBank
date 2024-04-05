@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import com.banking.dao.UserDao;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
+import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.utils.CommonUtils.Field;
 import com.banking.utils.CustomException;
@@ -65,8 +66,12 @@ public class UserDaoImplementation implements UserDao {
 			+ "u.UserId = e.user_id WHERE u.TypeId = 2 ORDER BY e.branch_id;";
 	private static final String UPDATE_CUSTOMER_DETAILS = "UPDATE Users SET FirstName = ?,LastName = ?,Gender = ?,Email = ?,"
 			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ?,UpdatedBy = ?,ModifiedBy = ? WHERE UserId = ?;";
-	
+
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
+
+	private static final String LOG_SESSION = "INSERT INTO Session (SessionId, UserId, LoginTime,UserAgent) VALUES (?,?,?,?)";
+
+	private static final String UPDATE_LOGOUT_SESSION = "UPDATE Session SET LogoutTime = ? WHERE SessionId = ? AND UserId = ?";
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -89,7 +94,47 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean addCustomer(Customer customer,int creatingUserId) throws CustomException {
+	public boolean logSession(SessionDetails sessionDetails) throws CustomException {
+		boolean isSessionLogged = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(LOG_SESSION)) {
+
+			preparedStatement.setString(1, sessionDetails.getSessionId());
+			preparedStatement.setInt(2, sessionDetails.getUserId());
+			preparedStatement.setLong(3, sessionDetails.getLoginTime());
+			preparedStatement.setString(4, sessionDetails.getUserAgent());
+			
+			int rowsAffected = preparedStatement.executeUpdate();
+			isSessionLogged = (rowsAffected > 0);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CustomException("Error While Logging User Session Details");
+		}
+		return isSessionLogged;
+	}
+
+	@Override
+	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
+		boolean isSessionUpdated = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_LOGOUT_SESSION)) {
+
+			preparedStatement.setLong(1, System.currentTimeMillis());
+			preparedStatement.setString(2, sessionId);
+			preparedStatement.setInt(3, userId);
+
+			int rowsAffected = preparedStatement.executeUpdate();
+			isSessionUpdated = (rowsAffected > 0);
+
+		} catch (Exception e) {
+			throw new CustomException("Error While Logging User Session Details");
+		}
+		return isSessionUpdated;
+	}
+
+	@Override
+	public boolean addCustomer(Customer customer, int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isCustomerCreated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
@@ -129,7 +174,7 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean addEmployee(Employee newEmployee,int creatingUserId) throws CustomException {
+	public boolean addEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isCustomerCreated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
@@ -308,7 +353,7 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean updateCustomerDetails(Customer customer,int updatingUserId) throws CustomException {
+	public boolean updateCustomerDetails(Customer customer, int updatingUserId) throws CustomException {
 		boolean isUpdated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_CUSTOMER_DETAILS)) {
@@ -426,15 +471,15 @@ public class UserDaoImplementation implements UserDao {
 		try {
 			try (Connection connection = DatabaseConnection.getConnection();
 					PreparedStatement preparedStatement = connection.prepareStatement(GET_PASSWORD)) {
-				
+
 				preparedStatement.setInt(1, userId);
 				try (ResultSet resultSet = preparedStatement.executeQuery()) {
-					if(resultSet.next()) {
+					if (resultSet.next()) {
 						password = resultSet.getString(1);
 					}
 				}
 			}
-		}catch (SQLException e) {
+		} catch (SQLException e) {
 			throw new CustomException("Error While Reterving User Password", e);
 		}
 		return password;

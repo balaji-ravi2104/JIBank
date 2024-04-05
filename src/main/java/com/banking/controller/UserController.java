@@ -9,6 +9,7 @@ import com.banking.dao.UserDao;
 import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
+import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
@@ -249,5 +250,26 @@ public class UserController {
 			throw new CustomException("Error while Checking Employee Exists!!", e);
 		}
 		return isExixts;
+	}
+
+	public boolean logSessionData(SessionDetails sessionDetails) throws CustomException {
+		InputValidator.isNull(sessionDetails, "Session object cannot be Null");
+		boolean isSessionLogged = false;
+		try {
+			isSessionLogged = userDao.logSession(sessionDetails);
+		}catch (Exception e) {
+			throw new CustomException("Error while logging session details", e);
+		}
+		return isSessionLogged;
+	}
+
+	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
+		boolean isSessionUpdated = false;
+		try {
+			isSessionUpdated = userDao.updateLogoutSession(sessionId,userId);
+		}catch (Exception e) {
+			throw new CustomException("Error while updating logging session details", e);
+		}
+		return isSessionUpdated;
 	}
 }

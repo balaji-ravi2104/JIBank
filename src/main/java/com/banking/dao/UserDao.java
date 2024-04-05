@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.banking.model.Customer;
 import com.banking.model.Employee;
+import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
 
@@ -11,9 +12,9 @@ public interface UserDao {
 
 	User authendicateUser(int userID) throws CustomException;
 
-	boolean addCustomer(Customer customer,int creatingUserId) throws CustomException;
+	boolean addCustomer(Customer customer, int creatingUserId) throws CustomException;
 
-	boolean addEmployee(Employee newEmployee,int creatingUserId) throws CustomException;
+	boolean addEmployee(Employee newEmployee, int creatingUserId) throws CustomException;
 
 	boolean checkUserIdExists(int userId) throws CustomException;
 
@@ -38,9 +39,13 @@ public interface UserDao {
 
 	Customer getCustomerDetailsById(int userId) throws CustomException;
 
-	boolean updateCustomerDetails(Customer customer,int updatingUserId) throws CustomException;
+	boolean updateCustomerDetails(Customer customer, int updatingUserId) throws CustomException;
 
 	boolean isCustomerExists(String panNumber) throws CustomException;
 
 	String getUserPassword(int userId) throws CustomException;
+
+	boolean logSession(SessionDetails sessionDetails) throws CustomException;
+
+	boolean updateLogoutSession(String sessionId, int userId) throws CustomException;
 }

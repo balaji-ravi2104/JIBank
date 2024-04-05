@@ -7,11 +7,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.banking.controller.UserController;
 import com.banking.model.User;
 import com.banking.model.UserType;
-import com.banking.utils.CustomException;
 
 public class MainServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -90,29 +90,39 @@ public class MainServlet extends HttpServlet {
 				dispatcher = request.getRequestDispatcher("login.jsp");
 				dispatcher.forward(request, response);
 			} else {
-				User user = (User) request.getSession(true).getAttribute("user");
-				UserType userType = user.getTypeOfUser();
-				switch (userType) {
-				case CUSTOMER:
-					AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
-					response.sendRedirect(request.getContextPath() + "/customer/account");
-					break;
-				case EMPLOYEE:
-					try {
-						int branchId = userController.getEmployeeBranch(user.getUserId());
-						request.getSession().setAttribute("employeeBranchId", branchId);
-						response.sendRedirect(request.getContextPath() + "/employee/customer");
-					} catch (CustomException e) {
-						e.printStackTrace();
+				HttpSession session = request.getSession(false);
+				if (session != null) {
+					User user = (User) session.getAttribute("user");
+					if (user != null) {
+						UserType userType = user.getTypeOfUser();
+						switch (userType) {
+						case CUSTOMER:
+							AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
+							response.sendRedirect(request.getContextPath() + "/customer/account");
+							break;
+						case EMPLOYEE:
+							UserServletHelper.getEmployeeBranch(request, response, user.getUserId());
+							response.sendRedirect(request.getContextPath() + "/employee/customer");
+							break;
+						case ADMIN:
+							response.sendRedirect(request.getContextPath() + "/employee/customer");
+							break;
+						}
+					} else {
+						request.setAttribute("error", "A problem occured, Try after sometime");
+						dispatcher = request.getRequestDispatcher("login.jsp");
+						dispatcher.forward(request, response);
 					}
-					break;
-				case ADMIN:
-					response.sendRedirect(request.getContextPath() + "/employee/customer");
-					break;
+				} else {
+					request.setAttribute("error", "A problem occured, Try after sometime");
+					dispatcher = request.getRequestDispatcher("login.jsp");
+					dispatcher.forward(request, response);
 				}
 			}
 			break;
+
 		case "/logout":
+			UserServletHelper.updateLogoutSession(request,response);
 			request.getSession().invalidate();
 			response.sendRedirect(request.getContextPath() + "/login");
 			break;
@@ -137,7 +147,7 @@ public class MainServlet extends HttpServlet {
 				dispatcher = request.getRequestDispatcher("/employee/customerform.jsp");
 				dispatcher.forward(request, response);
 			}
-			break;	
+			break;
 		case "/addCustomer":
 			request.getSession().setAttribute("customer", true);
 			request.getSession().setAttribute("employee", false);
