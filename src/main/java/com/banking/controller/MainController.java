@@ -195,7 +195,7 @@ public class MainController {
 					log.info("Enter the description");
 					String description = mainView.promptStringInput();
 					boolean isAmountDeposited = transactionController.depositAmount(selectedAccount, amountToDeposite,
-							description);
+							description,user.getUserId());
 					if (isAmountDeposited) {
 						transactionView.transactionMessages("Amount Deposited Successfully!!");
 					} else {
@@ -213,7 +213,7 @@ public class MainController {
 					log.info("Enter the description");
 					description = mainView.promptStringInput();
 					boolean isAmountWithdrawed = transactionController.withdrawAmount(selectedAccount, amountToWithdraw,
-							description);
+							description,user.getUserId());
 					if (isAmountWithdrawed) {
 						transactionView.transactionMessages("Amount Withdrawed Successfully!!");
 					} else {
@@ -596,7 +596,7 @@ public class MainController {
 						break;
 					}
 					boolean isAmountDeposited = transactionController.depositAmount(accountToDeposite, amountToDeposite,
-							description);
+							description,user.getUserId());
 					if (isAmountDeposited) {
 						transactionView.transactionMessages("Amount Deposited Successfully!!");
 					} else {

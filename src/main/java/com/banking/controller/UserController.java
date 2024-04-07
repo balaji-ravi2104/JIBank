@@ -7,6 +7,7 @@ import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.UserDao;
 import com.banking.dao.implementation.UserDaoImplementation;
+import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.SessionDetails;
@@ -21,6 +22,7 @@ public class UserController {
 	private static final Logger log = Logger.getLogger(MainController.class.getName());
 	private UserDao userDao = new UserDaoImplementation();;
 	private BranchController branchController = new BranchController();
+	private AuditLogHandler auditLogHandler = new AuditLogHandler();
 	private UserView userView = new UserView();
 	private AccountController accountController;
 	public static final String cachePrefix = "Customer";
@@ -256,7 +258,7 @@ public class UserController {
 		InputValidator.isNull(sessionDetails, "Session object cannot be Null");
 		boolean isSessionLogged = false;
 		try {
-			isSessionLogged = userDao.logSession(sessionDetails);
+			isSessionLogged = auditLogHandler.logLoginSession(sessionDetails);
 		}catch (Exception e) {
 			throw new CustomException("Error while logging session details", e);
 		}
@@ -266,7 +268,7 @@ public class UserController {
 	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
 		boolean isSessionUpdated = false;
 		try {
-			isSessionUpdated = userDao.updateLogoutSession(sessionId,userId);
+			isSessionUpdated = auditLogHandler.updateLogoutSession(sessionId,userId);
 		}catch (Exception e) {
 			throw new CustomException("Error while updating logging session details", e);
 		}

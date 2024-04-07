@@ -17,6 +17,7 @@ import com.banking.utils.DateUtils;
 public class UserServletHelper {
 
 	private static UserController userController = new UserController();
+	
 
 	public static void loginUser(HttpServletRequest request, HttpServletResponse response) {
 		int userId = Integer.parseInt(request.getParameter("userId"));

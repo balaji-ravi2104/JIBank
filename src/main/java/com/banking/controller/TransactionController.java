@@ -31,7 +31,7 @@ public class TransactionController {
 		this.transactionView = new TransactionView();
 	}
 
-	public boolean depositAmount(Account account, double amountToDeposite,String description) throws CustomException {
+	public boolean depositAmount(Account account, double amountToDeposite, String description,int userId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isDepositeSuccess = false;
 
@@ -43,14 +43,14 @@ public class TransactionController {
 		}
 
 		try {
-			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite,description);
+			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite, description,userId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
 		return isDepositeSuccess;
 	}
 
-	public boolean withdrawAmount(Account account, double amountToWithdraw,String description) throws CustomException {
+	public boolean withdrawAmount(Account account, double amountToWithdraw, String description, int userId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isWithdrawSuccess = false;
 
@@ -62,7 +62,7 @@ public class TransactionController {
 		}
 
 		try {
-			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw,description);
+			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw, description,userId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
@@ -171,11 +171,11 @@ public class TransactionController {
 		return transactions;
 	}
 
-	public List<Transaction> getTransactions(String accountNumber, String startDate, String endDate)
+	public List<Transaction> getTransactions(String accountNumber, String startDate, String endDate, int userId)
 			throws CustomException {
 		List<Transaction> transactions = null;
 		try {
-			transactions = transactionDao.getCustomerTransactions(accountNumber, startDate, endDate);
+			transactions = transactionDao.getCustomerTransactions(accountNumber, startDate, endDate,userId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Getting Transaction History!!!", e);
 		}

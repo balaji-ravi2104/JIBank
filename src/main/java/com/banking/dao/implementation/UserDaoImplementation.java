@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.banking.dao.UserDao;
+import com.banking.logservice.AuditLogHandler;
+import com.banking.model.AuditlogActions;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
-import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.utils.CommonUtils.Field;
 import com.banking.utils.CustomException;
@@ -46,7 +47,7 @@ public class UserDaoImplementation implements UserDao {
 	private static final String GET_CUSTOMER_DETAIL_BY_ID = "SELECT u.UserId, u.FirstName, u.LastName, u.Gender, "
 			+ "u.Email,u.ContactNumber,u.Address,u.DateOfBirth,u.StatusId,u.TypeId From Users u WHERE u.UserId = ?";
 
-	private static final String UPDATE_PASSWORD = "UPDATE Users SET Password = ? WHERE UserId = ?;";
+	private static final String UPDATE_PASSWORD = "UPDATE Users SET Password = ?, UpdatedBy = ?, ModifiedBy = ? WHERE UserId = ?;";
 
 	private static final String CHECK_EMPLOYEE_ID_EXISTS_QUERY = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? AND "
 			+ "u.TypeId = 2;";
@@ -69,9 +70,7 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
-	private static final String LOG_SESSION = "INSERT INTO Session (SessionId, UserId, LoginTime,UserAgent) VALUES (?,?,?,?)";
-
-	private static final String UPDATE_LOGOUT_SESSION = "UPDATE Session SET LogoutTime = ? WHERE SessionId = ? AND UserId = ?";
+	private static AuditLogHandler auditLogHandler = new AuditLogHandler();
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -91,46 +90,6 @@ public class UserDaoImplementation implements UserDao {
 			throw new CustomException("Error While Reterving User Details", e);
 		}
 		return user;
-	}
-
-	@Override
-	public boolean logSession(SessionDetails sessionDetails) throws CustomException {
-		boolean isSessionLogged = false;
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(LOG_SESSION)) {
-
-			preparedStatement.setString(1, sessionDetails.getSessionId());
-			preparedStatement.setInt(2, sessionDetails.getUserId());
-			preparedStatement.setLong(3, sessionDetails.getLoginTime());
-			preparedStatement.setString(4, sessionDetails.getUserAgent());
-			
-			int rowsAffected = preparedStatement.executeUpdate();
-			isSessionLogged = (rowsAffected > 0);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new CustomException("Error While Logging User Session Details");
-		}
-		return isSessionLogged;
-	}
-
-	@Override
-	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
-		boolean isSessionUpdated = false;
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_LOGOUT_SESSION)) {
-
-			preparedStatement.setLong(1, System.currentTimeMillis());
-			preparedStatement.setString(2, sessionId);
-			preparedStatement.setInt(3, userId);
-
-			int rowsAffected = preparedStatement.executeUpdate();
-			isSessionUpdated = (rowsAffected > 0);
-
-		} catch (Exception e) {
-			throw new CustomException("Error While Logging User Session Details");
-		}
-		return isSessionUpdated;
 	}
 
 	@Override
@@ -165,6 +124,9 @@ public class UserDaoImplementation implements UserDao {
 				int rowsAffected1 = addCustomerPanAadhar(userId, customer);
 				if (rowsAffected1 > 0) {
 					isCustomerCreated = true;
+					auditLogHandler.logAuditTable(userId, AuditlogActions.CREATE.getValue(), System.currentTimeMillis(),
+							creatingUserId,
+							String.format("User id %d Created New Customer With Id of %d", creatingUserId, userId));
 				}
 			}
 		} catch (SQLException e) {
@@ -205,6 +167,9 @@ public class UserDaoImplementation implements UserDao {
 				rowsAffected = addEmployeeToBranch(userId, newEmployee);
 				if (rowsAffected > 0) {
 					isCustomerCreated = true;
+					auditLogHandler.logAuditTable(userId, AuditlogActions.CREATE.getValue(), System.currentTimeMillis(),
+							creatingUserId,
+							String.format("User id %d Created New Employee With Id of %d", creatingUserId, userId));
 				}
 			}
 		} catch (SQLException e) {
@@ -372,7 +337,12 @@ public class UserDaoImplementation implements UserDao {
 
 			int rowsAffected = preparedStatement.executeUpdate();
 
-			isUpdated = (rowsAffected > 0);
+			if (rowsAffected > 0) {
+				isUpdated = true;
+				auditLogHandler.logAuditTable(customer.getUserId(), AuditlogActions.UPDATE.getValue(),
+						System.currentTimeMillis(), updatingUserId, String.format(
+								"User id %d Updates the Details of User Id %d", updatingUserId, customer.getUserId()));
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error While Updating User Details", e);
 		}
@@ -382,17 +352,27 @@ public class UserDaoImplementation implements UserDao {
 	@Override
 	public boolean updatePassword(int userId, String password) throws CustomException {
 		InputValidator.isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
+		boolean isPasswordUpdated = false;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PASSWORD)) {
 
 			preparedStatement.setString(1, password);
-			preparedStatement.setInt(2, userId);
+			preparedStatement.setLong(2, System.currentTimeMillis());
+			preparedStatement.setInt(3, userId);
+			preparedStatement.setInt(4, userId);
 
-			return preparedStatement.executeUpdate() > 0;
+			int rowsAffected = preparedStatement.executeUpdate();
+
+			if (rowsAffected > 0) {
+				isPasswordUpdated = true;
+				auditLogHandler.logAuditTable(userId, AuditlogActions.UPDATE.getValue(), System.currentTimeMillis(),
+						userId, String.format("User id %d Updated the Account login Password", userId));
+			}
 
 		} catch (SQLException e) {
 			throw new CustomException("Error While Updating User Details", e);
 		}
+		return isPasswordUpdated;
 	}
 
 	@Override

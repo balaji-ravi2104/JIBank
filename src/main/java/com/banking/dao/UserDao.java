@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.banking.model.Customer;
 import com.banking.model.Employee;
-import com.banking.model.SessionDetails;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
 
@@ -44,8 +43,4 @@ public interface UserDao {
 	boolean isCustomerExists(String panNumber) throws CustomException;
 
 	String getUserPassword(int userId) throws CustomException;
-
-	boolean logSession(SessionDetails sessionDetails) throws CustomException;
-
-	boolean updateLogoutSession(String sessionId, int userId) throws CustomException;
 }

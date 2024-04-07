@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.banking.controller.TransactionController;
 import com.banking.model.Account;
@@ -13,30 +14,39 @@ import com.banking.utils.CustomException;
 public class TransactionServletHelper {
 
 	private static final TransactionController transactionController = new TransactionController();
+
 	public static void getTransactions(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
 		String accountNumber = request.getParameter("accountNumber");
 		String fromDate = request.getParameter("fromDate");
 		String toDate = request.getParameter("toDate");
-
+		int userId = 0;
+		if (session != null) {
+			userId = (int) session.getAttribute("currentUserId");
+		}
 		try {
-			List<Transaction> transactions = transactionController.getTransactions(accountNumber, fromDate, toDate);
+			List<Transaction> transactions = transactionController.getTransactions(accountNumber, fromDate, toDate,userId);
 			if (transactions.isEmpty() || transactions == null) {
 				request.setAttribute("message", "No Transaction Found");
 			} else {
 				request.setAttribute("transactionList", transactions);
 			}
 		} catch (CustomException e) {
-			// e.printStackTrace();
 			request.setAttribute("message", "An Error Occured, Try Again");
 		}
 	}
 
 	public static void deposit(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(false);
 		Account account = (Account) request.getAttribute("account");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String description = request.getParameter("description");
+		int userId = 0;
+		if (session != null) {
+			userId = (int) session.getAttribute("currentUserId");
+		}
 		try {
-			boolean isAmountDeposited = transactionController.depositAmount(account, amount, description);
+			boolean isAmountDeposited = transactionController.depositAmount(account, amount, description,userId);
 			if (isAmountDeposited) {
 				request.setAttribute("success", "Amount Deposited Successfully");
 			} else {
@@ -51,8 +61,13 @@ public class TransactionServletHelper {
 		Account account = (Account) request.getAttribute("account");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String description = request.getParameter("description");
+		HttpSession session = request.getSession(false);
+		int userId = 0;
+		if (session != null) {
+			userId = (int) session.getAttribute("currentUserId");
+		}
 		try {
-			boolean isAmountDeposited = transactionController.withdrawAmount(account, amount, description);
+			boolean isAmountDeposited = transactionController.withdrawAmount(account, amount, description,userId);
 			if (isAmountDeposited) {
 				request.setAttribute("success", "Amount Withdraw Successfully");
 			} else {

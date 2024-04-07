@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.banking.dao.AccountDao;
+import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
+import com.banking.model.AuditlogActions;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 import com.banking.utils.ErrorMessages;
@@ -39,9 +41,11 @@ public class AccountDaoImplementation implements AccountDao {
 	private static final String CUSTOMER_ALREADY_HAS_ACCOUNT_TYPE = "SELECT COUNT(*) TypeId FROM Accounts WHERE user_id = ? and branch_id = ? and Typeid = ?;";
 
 	private static final String IS_ACCOUNT_PRESENT = "SELECT COUNT(*) AS account_count FROM Accounts WHERE account_number = ?;";
+	
+	private AuditLogHandler auditLogHandler = new AuditLogHandler();
 
 	@Override
-	public boolean createAccount(Account account, boolean isPrimary,int creatingUserId) throws CustomException {
+	public boolean createAccount(Account account, boolean isPrimary, int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		String accountNumber = String.format("%04d%08d", account.getBranchId(),
@@ -58,7 +62,13 @@ public class AccountDaoImplementation implements AccountDao {
 			preparedStatement.setInt(8, creatingUserId);
 
 			int rowsAffected = preparedStatement.executeUpdate();
-			isAccountCreated = rowsAffected > 0;
+			if (rowsAffected > 0) {
+				isAccountCreated = true;
+				auditLogHandler.logAuditTable(account.getUserId(), AuditlogActions.CREATE.getValue(),
+						System.currentTimeMillis(), creatingUserId,
+						String.format("User Id %d Created the new Account for User Id %d ", creatingUserId,
+								account.getUserId()));
+			}
 
 		} catch (SQLException e) {
 			throw new CustomException("Error While Creating new Account!!!", e);
@@ -188,7 +198,7 @@ public class AccountDaoImplementation implements AccountDao {
 	@Override
 	public boolean isAccountPresent(String accountNumber) throws CustomException {
 		boolean isAccountPresent = false;
-		//System.out.println(accountNumber);
+		// System.out.println(accountNumber);
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(IS_ACCOUNT_PRESENT)) {
 
@@ -241,7 +251,7 @@ public class AccountDaoImplementation implements AccountDao {
 	}
 
 	@Override
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status,int updatingUserId)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status, int updatingUserId)
 			throws CustomException {
 		boolean isAccountStatusChanged = false;
 		try (Connection connection = DatabaseConnection.getConnection();
@@ -251,7 +261,13 @@ public class AccountDaoImplementation implements AccountDao {
 			preparedStatement.setInt(3, updatingUserId);
 			preparedStatement.setString(4, accountNumber);
 			int rowsAffected = preparedStatement.executeUpdate();
-			isAccountStatusChanged = (rowsAffected > 0);
+			if (rowsAffected > 0) {
+				isAccountStatusChanged = true;
+				auditLogHandler.logAuditTable(getAccountDetail(accountNumber).getUserId(),
+						AuditlogActions.UPDATE.getValue(), System.currentTimeMillis(), updatingUserId,
+						String.format("User Id %d Updated the Account %s of User Id %d ", updatingUserId,accountNumber,
+								getAccountDetail(accountNumber).getUserId()));
+			}
 		} catch (SQLException e) {
 			throw new CustomException("Error While Updating Bank Account Status", e);
 		}
