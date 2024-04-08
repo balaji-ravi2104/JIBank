@@ -43,12 +43,7 @@ public class UserController {
 		InputValidator.isNull(password, "Password Cannot be Empty or Null!!!");
 		User user = null;
 		try {
-			if (isUserExists(userId)) {
-				String userPassword = userDao.getUserPassword(userId);
-				if (!userPassword.equals(password)) {
-					return user;
-				}
-			}else {
+			if (!isUserExists(userId) || !userDao.getUserPassword(userId).equals(password)) {
 				return user;
 			}
 			user = userDao.authendicateUser(userId);
@@ -58,22 +53,22 @@ public class UserController {
 		return user;
 	}
 
-	public boolean registerNewCustomer(Customer customer,int creatingUserId) throws CustomException {
+	public boolean registerNewCustomer(Customer customer, int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isRegistred = false;
 		try {
-			isRegistred = userDao.addCustomer(customer,creatingUserId);
+			isRegistred = userDao.addCustomer(customer, creatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
 		return isRegistred;
 	}
 
-	public boolean registerNewEmployee(Employee newEmployee,int creatingUserId) throws CustomException {
+	public boolean registerNewEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isRegistred = false;
 		try {
-			isRegistred = userDao.addEmployee(newEmployee,creatingUserId);
+			isRegistred = userDao.addEmployee(newEmployee, creatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
@@ -175,14 +170,14 @@ public class UserController {
 		return isExists;
 	}
 
-	public boolean updateCustomer(Customer customer,int updatingUserId) throws CustomException {
+	public boolean updateCustomer(Customer customer, int updatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isUpdated = false;
 		if (userCache.get(cachePrefix + customer.getUserId()) != null) {
 			userCache.rem(cachePrefix + customer.getUserId());
 		}
 		try {
-			isUpdated = userDao.updateCustomerDetails(customer,updatingUserId);
+			isUpdated = userDao.updateCustomerDetails(customer, updatingUserId);
 		} catch (Exception e) {
 			throw new CustomException("Error while Updation Customer Details", e);
 		}
@@ -235,7 +230,6 @@ public class UserController {
 		}
 	}
 
-
 	public boolean validateUserIdAndBranchId(int userId, int branchId) throws CustomException {
 		boolean isValidId = isUserExistsInTheBranch(userId, branchId);
 		if (!isValidId) {
@@ -259,7 +253,7 @@ public class UserController {
 		boolean isSessionLogged = false;
 		try {
 			isSessionLogged = auditLogHandler.logLoginSession(sessionDetails);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			throw new CustomException("Error while logging session details", e);
 		}
 		return isSessionLogged;
@@ -268,8 +262,8 @@ public class UserController {
 	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
 		boolean isSessionUpdated = false;
 		try {
-			isSessionUpdated = auditLogHandler.updateLogoutSession(sessionId,userId);
-		}catch (Exception e) {
+			isSessionUpdated = auditLogHandler.updateLogoutSession(sessionId, userId);
+		} catch (Exception e) {
 			throw new CustomException("Error while updating logging session details", e);
 		}
 		return isSessionUpdated;

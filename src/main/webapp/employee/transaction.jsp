@@ -102,7 +102,7 @@
 						<th>S.No</th>
 						<th>Transaction Id</th>
 						<th>Date</th>
-						<th>To Account</th>
+						<th>Transacted Account</th>
 						<th>Type</th>
 						<th>Amount</th>
 						<th>Balance</th>
