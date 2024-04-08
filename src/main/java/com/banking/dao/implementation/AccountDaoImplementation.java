@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import com.banking.dao.AccountDao;
 import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
+import com.banking.model.AuditLog;
 import com.banking.model.AuditlogActions;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
@@ -41,8 +42,7 @@ public class AccountDaoImplementation implements AccountDao {
 	private static final String CUSTOMER_ALREADY_HAS_ACCOUNT_TYPE = "SELECT COUNT(*) TypeId FROM Accounts WHERE user_id = ? and branch_id = ? and Typeid = ?;";
 
 	private static final String IS_ACCOUNT_PRESENT = "SELECT COUNT(*) AS account_count FROM Accounts WHERE account_number = ?;";
-	
-	private AuditLogHandler auditLogHandler = new AuditLogHandler();
+
 
 	@Override
 	public boolean createAccount(Account account, boolean isPrimary, int creatingUserId) throws CustomException {
@@ -64,10 +64,11 @@ public class AccountDaoImplementation implements AccountDao {
 			int rowsAffected = preparedStatement.executeUpdate();
 			if (rowsAffected > 0) {
 				isAccountCreated = true;
-				auditLogHandler.logAuditTable(account.getUserId(), AuditlogActions.CREATE.getValue(),
+				AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.CREATE,
 						System.currentTimeMillis(), creatingUserId,
 						String.format("User Id %d Created the new Account for User Id %d ", creatingUserId,
 								account.getUserId()));
+				AuditLogHandler.addAuditData(auditLog);
 			}
 
 		} catch (SQLException e) {
@@ -263,10 +264,11 @@ public class AccountDaoImplementation implements AccountDao {
 			int rowsAffected = preparedStatement.executeUpdate();
 			if (rowsAffected > 0) {
 				isAccountStatusChanged = true;
-				auditLogHandler.logAuditTable(getAccountDetail(accountNumber).getUserId(),
-						AuditlogActions.UPDATE.getValue(), System.currentTimeMillis(), updatingUserId,
-						String.format("User Id %d Updated the Account %s of User Id %d ", updatingUserId,accountNumber,
+				AuditLog auditLog = new AuditLog(getAccountDetail(accountNumber).getUserId(),
+						AuditlogActions.UPDATE, System.currentTimeMillis(), updatingUserId,
+						String.format("User Id %d Updated the Account %s of User Id %d ", updatingUserId, accountNumber,
 								getAccountDetail(accountNumber).getUserId()));
+				AuditLogHandler.addAuditData(auditLog);
 			}
 		} catch (SQLException e) {
 			throw new CustomException("Error While Updating Bank Account Status", e);

@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import com.banking.dao.UserDao;
 import com.banking.logservice.AuditLogHandler;
+import com.banking.model.AuditLog;
 import com.banking.model.AuditlogActions;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
@@ -70,7 +71,6 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
-	private static AuditLogHandler auditLogHandler = new AuditLogHandler();
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -124,9 +124,11 @@ public class UserDaoImplementation implements UserDao {
 				int rowsAffected1 = addCustomerPanAadhar(userId, customer);
 				if (rowsAffected1 > 0) {
 					isCustomerCreated = true;
-					auditLogHandler.logAuditTable(userId, AuditlogActions.CREATE.getValue(), System.currentTimeMillis(),
+					AuditLog auditLog = new AuditLog(userId, AuditlogActions.CREATE, System.currentTimeMillis(),
 							creatingUserId,
 							String.format("User id %d Created New Customer With Id of %d", creatingUserId, userId));
+
+					AuditLogHandler.addAuditData(auditLog);
 				}
 			}
 		} catch (SQLException e) {
@@ -167,9 +169,12 @@ public class UserDaoImplementation implements UserDao {
 				rowsAffected = addEmployeeToBranch(userId, newEmployee);
 				if (rowsAffected > 0) {
 					isCustomerCreated = true;
-					auditLogHandler.logAuditTable(userId, AuditlogActions.CREATE.getValue(), System.currentTimeMillis(),
+
+					AuditLog auditLog = new AuditLog(userId, AuditlogActions.CREATE, System.currentTimeMillis(),
 							creatingUserId,
 							String.format("User id %d Created New Employee With Id of %d", creatingUserId, userId));
+
+					AuditLogHandler.addAuditData(auditLog);
 				}
 			}
 		} catch (SQLException e) {
@@ -339,9 +344,11 @@ public class UserDaoImplementation implements UserDao {
 
 			if (rowsAffected > 0) {
 				isUpdated = true;
-				auditLogHandler.logAuditTable(customer.getUserId(), AuditlogActions.UPDATE.getValue(),
+				AuditLog auditLog = new AuditLog(customer.getUserId(), AuditlogActions.UPDATE,
 						System.currentTimeMillis(), updatingUserId, String.format(
 								"User id %d Updates the Details of User Id %d", updatingUserId, customer.getUserId()));
+
+				AuditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
 			throw new CustomException("Error While Updating User Details", e);
@@ -365,8 +372,10 @@ public class UserDaoImplementation implements UserDao {
 
 			if (rowsAffected > 0) {
 				isPasswordUpdated = true;
-				auditLogHandler.logAuditTable(userId, AuditlogActions.UPDATE.getValue(), System.currentTimeMillis(),
-						userId, String.format("User id %d Updated the Account login Password", userId));
+				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(), userId,
+						String.format("User id %d Updated the Account login Password", userId));
+
+				AuditLogHandler.addAuditData(auditLog);
 			}
 
 		} catch (SQLException e) {

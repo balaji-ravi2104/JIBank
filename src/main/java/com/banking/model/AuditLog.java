@@ -6,6 +6,15 @@ public class AuditLog {
 	private long createdTime;
 	private int userId;
 	private String description;
+	
+	public AuditLog(int targetId, AuditlogActions auditlogActions, long createdTime, int userId, String description) {
+		super();
+		this.targetId = targetId;
+		this.auditlogActions = auditlogActions;
+		this.createdTime = createdTime;
+		this.userId = userId;
+		this.description = description;
+	}
 
 	public int getTargetId() {
 		return targetId;

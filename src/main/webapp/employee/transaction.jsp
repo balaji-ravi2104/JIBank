@@ -181,11 +181,11 @@
 						<c:choose>
 							<c:when test="${not empty success}">
 								<input type="number" id="amount" name="amount" value=""
-									placeholder="Enter the Amount" required>
+									placeholder="Enter the Amount" step="0.01" required>
 							</c:when>
 							<c:otherwise>
 								<input type="number" id="amount" name="amount"
-									value="${param.amount}" placeholder="Enter the Amount" required>
+									value="${param.amount}" placeholder="Enter the Amount" step="0.01" required>
 							</c:otherwise>
 						</c:choose>
 						<c:if test="${not empty invalidBalance}">

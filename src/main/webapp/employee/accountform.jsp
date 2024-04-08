@@ -106,11 +106,11 @@
 					<c:choose>
 						<c:when test="${not empty success}">
 							<input type="number" name="balance"
-								placeholder="Enter the Balance" value="" required>
+								placeholder="Enter the Balance" value="" step="0.01" required>
 						</c:when>
 						<c:otherwise>
 							<input type="number" name="balance"
-								placeholder="Enter the Balance" value="${param.balance}"
+								placeholder="Enter the Balance" value="${param.balance}" step="0.01"
 								required>
 						</c:otherwise>
 					</c:choose>

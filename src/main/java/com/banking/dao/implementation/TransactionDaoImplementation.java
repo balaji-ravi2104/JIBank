@@ -13,6 +13,7 @@ import com.banking.dao.AccountDao;
 import com.banking.dao.TransactionDao;
 import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
+import com.banking.model.AuditLog;
 import com.banking.model.AuditlogActions;
 import com.banking.model.Transaction;
 import com.banking.model.TransactionStatus;
@@ -47,8 +48,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 			+ "t.transacted_account_number, t.TypeId, t.transaction_amount,t.balance, t.transaction_date, t.remark, "
 			+ "t.statusId,t.reference_id FROM Transaction t WHERE t.viewer_account_number = ? AND "
 			+ "FROM_UNIXTIME(transaction_date / 1000) BETWEEN ? AND ? ORDER BY t.transaction_id DESC;";
-
-	private AuditLogHandler auditLogHandler = new AuditLogHandler();
+	
 	private AccountDao accountDao = new AccountDaoImplementation();
 
 	@Override
@@ -69,10 +69,12 @@ public class TransactionDaoImplementation implements TransactionDao {
 						account.getUserId() + System.currentTimeMillis());
 				if (isAmountDepositedAndLoggedInTransaction) {
 					connection.commit();
-					auditLogHandler.logAuditTable(account.getUserId(), AuditlogActions.DEPOSIT.getValue(),
+
+					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.DEPOSIT,
 							System.currentTimeMillis(), userId,
 							String.format("User Id %d Deposited Amount to the Account %s for User Id %d ", userId,
 									account.getAccountNumber(), account.getUserId()));
+					AuditLogHandler.addAuditData(auditLog);
 				} else {
 					connection.rollback();
 				}
@@ -101,10 +103,11 @@ public class TransactionDaoImplementation implements TransactionDao {
 						account.getUserId() + System.currentTimeMillis());
 				if (isAmountWithdrawnAndLoggedInTransaction) {
 					connection.commit();
-					auditLogHandler.logAuditTable(account.getUserId(), AuditlogActions.WITHDRAW.getValue(),
+					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.WITHDRAW,
 							System.currentTimeMillis(), userId,
 							String.format("User Id %d Withdraw Amount from the Account %s for User Id %d ", userId,
 									account.getAccountNumber(), account.getUserId()));
+					AuditLogHandler.addAuditData(auditLog);
 				} else {
 					connection.rollback();
 				}
@@ -148,12 +151,12 @@ public class TransactionDaoImplementation implements TransactionDao {
 					if (isTransactionLoggedWithdraw && isTransactionLoggedDeposit) {
 						connection.commit();
 						isTransferSuccess = true;
-						auditLogHandler.logAuditTable(accountFromTransfer.getUserId(),
-								AuditlogActions.TRANSFER.getValue(), System.currentTimeMillis(),
-								accountFromTransfer.getUserId(),
+						AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+								System.currentTimeMillis(), accountFromTransfer.getUserId(),
 								String.format("User Id %d Transfer Amount from Account %s to Account %s ",
 										accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
 										accountToTransfer.getAccountNumber()));
+						AuditLogHandler.addAuditData(auditLog);
 					} else {
 						connection.rollback();
 					}
@@ -193,12 +196,12 @@ public class TransactionDaoImplementation implements TransactionDao {
 				accountFromTransfer.setBalance(newBalanceOfFromAccount);
 				if (isTransferSuccess) {
 					connection.commit();
-					auditLogHandler.logAuditTable(accountFromTransfer.getUserId(),
-							AuditlogActions.TRANSFER.getValue(), System.currentTimeMillis(),
-							accountFromTransfer.getUserId(),
+					AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+							System.currentTimeMillis(), accountFromTransfer.getUserId(),
 							String.format("User Id %d Transfer Amount from Account %s to Account %s ",
 									accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
 									accountNumberToTransfer));
+					AuditLogHandler.addAuditData(auditLog);
 				} else {
 					connection.rollback();
 				}
@@ -280,9 +283,12 @@ public class TransactionDaoImplementation implements TransactionDao {
 				getCustomerTransactionDetail(resultSet, historyList);
 
 				int targetUserId = accountDao.getAccountDetail(accountNumber).getUserId();
-				auditLogHandler.logAuditTable(targetUserId, AuditlogActions.VIEW.getValue(), System.currentTimeMillis(),
-						userId, String.format("User Id %d Viewed the Transaction of Account %s of User Id %d ", userId,
+
+				AuditLog auditLog = new AuditLog(targetUserId, AuditlogActions.VIEW, System.currentTimeMillis(), userId,
+						String.format("User Id %d Viewed the Transaction of Account %s of User Id %d ", userId,
 								accountNumber, targetUserId));
+
+				AuditLogHandler.addAuditData(auditLog);
 			}
 		} catch (SQLException e) {
 			// e.printStackTrace();
