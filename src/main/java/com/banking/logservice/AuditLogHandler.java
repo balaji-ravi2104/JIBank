@@ -9,7 +9,7 @@ import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 
 public class AuditLogHandler {
-	private static final String LOG_SESSION = "INSERT INTO Session (SessionKey, UserId, LoginTime,	) VALUES (?,?,?,?)";
+	private static final String LOG_SESSION = "INSERT INTO Session (SessionKey, UserId, LoginTime,UserAgent) VALUES (?,?,?,?)";
 	
 	private static final String UPDATE_LOGOUT_SESSION = "UPDATE Session SET LogoutTime = ? WHERE SessionKey = ? AND UserId = ?";
 	
@@ -34,7 +34,7 @@ public class AuditLogHandler {
 			}
 
 		} catch (Exception e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			throw new CustomException("Error While Logging User Session Details");
 		}
 		return isSessionLogged;

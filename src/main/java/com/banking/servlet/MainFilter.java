@@ -385,11 +385,17 @@ public class MainFilter implements Filter {
 			try {
 				String accountNumber = request.getParameter("accountNumber");
 				double amount = Double.parseDouble(request.getParameter("amount"));
-				//int branchId = Integer.parseInt(request.getParameter("branchId"));
+				// int branchId = Integer.parseInt(request.getParameter("branchId"));
 				boolean flag = false;
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
+
+				if (senderAccount == null) {
+					request.setAttribute("inactiveAccount", "You don't have Any Accounts");
+					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
 
 				if (senderAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Your Account is InActive");
@@ -422,7 +428,7 @@ public class MainFilter implements Filter {
 				if (receiverAccount == null) {
 					receiverAccount = AccountDao.getAccountDetail(accountNumber);
 				}
-				
+
 				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Receiver Account is InActive");
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
@@ -455,6 +461,12 @@ public class MainFilter implements Filter {
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
+
+				if (senderAccount == null) {
+					request.setAttribute("inactiveAccount", "You don't have Any Accounts");
+					httpRequest.getRequestDispatcher("/transferOutSideBank").forward(httpRequest, httpResponse);
+					return;
+				}
 
 				if (senderAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Your Account is InActive");
@@ -499,6 +511,15 @@ public class MainFilter implements Filter {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 				Date fromDateObj = sdf.parse(fromDate);
 				Date toDateObj = sdf.parse(toDate);
+				HttpSession session = ((HttpServletRequest) request).getSession(false);
+
+				Account senderAccount = (Account) session.getAttribute("currentAccount");
+
+				if (senderAccount == null) {
+					request.setAttribute("message", "You don't have Any Accounts");
+					httpRequest.getRequestDispatcher("/customer/statement.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
 
 				if (fromDateObj.after(toDateObj)) {
 					request.setAttribute("dateError", "From date should be less then To date");

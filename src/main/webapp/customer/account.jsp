@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath()+"/login");
+		response.sendRedirect(request.getContextPath() + "/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -32,10 +32,8 @@
 		<div>
 			<li><a href="<%=request.getContextPath()%>/customer/account"
 				class="active">Accounts</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
-			<li><a
-				href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
 			<li><a href="<%=request.getContextPath()%>/customer/profile">Profile</a></li>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
@@ -56,48 +54,55 @@
 					alt="Account Image">
 			</div>
 			<div id="account-details">
-				<div class="account-logo">
-					<img src="<%=request.getContextPath()%>/images/AccountLogo.png"
-						alt="Account Logo">
-				</div>
-				<table>
-					<tr>
-						<th>Account Id</th>
-						<td>${currentAccount.accountId}</td>
-					</tr>
-					<tr>
-						<th>Account Number</th>
-						<td>${currentAccount.accountNumber}</td>
-					</tr>
-					<tr>
-						<th>Branch Id</th>
-						<td>${currentAccount.branchId}</td>
-					</tr>
-					<tr>
-						<th>Account Type</th>
-						<td>${currentAccount.accountType}</td>
-					</tr>
-					<tr>
-						<th>Balance</th>
-						<td>${currentAccount.balance}</td>
-					</tr>
-					<tr>
-						<th>Primary Account</th>
-						<td>${currentAccount.primaryAccount ?'Yes' :'No'}</td>
-					</tr>
-					<tr>
-						<th>Account Status</th>
-						<td>${currentAccount.accountStatus}</td>
-					</tr>
-				</table>
-				<c:if test="${accountsList.size()>1}">
-					<div class="Switch-account-button">
-						<form action="<%=request.getContextPath()%>/switchAccount"
-							method="post">
-							<button>Switch Account</button>
-						</form>
-					</div>
-				</c:if>
+				<c:choose>
+					<c:when test="${not empty currentAccount}">
+						<div class="account-logo">
+							<img src="<%=request.getContextPath()%>/images/AccountLogo.png"
+								alt="Account Logo">
+						</div>
+						<table>
+							<tr>
+								<th>Account Id</th>
+								<td>${currentAccount.accountId}</td>
+							</tr>
+							<tr>
+								<th>Account Number</th>
+								<td>${currentAccount.accountNumber}</td>
+							</tr>
+							<tr>
+								<th>Branch Id</th>
+								<td>${currentAccount.branchId}</td>
+							</tr>
+							<tr>
+								<th>Account Type</th>
+								<td>${currentAccount.accountType}</td>
+							</tr>
+							<tr>
+								<th>Balance</th>
+								<td>${currentAccount.balance}</td>
+							</tr>
+							<tr>
+								<th>Primary Account</th>
+								<td>${currentAccount.primaryAccount ?'Yes' :'No'}</td>
+							</tr>
+							<tr>
+								<th>Account Status</th>
+								<td>${currentAccount.accountStatus}</td>
+							</tr>
+						</table>
+						<c:if test="${accountsList.size()>1}">
+							<div class="Switch-account-button">
+								<form action="<%=request.getContextPath()%>/switchAccount"
+									method="post">
+									<button>Switch Account</button>
+								</form>
+							</div>
+						</c:if>
+					</c:when>
+					<c:otherwise>
+						<h1>No Account Found</h1>
+					</c:otherwise>
+				</c:choose>
 			</div>
 		</div>
 	</div>

@@ -39,6 +39,7 @@ public class UserServletHelper {
 				}
 			}
 		} catch (CustomException e) {
+			//e.printStackTrace();
 			System.out.println("In Exception");
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
