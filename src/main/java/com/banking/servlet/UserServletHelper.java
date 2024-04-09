@@ -1,5 +1,7 @@
 package com.banking.servlet;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -19,7 +21,7 @@ public class UserServletHelper {
 	private static UserController userController = new UserController();
 	
 
-	public static void loginUser(HttpServletRequest request, HttpServletResponse response) {
+	public static void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		String password = request.getParameter("password");
 
@@ -33,10 +35,18 @@ public class UserServletHelper {
 				HttpSession session = request.getSession(true);
 				session.setAttribute("currentUserId", user.getUserId());
 				session.setAttribute("user", user);
+				
 				boolean isSessionLogged = userController.logSessionData(getSessionObject(session,user.getUserId(),request));
 				if (!isSessionLogged) {
 					request.setAttribute("error", "A problem occured, Try after sometime");
 				}
+				
+//				JSONObject jsonObject = new JSONObject(user);
+//				response.setContentType("application/json");
+//				PrintWriter out = response.getWriter();
+//				out.print(jsonObject);
+//				out.flush();
+				
 			}
 		} catch (CustomException e) {
 			//e.printStackTrace();

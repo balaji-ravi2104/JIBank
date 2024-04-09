@@ -21,7 +21,7 @@
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
-	</div>
+	</div>	
 
 	<div class="container">
 		<div id="login-image">
@@ -29,8 +29,8 @@
 				alt="Login Images" />
 		</div>
 		<div id="form">
-			<c:if test="${not empty error}">
-				<div class="usercreation-message failed login-error">
+			<c:if test="${not empty error}"> 
+				<div class="usercreation-message failed login-error">   
 					<i class="fa-solid fa-triangle-exclamation"></i>
 					<p>${error}</p>
 				</div>

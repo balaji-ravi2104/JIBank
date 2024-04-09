@@ -1,5 +1,6 @@
 package com.banking.servlet;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,8 @@ import com.banking.utils.CustomException;
 public class AccountServletHelper {
 	private static AccountController accountController = new AccountController();
 
-	public static void getCustomerAccountsInBranch(HttpServletRequest request, HttpServletResponse response) {
+	public static void getCustomerAccountsInBranch(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		int branchId = Integer.parseInt(request.getParameter("branchId"));
 		try {
@@ -24,6 +26,12 @@ public class AccountServletHelper {
 				request.setAttribute("error", "No Accounts Found");
 			} else {
 				request.setAttribute("customerAccounts", customerAccounts);
+//
+//				JSONArray jsonAccounts = new JSONArray(customerAccounts.values());
+//				response.setContentType("application/json");
+//				PrintWriter out = response.getWriter();
+//				out.print(jsonAccounts);
+//				out.flush();
 			}
 		} catch (CustomException e) {
 			request.setAttribute("error", "An Error Occured, Try Again");
@@ -66,7 +74,7 @@ public class AccountServletHelper {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void updateAccountStatus(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
 
@@ -80,8 +88,9 @@ public class AccountServletHelper {
 
 				AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
 				int value = accountStatus.getValue();
-				int updatingUserId  = (int) session.getAttribute("currentUserId");
-				boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value,updatingUserId);
+				int updatingUserId = (int) session.getAttribute("currentUserId");
+				boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value,
+						updatingUserId);
 				if (isUpdated) {
 					request.setAttribute("updatedSuccess", "Account Status Updated");
 				} else {
