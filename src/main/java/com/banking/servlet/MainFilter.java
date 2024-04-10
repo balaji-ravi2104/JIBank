@@ -47,11 +47,11 @@ public class MainFilter implements Filter {
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-		String action = httpRequest.getServletPath();
+		String path = httpRequest.getPathInfo();
+	
+		System.out.println("In Filter :"+path);
 
-		System.out.println(action);
-
-		switch (action) {
+		switch (path) {
 		case "/getCustomer":
 			int CustomerId = Integer.parseInt(request.getParameter("userId"));
 			if (CustomerId <= 1000) {
@@ -219,7 +219,7 @@ public class MainFilter implements Filter {
 		case "/account/getAccounts":
 			try {
 				int userId = Integer.parseInt(request.getParameter("userId"));
-				if (userId <= 1000 || !userDao.checkUserIdExists(userId)) {
+				if (userId <= 1000 || !userDao.isValidCustomer(userId)) {
 					request.setAttribute("error", "Invalid Customer Id");
 					httpRequest.getRequestDispatcher("/employee/account.jsp").forward(httpRequest, httpResponse);
 					return;
@@ -231,12 +231,12 @@ public class MainFilter implements Filter {
 		case "/createAccount":
 			try {
 				boolean flag = false;
-				CustomerId = Integer.parseInt(request.getParameter("userId"));
+				int customerId = Integer.parseInt(request.getParameter("userId"));
 				int branchId = Integer.parseInt(request.getParameter("branchId"));
 				int accountType = Integer.parseInt(request.getParameter("accountType"));
 				double balance = Double.parseDouble(request.getParameter("balance"));
 
-				if (CustomerId <= 1000 || !userDao.checkUserIdExists(CustomerId)) {
+				if (customerId <= 1000 || !userDao.isValidCustomer(customerId)) {
 					flag = true;
 					request.setAttribute("error", "Invalid Customer Id");
 				}
@@ -251,14 +251,14 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				if (AccountDao.isCustomerAlreadyHasAccount(CustomerId, accountType, branchId)) {
+				if (AccountDao.isCustomerAlreadyHasAccount(customerId, accountType, branchId)) {
 					request.setAttribute("accountExists", "Account Already Present in the Branch");
 					httpRequest.getRequestDispatcher("/employee/accountform.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 
 				Account account = new Account();
-				account.setUserId(CustomerId);
+				account.setUserId(customerId);
 				account.setBranchId(branchId);
 				account.setAccountType(accountType);
 				account.setBalance(balance);
@@ -523,7 +523,7 @@ public class MainFilter implements Filter {
 
 				if (fromDateObj.after(toDateObj)) {
 					request.setAttribute("dateError", "From date should be less then To date");
-					httpRequest.getRequestDispatcher("customer/statement.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/customer/statement.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 			} catch (Exception e) {
@@ -540,18 +540,18 @@ public class MainFilter implements Filter {
 
 				if (!password.equals(oldPassword)) {
 					request.setAttribute("wrongPassword", "Wrong Password");
-					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/customer/profile.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 				if (newPassword.length() < 8 || !InputValidator.validatePassword(newPassword)) {
 					request.setAttribute("InvalidPassword",
 							"Password must contain at least 8 characters, including at least one lowercase letter, one uppercase letter, one digit, and one special character");
-					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/customer/profile.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 				if (!newPassword.equals(confirmPassword)) {
 					request.setAttribute("diffPassword", "New and Confirm Password Must be Same");
-					httpRequest.getRequestDispatcher("customer/profile.jsp").forward(httpRequest, httpResponse);
+					httpRequest.getRequestDispatcher("/customer/profile.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
 			} catch (Exception e) {

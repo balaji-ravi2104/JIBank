@@ -23,7 +23,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath() + "/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -31,12 +31,12 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer"
+			<li><a href="<%=request.getContextPath()%>/bank/employee/customer"
 				class="active">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
@@ -49,19 +49,19 @@
 	</div>
 	<div class="customer-page">
 		<div class="create-button">
-			<form action="<%=request.getContextPath()%>/addCustomer"
+			<form action="<%=request.getContextPath()%>/bank/addCustomer"
 				method="post">
 				<button>Add Customer</button>
 			</form>
 			<c:if test="${user.typeOfUser == 'ADMIN'}">
-				<form action="<%=request.getContextPath()%>/addEmployee"
+				<form action="<%=request.getContextPath()%>/bank/addEmployee"
 					method="post">
 					<button>Add Employee</button>
 				</form>
 			</c:if>
 		</div>
 		<form id="searchFormCustomer" method="post"
-			action="<%=request.getContextPath()%>/getCustomer">
+			action="<%=request.getContextPath()%>/bank/getCustomer">
 			<div>
 				<div class="search-bar">
 					<input type="text" id="searchCustomer" name="userId" maxlength="4"
@@ -80,7 +80,7 @@
 			</div>
 			<div>
 				<button id="updateCustomerButton" type="submit"
-					formaction="<%=request.getContextPath()%>/updateCustomer">Update
+					formaction="<%=request.getContextPath()%>/bank/updateCustomer">Update
 					User</button>
 			</div>
 		</form>

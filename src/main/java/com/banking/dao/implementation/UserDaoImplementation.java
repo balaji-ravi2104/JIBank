@@ -36,7 +36,9 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String CREATE_CUSTOMER = "INSERT INTO Customer (User_id, Pan, Aadhar) VALUES (?, ?, ?);";
 
-	private static final String CHECK_USER_ID_EXISTS = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? ;";
+	private static final String CHECK_USER_ID_EXISTS = "SELECT u.UserId FROM Users u WHERE u.UserId = ?;";
+	
+	private static final String CHECK_CUSTOMER_ID = "SELECT u.UserId FROM Users u WHERE u.UserId = ? and u.TypeId=1;";
 
 	private static final String CHECK_CUSTOMER_ID_EXISTS_QUERY_IN_BRANCH = "SELECT COUNT(*) FROM Users u JOIN "
 			+ "Accounts a ON u.UserId = a.user_id WHERE u.UserId = ? AND a.branch_id = ? AND u.TypeId = 1;";
@@ -70,7 +72,6 @@ public class UserDaoImplementation implements UserDao {
 			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ?,UpdatedBy = ?,ModifiedBy = ? WHERE UserId = ?;";
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
-
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -216,6 +217,24 @@ public class UserDaoImplementation implements UserDao {
 			throw new CustomException("Error While Checking User Exists", e);
 		}
 		return userIdExists;
+	}
+
+	@Override
+	public boolean isValidCustomer(int userId) throws CustomException {
+		boolean isValid = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(CHECK_CUSTOMER_ID)) {
+			preparedStatement.setInt(1, userId);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					int count = resultSet.getInt(1);
+					isValid = (count > 0);
+				}
+			}
+		} catch (SQLException e) {
+			throw new CustomException("Error While Checking User Exists", e);
+		}
+		return isValid;
 	}
 
 	@Override

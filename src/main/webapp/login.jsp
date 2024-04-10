@@ -36,7 +36,7 @@
 				</div>
 			</c:if>
 			<form class="input-form" method="post"
-				action="<%=request.getContextPath()%>/login">
+				action="<%=request.getContextPath()%>/bank/login">
 				<label for="userId">User Id</label> <input type="text" name="userId"
 					pattern="\d{1,4}" placeholder="Enter Your User Id" maxlength="4"
 					required> <label for="password">Password</label> <input

@@ -23,7 +23,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath() + "/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -31,12 +31,12 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/transaction"
+			<li><a href="<%=request.getContextPath()%>/bank/employee/customer">Users</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction"
 				class="active">Transactions</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
@@ -58,7 +58,7 @@
 			</div>
 		</div>
 		<form id="searchFormTransaction"
-			action="<%=request.getContextPath()%>/getTransactions" method="post">
+			action="<%=request.getContextPath()%>/bank/getTransactions" method="post">
 			<div class="transaction-search">
 				<div>
 					<input type="text" id="searchTransaction" name="accountNumber"
@@ -250,14 +250,14 @@
         modal.style.display = "block";
         amountLabel.textContent = "Deposit Amount";
         submitButton.value = "Deposit";
-        form.action = "<%=request.getContextPath()%>/employeeDeposit";
+        form.action = "<%=request.getContextPath()%>/bank/employeeDeposit";
     }
 
     withdrawBtn.onclick = function() {
         modal.style.display = "block";
         amountLabel.textContent = "Withdraw Amount";
         submitButton.value = "Withdraw";
-        form.action = "<%=request.getContextPath()%>/employeeWithdraw";
+        form.action = "<%=request.getContextPath()%>/bank/employeeWithdraw";
     }
 
     span.onclick = function() {

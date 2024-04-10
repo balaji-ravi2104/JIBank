@@ -11,7 +11,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>MainServlet</servlet-name>
-		<url-pattern>/</url-pattern>
+		<url-pattern>/bank/*</url-pattern>
 	</servlet-mapping>
 
 	<filter>
@@ -20,7 +20,7 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>MainFilter</filter-name>
-		<url-pattern>/*</url-pattern> <!-- Apply the filter to all requests -->
+		<url-pattern>/bank/*</url-pattern> <!-- Apply the filter to all requests -->
 	</filter-mapping>
 
 	<!-- Servlet Mapping for default servlet handling static resources -->

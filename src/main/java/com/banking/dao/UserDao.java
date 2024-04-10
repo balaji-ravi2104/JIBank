@@ -43,4 +43,6 @@ public interface UserDao {
 	boolean isCustomerExists(String panNumber) throws CustomException;
 
 	String getUserPassword(int userId) throws CustomException;
+	
+	boolean isValidCustomer(int userId) throws CustomException;
 }

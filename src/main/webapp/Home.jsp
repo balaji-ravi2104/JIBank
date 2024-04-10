@@ -23,7 +23,7 @@
 	</div>
 	<div class="home-container">
 		<p>Welcome to JI Bank</p>
-		<a href="<%=request.getContextPath()%>/login">Login</a>
+		<a href="<%=request.getContextPath()%>/bank/login">Login</a>
 	</div>
 </body>
 </html>

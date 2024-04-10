@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath() + "/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,13 +30,13 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/customer/account"
+			<li><a href="<%=request.getContextPath()%>/bank/customer/account"
 				class="active">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/customer/transaction">Transactions</a></li>
-			<li><a href="<%=request.getContextPath()%>/customer/Statement">Statements</a></li>
-			<li><a href="<%=request.getContextPath()%>/customer/profile">Profile</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/customer/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
@@ -92,7 +92,7 @@
 						</table>
 						<c:if test="${accountsList.size()>1}">
 							<div class="Switch-account-button">
-								<form action="<%=request.getContextPath()%>/switchAccount"
+								<form action="<%=request.getContextPath()%>/bank/switchAccount"
 									method="post">
 									<button>Switch Account</button>
 								</form>

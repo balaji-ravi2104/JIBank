@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath() + "/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,12 +30,12 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer"
+			<li><a href="<%=request.getContextPath()%>/bank/employee/customer"
 				class="active">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">

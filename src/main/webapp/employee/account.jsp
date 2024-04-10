@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath() + "/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,12 +30,12 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account"
+			<li><a href="<%=request.getContextPath()%>/bank/employee/customer">Users</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/account"
 				class="active">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
@@ -48,12 +48,12 @@
 	</div>
 
 	<div class="customer-page">
-		<form action="<%=request.getContextPath()%>/createaccount"
+		<form action="<%=request.getContextPath()%>/bank/createaccount"
 			method="post">
 			<button>Create Account</button>
 		</form>
 		<form id="searchFormAccount"
-			action="<%=request.getContextPath()%>/account/getAccounts"
+			action="<%=request.getContextPath()%>/bank/account/getAccounts"
 			method="post">
 			<div class="accountsearch-bar">
 				<div>
@@ -138,7 +138,7 @@
 						<td>${account.accountType}</td>
 						<td>${account.accountStatus}</td>
 						<td>
-							<form action="<%=request.getContextPath()%>/updateAccountStatus"
+							<form action="<%=request.getContextPath()%>/bank/updateAccountStatus"
 								method="post">
 								<input type="hidden" name="userId" value="${account.userId}" />
 								<input type="hidden" name="branchId" value="${account.branchId}" />

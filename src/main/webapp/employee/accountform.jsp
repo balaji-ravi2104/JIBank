@@ -22,7 +22,7 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath()+"/login");
+		response.sendRedirect(request.getContextPath()+"/bank/login");
 	}
 	%>
 	<div class="navbar-home">
@@ -30,12 +30,12 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/employee/customer">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/account"
+			<li><a href="<%=request.getContextPath()%>/bank/employee/customer">Users</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/account"
 				class="active">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/employee/transaction">Transactions</a></li>
+			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/logout"
+				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
@@ -55,7 +55,7 @@
 			</div>
 			<div id="form">
 				<form class="input-form accountform" method="post"
-					action="<%=request.getContextPath()%>/createAccount">
+					action="<%=request.getContextPath()%>/bank/createAccount">
 					<c:if test="${not empty accountExists}">
 						<div class="usercreation-message failed">
 							<i class="fa-solid fa-triangle-exclamation"></i>
