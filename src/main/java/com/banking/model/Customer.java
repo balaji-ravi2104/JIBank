@@ -7,7 +7,7 @@ public class Customer extends User implements Serializable {
 	String panNumber;
 	String aadharNumber;
 
-	public String getPanNumber() {
+	public String getPanNumber() { 
 		return panNumber;
 	}
 
@@ -16,7 +16,7 @@ public class Customer extends User implements Serializable {
 	}
 
 	public String getAadharNumber() {
-		return aadharNumber;
+		return aadharNumber; 
 	}
 
 	public void setAadharNumber(String aadharNumber) {

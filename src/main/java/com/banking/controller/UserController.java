@@ -41,16 +41,16 @@ public class UserController {
 
 	public User login(int userId, String password) throws CustomException {
 		InputValidator.isNull(password, "Password Cannot be Empty or Null!!!");
-		User user = null;
 		try {
-			if (!isUserExists(userId) || !userDao.getUserPassword(userId).equals(password)) {
+			User user = userDao.authendicateUser(userId);
+			if (user != null && user.getPassword().equals(password)) {
+				user.setPassword(null);
 				return user;
 			}
-			user = userDao.authendicateUser(userId);
 		} catch (Exception e) {
 			throw new CustomException("Error while loggin!!", e);
 		}
-		return user;
+		return null;
 	}
 
 	public boolean registerNewCustomer(Customer customer, int creatingUserId) throws CustomException {
@@ -73,14 +73,6 @@ public class UserController {
 			throw new CustomException("Error while creating new User!!", e);
 		}
 		return isRegistred;
-	}
-
-	public boolean isUserExists(int userId) throws CustomException {
-		try {
-			return userDao.checkUserIdExists(userId);
-		} catch (Exception e) {
-			throw new CustomException("Error while Checking User Exists!!", e);
-		}
 	}
 
 	public int getEmployeeBranch(int userId) throws CustomException {
@@ -136,7 +128,7 @@ public class UserController {
 				System.out.println("Inside Cache(Admin Purpose) User Id : " + userId);
 				return userCache.get(cachePrefix + userId);
 			}
-			try {
+			try { 
 				customerDetails = userDao.getCustomerDetailsById(userId);
 				if (customerDetails != null) {
 					userCache.set(userId, customerDetails);

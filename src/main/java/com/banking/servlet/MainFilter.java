@@ -49,12 +49,12 @@ public class MainFilter implements Filter {
 
 		String path = httpRequest.getPathInfo();
 	
-		System.out.println("In Filter :"+path);
+		System.out.println("In Servlet Filter :"+path);
 
 		switch (path) {
 		case "/getCustomer":
-			int CustomerId = Integer.parseInt(request.getParameter("userId"));
-			if (CustomerId <= 1000) {
+			int customerId = Integer.parseInt(request.getParameter("userId"));
+			if (customerId <= 1000) {
 				request.setAttribute("error", "Invalid Customer Id");
 				httpRequest.getRequestDispatcher("/employee/customer.jsp").forward(httpRequest, httpResponse);
 				return;
@@ -70,7 +70,7 @@ public class MainFilter implements Filter {
 
 					String firstName = request.getParameter("firstname");
 					String lastName = request.getParameter("lastname");
-					String email = request.getParameter("email");
+					String email = request.getParameter("email"); 
 					String gender = request.getParameter("gender");
 					String contactNumber = request.getParameter("contactnumber");
 					String address = request.getParameter("address");
@@ -161,7 +161,7 @@ public class MainFilter implements Filter {
 		case "/updateUser":
 			try {
 				boolean flag = false;
-				int customerId = Integer.parseInt(request.getParameter("userId"));
+				customerId = Integer.parseInt(request.getParameter("userId"));
 				String firstName = request.getParameter("firstname");
 				String lastName = request.getParameter("lastname");
 				String email = request.getParameter("email");
@@ -231,7 +231,7 @@ public class MainFilter implements Filter {
 		case "/createAccount":
 			try {
 				boolean flag = false;
-				int customerId = Integer.parseInt(request.getParameter("userId"));
+				customerId = Integer.parseInt(request.getParameter("userId"));
 				int branchId = Integer.parseInt(request.getParameter("branchId"));
 				int accountType = Integer.parseInt(request.getParameter("accountType"));
 				double balance = Double.parseDouble(request.getParameter("balance"));

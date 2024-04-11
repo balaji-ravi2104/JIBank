@@ -20,7 +20,7 @@ public class HttpPostRequestExample {
 		carAttributes.put("color", "red");
 
 		Car car = new Car("BMW X-5", carAttributes);
-
+ 
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			String requestBody = objectMapper.writeValueAsString(car);

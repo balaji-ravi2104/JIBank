@@ -15,8 +15,6 @@ public interface UserDao {
 
 	boolean addEmployee(Employee newEmployee, int creatingUserId) throws CustomException;
 
-	boolean checkUserIdExists(int userId) throws CustomException;
-
 	Customer getCustomerDetails(String accountNumber) throws CustomException;
 
 	boolean checkCustomerIdPresentInBranch(int userId, int branchId) throws CustomException;
@@ -45,4 +43,6 @@ public interface UserDao {
 	String getUserPassword(int userId) throws CustomException;
 	
 	boolean isValidCustomer(int userId) throws CustomException;
+
+	String getToken(int userId) throws CustomException;
 }

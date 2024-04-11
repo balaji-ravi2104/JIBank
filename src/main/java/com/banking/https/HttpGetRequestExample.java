@@ -15,7 +15,7 @@ public class HttpGetRequestExample {
 
 			int responseCode = connection.getResponseCode();
 
-			 System.out.println("Response Code :" + responseCode);
+			System.out.println("Response Code :" + responseCode);  
 
 			if (responseCode == HttpsURLConnection.HTTP_OK) {
 				

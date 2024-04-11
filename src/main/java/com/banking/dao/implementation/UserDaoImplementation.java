@@ -24,8 +24,7 @@ import com.banking.utils.InputValidator;
 
 public class UserDaoImplementation implements UserDao {
 
-	private static final String GET_USER = "SELECT  u.userId,u.FirstName,u.LastName,u.Gender,u.Email,"
-			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId FROM Users u WHERE u.userId = ?";
+	private static final String GET_USER = "SELECT * FROM Users u WHERE u.userId = ?";
 
 	private static final String GET_EMPLOYEE_BRANCH = "SELECT branch_id FROM Employee WHERE User_id = ?";
 
@@ -36,8 +35,6 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String CREATE_CUSTOMER = "INSERT INTO Customer (User_id, Pan, Aadhar) VALUES (?, ?, ?);";
 
-	private static final String CHECK_USER_ID_EXISTS = "SELECT u.UserId FROM Users u WHERE u.UserId = ?;";
-	
 	private static final String CHECK_CUSTOMER_ID = "SELECT u.UserId FROM Users u WHERE u.UserId = ? and u.TypeId=1;";
 
 	private static final String CHECK_CUSTOMER_ID_EXISTS_QUERY_IN_BRANCH = "SELECT COUNT(*) FROM Users u JOIN "
@@ -68,10 +65,13 @@ public class UserDaoImplementation implements UserDao {
 	private static final String GET_ALL_EMPLOYEE_FROM_ALL_BRANCH = "SELECT u.UserId,u.FirstName,u.LastName,u.Gender,u.Email,"
 			+ "u.ContactNumber,u.Address,u.DateOfBirth,u.TypeId,u.StatusId,e.branch_id FROM Users u INNER JOIN Employee e ON "
 			+ "u.UserId = e.user_id WHERE u.TypeId = 2 ORDER BY e.branch_id;";
+	
 	private static final String UPDATE_CUSTOMER_DETAILS = "UPDATE Users SET FirstName = ?,LastName = ?,Gender = ?,Email = ?,"
 			+ "ContactNumber = ?,Address = ?,DateOfBirth = ?,StatusId = ?,UpdatedBy = ?,ModifiedBy = ? WHERE UserId = ?;";
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
+
+	private static final String GET_USER_TOKEN = "SELECT token from TokenDB WHERE userId = ?";
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -132,7 +132,7 @@ public class UserDaoImplementation implements UserDao {
 					AuditLogHandler.addAuditData(auditLog);
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new CustomException("Error Creating new User", e);
 		}
 		return isCustomerCreated;
@@ -200,23 +200,22 @@ public class UserDaoImplementation implements UserDao {
 		}
 		return branchId;
 	}
-
+	
 	@Override
-	public boolean checkUserIdExists(int userId) throws CustomException {
-		boolean userIdExists = false;
+	public String getToken(int userId) throws CustomException {
+		String token = null;
 		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(CHECK_USER_ID_EXISTS)) {
+				PreparedStatement preparedStatement = connection.prepareStatement(GET_USER_TOKEN)) {
 			preparedStatement.setInt(1, userId);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
-					int count = resultSet.getInt(1);
-					userIdExists = (count > 0);
+					token = resultSet.getString(1);
 				}
 			}
 		} catch (SQLException e) {
 			throw new CustomException("Error While Checking User Exists", e);
 		}
-		return userIdExists;
+		return token;
 	}
 
 	@Override
@@ -303,7 +302,7 @@ public class UserDaoImplementation implements UserDao {
 
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
-					customerDetails = getCustomerDetail(resultSet);
+					customerDetails = getCustomerDetail(resultSet); 
 				}
 			}
 		} catch (SQLException e) {
@@ -593,14 +592,15 @@ public class UserDaoImplementation implements UserDao {
 
 	private void getUserDetails(ResultSet resultSet, User user) throws SQLException {
 		user.setUserId(resultSet.getInt(1));
-		user.setFirstName(resultSet.getString(2));
-		user.setLastName(resultSet.getString(3));
-		user.setGender(resultSet.getString(4));
-		user.setEmail(resultSet.getString(5));
-		user.setContactNumber(resultSet.getString(6));
-		user.setAddress(resultSet.getString(7));
-		user.setDateOfBirth(resultSet.getLong(8));
-		user.setTypeOfUser(resultSet.getInt(9));
-		user.setStatus(resultSet.getInt(10));
+		user.setPassword(resultSet.getString(2));
+		user.setFirstName(resultSet.getString(3));
+		user.setLastName(resultSet.getString(4));
+		user.setGender(resultSet.getString(5));
+		user.setEmail(resultSet.getString(6));
+		user.setContactNumber(resultSet.getString(7));
+		user.setAddress(resultSet.getString(8));
+		user.setDateOfBirth(resultSet.getLong(9));
+		user.setTypeOfUser(resultSet.getInt(10));
+		user.setStatus(resultSet.getInt(11));
 	}
 }

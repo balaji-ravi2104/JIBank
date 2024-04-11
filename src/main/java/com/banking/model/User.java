@@ -2,7 +2,9 @@ package com.banking.model;
 
 import java.io.Serializable;
 
-public class User implements Serializable{
+import com.banking.utils.DateUtils;
+
+public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private int userId;
 	private String password;
@@ -14,7 +16,7 @@ public class User implements Serializable{
 	private String address;
 	private long dateOfBirth;
 	private UserType typeOfUser;
-	private AccountStatus status;	
+	private AccountStatus status;
 
 	public AccountStatus getStatus() {
 		return status;
@@ -110,8 +112,8 @@ public class User implements Serializable{
 	public String toString() {
 		return "User [userId=" + userId + ", password=" + password + ", firstName=" + firstName + ", lastName="
 				+ lastName + ", gender=" + gender + ", email=" + email + ", contactNumber=" + contactNumber
-				+ ", address=" + address + ", dateOfBirth=" + dateOfBirth + ", typeOfUser=" + typeOfUser + ", Status="
-				+ status + "]";
+				+ ", address=" + address + ", dateOfBirth=" + DateUtils.longToDate(dateOfBirth) + ", typeOfUser="
+				+ typeOfUser + ", Status=" + status + "]";
 	}
 
 }

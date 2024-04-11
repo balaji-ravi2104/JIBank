@@ -26,12 +26,6 @@ public class AccountServletHelper {
 				request.setAttribute("error", "No Accounts Found");
 			} else {
 				request.setAttribute("customerAccounts", customerAccounts);
-//
-//				JSONArray jsonAccounts = new JSONArray(customerAccounts.values());
-//				response.setContentType("application/json");
-//				PrintWriter out = response.getWriter();
-//				out.print(jsonAccounts);
-//				out.flush();
 			}
 		} catch (CustomException e) {
 			request.setAttribute("error", "An Error Occured, Try Again");

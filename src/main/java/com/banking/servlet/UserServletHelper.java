@@ -87,7 +87,7 @@ public class UserServletHelper {
 			} else {
 				String date = DateUtils.longToDate(customer.getDateOfBirth());
 				date = DateUtils.convertToHtmlDateFormat(date);
-				request.setAttribute("DOB", date);
+				request.setAttribute("DOB", date); 
 				request.setAttribute("customerDetails", customer);
 			}
 		} catch (CustomException e) {

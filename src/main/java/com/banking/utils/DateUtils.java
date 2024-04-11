@@ -5,17 +5,15 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import com.banking.view.UserView;
 
 public class DateUtils {
 
-	private static UserView userView = new UserView();
 
 	public static String longToDate(long millis) {
 		Instant instant = Instant.ofEpochMilli(millis);
 		ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
+ 
 		return time.format(formatter);
 	}
 

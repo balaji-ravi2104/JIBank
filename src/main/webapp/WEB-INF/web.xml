@@ -23,16 +23,24 @@
 		<url-pattern>/bank/*</url-pattern> <!-- Apply the filter to all requests -->
 	</filter-mapping>
 
-	<!-- Servlet Mapping for default servlet handling static resources -->
+	<servlet>
+		<servlet-name>APIServlet</servlet-name>
+		<servlet-class>com.banking.servlet.APIServlet</servlet-class>
+	</servlet>
 	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.css</url-pattern> <!-- Mapping for CSS files -->
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>*.png</url-pattern> <!-- Mapping for PNG image files -->
+		<servlet-name>APIServlet</servlet-name>
+		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 
+	<filter>
+		<filter-name>APIFilter</filter-name>
+		<filter-class>com.banking.servlet.APIFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>APIFilter</filter-name>
+		<url-pattern>/api/*</url-pattern> <!-- Apply the filter to all requests -->
+	</filter-mapping>
+	
 	<welcome-file-list>
 		<welcome-file>Home.jsp</welcome-file>
 	</welcome-file-list>

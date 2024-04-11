@@ -122,7 +122,7 @@ public class MainServlet extends HttpServlet {
 			}
 			break;
 
-		case "/logout":
+		case "/logout": 
 			UserServletHelper.updateLogoutSession(request,response);
 			request.getSession().invalidate();
 			response.sendRedirect(request.getContextPath() + request.getServletPath()+"/login");
