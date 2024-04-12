@@ -2,23 +2,26 @@ package com.banking.controller;
 
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.AccountDao;
 import com.banking.dao.implementation.AccountDaoImplementation;
+import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
+import com.banking.model.AuditLog;
+import com.banking.model.AuditlogActions;
+import com.banking.model.Status;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
 
 public class AccountController {
 
-	private static final Logger log = Logger.getLogger(MainController.class.getName());
-	private AccountDao accountDao = new AccountDaoImplementation();
-	private BranchController branchController = new BranchController();
+	private AccountDao accountDao;
+	private BranchController branchController;
+	private AuditLogHandler auditLogHandler;
+
 	public static final String accountCachePrefix = "Account";
 	public static final String listAccountCachePrefix = "ListAccount";
 
@@ -26,19 +29,17 @@ public class AccountController {
 	private final Object getAccountDetailsLock = new Object();
 	private final Object getAccountsOfCustomerLock = new Object();
 
-	// public static final Cache<String, Account> accountCache = new
-	// LRUCache<String, Account>(50);
-	// public static final Cache<Integer, List<Account>> listOfAccounts = new
-	// LRUCache<Integer, List<Account>>(50);
-
 	public static final Cache<String, Account> accountCache = new RedisCache<String, Account>(6379, accountCachePrefix);
 	public static final Cache<Integer, List<Account>> listOfAccounts = new RedisCache<Integer, List<Account>>(6379,
 			listAccountCachePrefix);
 
 	public AccountController() {
+		this.accountDao = new AccountDaoImplementation();
+		this.branchController = new BranchController();
+		this.auditLogHandler = new AuditLogHandler();
 	}
 
-	public boolean createAccount(Account account,int creatingUserId) throws CustomException {
+	public boolean createAccount(Account account, int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		boolean isPrimary = false;
@@ -48,7 +49,22 @@ public class AccountController {
 				isPrimary = true;
 			}
 			try {
-				isAccountCreated = accountDao.createAccount(account, isPrimary,creatingUserId);
+				isAccountCreated = accountDao.createAccount(account, isPrimary, creatingUserId);
+				if (isAccountCreated) {
+					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.CREATE,
+							System.currentTimeMillis(), creatingUserId,
+							String.format("User Id %d Created the new Account for User Id %d ", creatingUserId,
+									account.getUserId()),
+							Status.SUCCESS);
+					auditLogHandler.addAuditData(auditLog);
+				} else {
+					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.CREATE,
+							System.currentTimeMillis(), creatingUserId,
+							String.format("User Id %d Created the new Account for User Id %d but Failed", creatingUserId,
+									account.getUserId()),
+							Status.FAILURE);
+					auditLogHandler.addAuditData(auditLog);
+				}
 			} catch (Exception e) {
 				throw new CustomException("Erroe While Creating Account!!", e);
 			}
@@ -125,12 +141,27 @@ public class AccountController {
 		return customerAccounts;
 	}
 
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status,int updatingUserId)
+	public boolean activateDeactivateCustomerAccount(String accountNumber, int status, int updatingUserId)
 			throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountStatusChanged = false;
 		try {
-			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status,updatingUserId);
+			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status,
+					updatingUserId);
+			int userId = accountDao.getAccountDetail(accountNumber).getUserId();
+			if (isAccountStatusChanged) {
+				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(),
+						updatingUserId, String.format("User Id %d Updated the Account %s of User Id %d ",
+								updatingUserId, accountNumber, userId),
+						Status.SUCCESS);
+				auditLogHandler.addAuditData(auditLog);
+			}else {
+				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(),
+						updatingUserId, String.format("User Id %d Updated the Account %s of User Id %d but Failed",
+								updatingUserId, accountNumber, userId),
+						Status.FAILURE);
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Updating Bank Account Status!!", e);
 		}
@@ -147,7 +178,7 @@ public class AccountController {
 		return isAccountPresent;
 	}
 
-	public boolean isAccountPresent(String accountNumber) throws CustomException{
+	public boolean isAccountPresent(String accountNumber) throws CustomException {
 		boolean isAccountPresent = false;
 		try {
 			isAccountPresent = accountDao.isAccountPresent(accountNumber);
@@ -160,7 +191,7 @@ public class AccountController {
 	private boolean validateAccountNumber(String accountNumber) throws CustomException {
 		boolean isValid = false;
 		if (InputValidator.validateString(accountNumber)) {
-			log.warning("Account Number Cannot be Empty!!!");
+
 			isValid = true;
 		}
 		return isValid;
@@ -169,7 +200,7 @@ public class AccountController {
 	public boolean validateAccountAndBranch(String accountNumber, int branchId) throws CustomException {
 		boolean isValid = true;
 		if (!isAccountExistsInTheBranch(accountNumber, branchId)) {
-			log.log(Level.WARNING, "Account Number Doesn't Exists in this Branch!!!");
+
 			isValid = false;
 		}
 		return isValid;

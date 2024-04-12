@@ -35,6 +35,10 @@
 				class="active">Users</a></li>
 			<li><a href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
 			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
+			<c:if test="${user.typeOfUser == 'ADMIN'}">
+				<li><a
+					href="<%=request.getContextPath()%>/bank/employee/apiservice">API Service</a></li>
+			</c:if>
 			<li>
 				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
 					method="post">

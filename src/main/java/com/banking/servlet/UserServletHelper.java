@@ -1,16 +1,21 @@
 package com.banking.servlet;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.banking.controller.ApiController;
 import com.banking.controller.UserController;
+import com.banking.dao.LogServiceDao;
+import com.banking.dao.implementation.LogServiceDaoImplementation;
 import com.banking.model.AccountStatus;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.SessionDetails;
+import com.banking.model.Token;
 import com.banking.model.User;
 import com.banking.model.UserType;
 import com.banking.utils.CustomException;
@@ -19,7 +24,8 @@ import com.banking.utils.DateUtils;
 public class UserServletHelper {
 
 	private static UserController userController = new UserController();
-	
+	private static LogServiceDao logServiceDao = new LogServiceDaoImplementation();
+	private static ApiController apiController = new ApiController();
 
 	public static void loginUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		int userId = Integer.parseInt(request.getParameter("userId"));
@@ -36,21 +42,9 @@ public class UserServletHelper {
 				session.setAttribute("currentUserId", user.getUserId());
 				session.setAttribute("user", user);
 				
-				boolean isSessionLogged = userController.logSessionData(getSessionObject(session,user.getUserId(),request));
-				if (!isSessionLogged) {
-					request.setAttribute("error", "A problem occured, Try after sometime");
-				}
-				
-//				JSONObject jsonObject = new JSONObject(user);
-//				response.setContentType("application/json");
-//				PrintWriter out = response.getWriter();
-//				out.print(jsonObject);
-//				out.flush();
-				
+				logServiceDao.logLoginSession((getSessionObject(session, user.getUserId(), request)));
 			}
 		} catch (CustomException e) {
-			//e.printStackTrace();
-			System.out.println("In Exception");
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}
@@ -64,18 +58,16 @@ public class UserServletHelper {
 		return sessionDetails;
 	}
 
-	public static boolean updateLogoutSession(HttpServletRequest request, HttpServletResponse response) {
+	public static void updateLogoutSession(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
-		boolean isUpdated = false;
 		try {
 			if (session != null) {
 				int userId = (int) session.getAttribute("currentUserId");
-				isUpdated = userController.updateLogoutSession(session.getId(), userId);
+				logServiceDao.updateLogoutSession(session.getId(), userId);
 			}
 		} catch (Exception e) {
 			request.setAttribute("logoutError", "An problem occured while logout");
 		}
-		return isUpdated;
 	}
 
 	public static void getCustomerDetails(HttpServletRequest request, HttpServletResponse response) {
@@ -87,7 +79,7 @@ public class UserServletHelper {
 			} else {
 				String date = DateUtils.longToDate(customer.getDateOfBirth());
 				date = DateUtils.convertToHtmlDateFormat(date);
-				request.setAttribute("DOB", date); 
+				request.setAttribute("DOB", date);
 				request.setAttribute("customerDetails", customer);
 			}
 		} catch (CustomException e) {
@@ -105,8 +97,8 @@ public class UserServletHelper {
 
 				if (isCustomer != null && isCustomer) {
 					Customer customer = (Customer) request.getAttribute("customerObject");
-					boolean isCreated = userController.registerNewCustomer(customer, creatingUserId);
-					if (isCreated) {
+					int customerId = userController.registerNewCustomer(customer, creatingUserId);
+					if (customerId != 0) {
 						request.setAttribute("userCreationSuccess", "User Created Successfully!!!");
 					} else {
 						request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
@@ -114,8 +106,8 @@ public class UserServletHelper {
 
 				} else if (isEmployee != null && isEmployee) {
 					Employee employee = (Employee) request.getAttribute("employeeObject");
-					boolean isCreated = userController.registerNewEmployee(employee, creatingUserId);
-					if (isCreated) {
+					int employeeId = userController.registerNewEmployee(employee, creatingUserId);
+					if (employeeId != 0) {
 						request.setAttribute("userCreationSuccess", "Employee Created Successfully!!!");
 					} else {
 						request.setAttribute("userCreationFailed", "Employee Creation Failed!! Try Again!!");
@@ -171,6 +163,37 @@ public class UserServletHelper {
 				request.setAttribute("error", "A problem occured, Try after sometime");
 			}
 		} catch (Exception e) {
+			request.setAttribute("error", "A problem occured, Try after sometime");
+		}
+	}
+
+	public static void getApiKey(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			int userId = Integer.parseInt(request.getParameter("userId"));
+			Map<Integer,Token> userApiKeys = apiController.getApiKeys(userId);
+			if(userApiKeys.isEmpty()) {
+				request.setAttribute("error", "No API Keys Found");
+			}else {
+				System.out.println(userApiKeys);
+				request.setAttribute("userApiKeys", userApiKeys);
+			}
+		}catch (Exception e) {
+			request.setAttribute("error", "A problem occured, Try after sometime");
+		}
+	}
+
+	public static void getCreateApiKey(HttpServletRequest request, HttpServletResponse response) {
+		boolean isKeyCreated = false;
+		try {
+			int userId = Integer.parseInt(request.getParameter("userId"));
+			isKeyCreated = apiController.createApikey(userId);
+			if(isKeyCreated) {
+				request.setAttribute("updatedSuccess", "API Key Create Successfully");
+			}else {
+				request.setAttribute("updationFailed", "API Key Creation Failed");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}

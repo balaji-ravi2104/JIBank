@@ -48,8 +48,8 @@ public class MainFilter implements Filter {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 
 		String path = httpRequest.getPathInfo();
-	
-		System.out.println("In Servlet Filter :"+path);
+
+		System.out.println("In Servlet Filter :" + path);
 
 		switch (path) {
 		case "/getCustomer":
@@ -70,7 +70,7 @@ public class MainFilter implements Filter {
 
 					String firstName = request.getParameter("firstname");
 					String lastName = request.getParameter("lastname");
-					String email = request.getParameter("email"); 
+					String email = request.getParameter("email");
 					String gender = request.getParameter("gender");
 					String contactNumber = request.getParameter("contactnumber");
 					String address = request.getParameter("address");
@@ -556,6 +556,30 @@ public class MainFilter implements Filter {
 				}
 			} catch (Exception e) {
 				request.setAttribute("failed", "Password Updation Failed");
+			}
+			break;
+		case "/api/getapikey":
+			int userId = Integer.parseInt(request.getParameter("userId"));
+			try {
+				if (userId <= 1000 || !userDao.checkEmployeeExists(userId)) {
+					request.setAttribute("error", "Invalid User Id");
+					httpRequest.getRequestDispatcher("/employee/apiservice.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+			} catch (Exception e) {
+				request.setAttribute("error", "A problem occured, Try after sometime");
+			}
+			break;
+		case "/api/createapikey":
+			userId = Integer.parseInt(request.getParameter("userId"));
+			try {
+				if (userId <= 1000 || !userDao.checkEmployeeExists(userId)) {
+					request.setAttribute("error", "Invalid User Id");
+					httpRequest.getRequestDispatcher("/employee/apiservice.jsp").forward(httpRequest, httpResponse);
+					return;
+				}
+			} catch (Exception e) {
+				request.setAttribute("error", "A problem occured, Try after sometime");
 			}
 			break;
 		}

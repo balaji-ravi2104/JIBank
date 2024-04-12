@@ -11,9 +11,9 @@ public interface UserDao {
 
 	User authendicateUser(int userID) throws CustomException;
 
-	boolean addCustomer(Customer customer, int creatingUserId) throws CustomException;
+	int addCustomer(Customer customer, int creatingUserId) throws CustomException;
 
-	boolean addEmployee(Employee newEmployee, int creatingUserId) throws CustomException;
+	int addEmployee(Employee newEmployee, int creatingUserId) throws CustomException;
 
 	Customer getCustomerDetails(String accountNumber) throws CustomException;
 

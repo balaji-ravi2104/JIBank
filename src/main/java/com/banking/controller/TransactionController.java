@@ -3,9 +3,15 @@ package com.banking.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.banking.dao.AccountDao;
 import com.banking.dao.TransactionDao;
+import com.banking.dao.implementation.AccountDaoImplementation;
 import com.banking.dao.implementation.TransactionDaoImplementation;
+import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
+import com.banking.model.AuditLog;
+import com.banking.model.AuditlogActions;
+import com.banking.model.Status;
 import com.banking.model.Transaction;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
@@ -15,23 +21,28 @@ import com.banking.view.TransactionView;
 public class TransactionController {
 
 	private TransactionDao transactionDao;
+	private AccountDao accountDao;
 	private AccountController accountController;
 	private BranchController branchController;
 	private UserController userController;
 	private TransactionView transactionView;
+	private AuditLogHandler auditLogHandler;
 
 	private static final Object accountCacheLock = new Object();
 	private static final Object listOfAccountsLock = new Object();
 
 	public TransactionController() {
 		this.accountController = new AccountController();
+		this.accountDao = new AccountDaoImplementation();
 		this.transactionDao = new TransactionDaoImplementation();
 		this.userController = new UserController();
 		this.branchController = new BranchController();
 		this.transactionView = new TransactionView();
+		this.auditLogHandler = new AuditLogHandler();
 	}
 
-	public boolean depositAmount(Account account, double amountToDeposite, String description,int userId) throws CustomException {
+	public boolean depositAmount(Account account, double amountToDeposite, String description, int userId)
+			throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isDepositeSuccess = false;
 
@@ -43,14 +54,30 @@ public class TransactionController {
 		}
 
 		try {
-			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite, description,userId);
+			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite, description, userId);
+			if (isDepositeSuccess) {
+				AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.DEPOSIT,
+						System.currentTimeMillis(), userId,
+						String.format("User Id %d Deposited Amount to the Account %s for User Id %d ", userId,
+								account.getAccountNumber(), account.getUserId()),
+						Status.SUCCESS);
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.DEPOSIT,
+						System.currentTimeMillis(), userId,
+						String.format("User Id %d Deposited Amount to the Account %s for User Id %d but Failed", userId,
+								account.getAccountNumber(), account.getUserId()),
+						Status.FAILURE);
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
 		return isDepositeSuccess;
 	}
 
-	public boolean withdrawAmount(Account account, double amountToWithdraw, String description, int userId) throws CustomException {
+	public boolean withdrawAmount(Account account, double amountToWithdraw, String description, int userId)
+			throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isWithdrawSuccess = false;
 
@@ -62,7 +89,22 @@ public class TransactionController {
 		}
 
 		try {
-			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw, description,userId);
+			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw, description, userId);
+			if (isWithdrawSuccess) {
+				AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.WITHDRAW,
+						System.currentTimeMillis(), userId,
+						String.format("User Id %d Withdraw Amount from the Account %s for User Id %d ", userId,
+								account.getAccountNumber(), account.getUserId()),
+						Status.SUCCESS);
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.WITHDRAW,
+						System.currentTimeMillis(), userId,
+						String.format("User Id %d Withdraw Amount from the Account %s for User Id %d but Failed",
+								userId, account.getAccountNumber(), account.getUserId()),
+						Status.FAILURE);
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Depositing Money!!", e);
 		}
@@ -93,6 +135,23 @@ public class TransactionController {
 		try {
 			isTransactionSuccess = transactionDao.transferMoneyWithinBank(accountFromTransfer, accountToTransfer,
 					amountToTransfer, remark);
+			if (isTransactionSuccess) {
+				AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+						System.currentTimeMillis(), accountFromTransfer.getUserId(),
+						String.format("User Id %d Transfer Amount from Account %s to Account %s ",
+								accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
+								accountToTransfer.getAccountNumber()),
+						Status.SUCCESS);
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+						System.currentTimeMillis(), accountFromTransfer.getUserId(),
+						String.format("User Id %d Transfer Amount from Account %s to Account %s but Failed",
+								accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
+								accountToTransfer.getAccountNumber()),
+						Status.FAILURE);
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Transferring Money!! " + e.getMessage(), e);
 		}
@@ -121,6 +180,23 @@ public class TransactionController {
 		try {
 			isTransactionSuccess = transactionDao.transferMoneyWithOtherBank(accountFromTransfer,
 					accountNumberToTransfer, amountToTransferWithOtherBank, remark);
+			if (isTransactionSuccess) {
+				AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+						System.currentTimeMillis(), accountFromTransfer.getUserId(),
+						String.format("User Id %d Transfer Amount from Account %s to Account %s ",
+								accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
+								accountNumberToTransfer),
+						Status.SUCCESS);
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(accountFromTransfer.getUserId(), AuditlogActions.TRANSFER,
+						System.currentTimeMillis(), accountFromTransfer.getUserId(),
+						String.format("User Id %d Transfer Amount from Account %s to Account %s but Failed",
+								accountFromTransfer.getUserId(), accountFromTransfer.getAccountNumber(),
+								accountNumberToTransfer),
+						Status.FAILURE);
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Transferring Money!! " + e.getMessage(), e);
 		}
@@ -175,7 +251,23 @@ public class TransactionController {
 			throws CustomException {
 		List<Transaction> transactions = null;
 		try {
-			transactions = transactionDao.getCustomerTransactions(accountNumber, startDate, endDate,userId);
+			transactions = transactionDao.getCustomerTransactions(accountNumber, startDate, endDate, userId);
+			int targetUserId = accountDao.getAccountDetail(accountNumber).getUserId();
+			if (transactions != null) {
+				AuditLog auditLog = new AuditLog(targetUserId, AuditlogActions.VIEW, System.currentTimeMillis(), userId,
+						String.format("User Id %d Viewed the Transaction of Account %s of User Id %d ", userId,
+								accountNumber, targetUserId),
+						Status.SUCCESS);
+
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(targetUserId, AuditlogActions.VIEW, System.currentTimeMillis(), userId,
+						String.format("User Id %d Viewed the Transaction of Account %s of User Id %d but Failed", userId,
+								accountNumber, targetUserId),
+						Status.FAILURE);
+
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Getting Transaction History!!!", e);
 		}

@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.banking.dao.UserDao;
-import com.banking.logservice.AuditLogHandler;
-import com.banking.model.AuditLog;
-import com.banking.model.AuditlogActions;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
@@ -39,6 +36,7 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String CHECK_CUSTOMER_ID_EXISTS_QUERY_IN_BRANCH = "SELECT COUNT(*) FROM Users u JOIN "
 			+ "Accounts a ON u.UserId = a.user_id WHERE u.UserId = ? AND a.branch_id = ? AND u.TypeId = 1;";
+	
 
 	private static final String GET_CUSTOMER_DETAIL_BY_ACCOUNT_NUMBER = "SELECT u.UserId, u.FirstName, u.LastName, u.Gender, "
 			+ "u.Email,u.ContactNumber,u.Address,u.DateOfBirth,u.StatusId,c.Pan, c.Aadhar FROM Users u "
@@ -50,7 +48,7 @@ public class UserDaoImplementation implements UserDao {
 	private static final String UPDATE_PASSWORD = "UPDATE Users SET Password = ?, UpdatedBy = ?, ModifiedBy = ? WHERE UserId = ?;";
 
 	private static final String CHECK_EMPLOYEE_ID_EXISTS_QUERY = "SELECT COUNT(*) FROM Users u WHERE u.UserId = ? AND "
-			+ "u.TypeId = 2;";
+			+ "(u.TypeId = 2 OR u.TypeId = 3);";
 
 	private static final String CHECK_CUSTOMER_EXISTS = "SELECT COUNT(*) FROM Customer WHERE Pan = ?;";
 
@@ -94,9 +92,9 @@ public class UserDaoImplementation implements UserDao {
 	}
 
 	@Override
-	public boolean addCustomer(Customer customer, int creatingUserId) throws CustomException {
+	public int addCustomer(Customer customer, int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
-		boolean isCustomerCreated = false;
+		int customerUserId = 0;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement createUserStatement = connection.prepareStatement(CREATE_NEW_USER,
 						Statement.RETURN_GENERATED_KEYS)) {
@@ -114,7 +112,7 @@ public class UserDaoImplementation implements UserDao {
 
 			int rowsAffected = createUserStatement.executeUpdate();
 			if (rowsAffected > 0) {
-				int userId;
+				int userId=0;
 				try (ResultSet generatedKeys = createUserStatement.getGeneratedKeys()) {
 					if (generatedKeys.next()) {
 						userId = generatedKeys.getInt(1);
@@ -124,24 +122,19 @@ public class UserDaoImplementation implements UserDao {
 				}
 				int rowsAffected1 = addCustomerPanAadhar(userId, customer);
 				if (rowsAffected1 > 0) {
-					isCustomerCreated = true;
-					AuditLog auditLog = new AuditLog(userId, AuditlogActions.CREATE, System.currentTimeMillis(),
-							creatingUserId,
-							String.format("User id %d Created New Customer With Id of %d", creatingUserId, userId));
-
-					AuditLogHandler.addAuditData(auditLog);
+					customerUserId = userId;
 				}
 			}
 		} catch (Exception e) {
 			throw new CustomException("Error Creating new User", e);
 		}
-		return isCustomerCreated;
+		return customerUserId;
 	}
 
 	@Override
-	public boolean addEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
+	public int addEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
-		boolean isCustomerCreated = false;
+		int employeeId = 0;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement createUserStatement = connection.prepareStatement(CREATE_NEW_USER,
 						Statement.RETURN_GENERATED_KEYS)) {
@@ -159,7 +152,7 @@ public class UserDaoImplementation implements UserDao {
 
 			int rowsAffected = createUserStatement.executeUpdate();
 			if (rowsAffected > 0) {
-				int userId;
+				int userId=0;
 				try (ResultSet generatedKeys = createUserStatement.getGeneratedKeys()) {
 					if (generatedKeys.next()) {
 						userId = generatedKeys.getInt(1);
@@ -169,19 +162,13 @@ public class UserDaoImplementation implements UserDao {
 				}
 				rowsAffected = addEmployeeToBranch(userId, newEmployee);
 				if (rowsAffected > 0) {
-					isCustomerCreated = true;
-
-					AuditLog auditLog = new AuditLog(userId, AuditlogActions.CREATE, System.currentTimeMillis(),
-							creatingUserId,
-							String.format("User id %d Created New Employee With Id of %d", creatingUserId, userId));
-
-					AuditLogHandler.addAuditData(auditLog);
+					employeeId = userId;
 				}
 			}
 		} catch (SQLException e) {
 			throw new CustomException("Error Creating new User", e);
 		}
-		return isCustomerCreated;
+		return employeeId;
 	}
 
 	@Override
@@ -362,11 +349,6 @@ public class UserDaoImplementation implements UserDao {
 
 			if (rowsAffected > 0) {
 				isUpdated = true;
-				AuditLog auditLog = new AuditLog(customer.getUserId(), AuditlogActions.UPDATE,
-						System.currentTimeMillis(), updatingUserId, String.format(
-								"User id %d Updates the Details of User Id %d", updatingUserId, customer.getUserId()));
-
-				AuditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
 			throw new CustomException("Error While Updating User Details", e);
@@ -390,10 +372,6 @@ public class UserDaoImplementation implements UserDao {
 
 			if (rowsAffected > 0) {
 				isPasswordUpdated = true;
-				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(), userId,
-						String.format("User id %d Updated the Account login Password", userId));
-
-				AuditLogHandler.addAuditData(auditLog);
 			}
 
 		} catch (SQLException e) {

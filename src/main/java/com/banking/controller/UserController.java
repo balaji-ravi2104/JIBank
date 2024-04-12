@@ -1,16 +1,17 @@
 package com.banking.controller;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.UserDao;
 import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.logservice.AuditLogHandler;
+import com.banking.model.AuditLog;
+import com.banking.model.AuditlogActions;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
-import com.banking.model.SessionDetails;
+import com.banking.model.Status;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
@@ -19,17 +20,14 @@ import com.banking.view.UserView;
 
 public class UserController {
 
-	private static final Logger log = Logger.getLogger(MainController.class.getName());
-	private UserDao userDao = new UserDaoImplementation();;
-	private BranchController branchController = new BranchController();
-	private AuditLogHandler auditLogHandler = new AuditLogHandler();
-	private UserView userView = new UserView();
+	private UserDao userDao;
+	private BranchController branchController;
+	private AuditLogHandler auditLogHandler;
+	private UserView userView;
 	private AccountController accountController;
 	public static final String cachePrefix = "Customer";
 
 	private static final Object userCacheLock = new Object();
-
-	// public static final Cache<Integer, Customer> userCache = new LRUCache<>(50);
 	public static final Cache<Integer, Customer> userCache = new RedisCache<Integer, Customer>(6379, cachePrefix);
 
 	public UserController(AccountController accountController) {
@@ -37,6 +35,10 @@ public class UserController {
 	}
 
 	public UserController() {
+		this.userDao = new UserDaoImplementation();
+		this.branchController = new BranchController();
+		this.auditLogHandler = new AuditLogHandler();
+		this.userView = new UserView();
 	}
 
 	public User login(int userId, String password) throws CustomException {
@@ -53,26 +55,56 @@ public class UserController {
 		return null;
 	}
 
-	public boolean registerNewCustomer(Customer customer, int creatingUserId) throws CustomException {
+	public int registerNewCustomer(Customer customer, int creatingUserId) throws CustomException {
 		InputValidator.isNull(customer, ErrorMessages.INPUT_NULL_MESSAGE);
-		boolean isRegistred = false;
+		int customerId = 0;
 		try {
-			isRegistred = userDao.addCustomer(customer, creatingUserId);
+			customerId = userDao.addCustomer(customer, creatingUserId);
+			if (customerId != 0) {
+				AuditLog auditLog = new AuditLog(customerId, AuditlogActions.CREATE, System.currentTimeMillis(),
+						creatingUserId,
+						String.format("User id %d Created New Customer With Id of %d", creatingUserId, customerId),
+						Status.SUCCESS);
+
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(customerId, AuditlogActions.CREATE, System.currentTimeMillis(),
+						creatingUserId,
+						String.format("User id %d Try to Create New Customer but Failed", creatingUserId),
+						Status.FAILURE);
+
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
-		return isRegistred;
+		return customerId;
 	}
 
-	public boolean registerNewEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
+	public int registerNewEmployee(Employee newEmployee, int creatingUserId) throws CustomException {
 		InputValidator.isNull(newEmployee, ErrorMessages.INPUT_NULL_MESSAGE);
-		boolean isRegistred = false;
+		int employeeId = 0;
 		try {
-			isRegistred = userDao.addEmployee(newEmployee, creatingUserId);
+			employeeId = userDao.addEmployee(newEmployee, creatingUserId);
+			if (employeeId != 0) {
+				AuditLog auditLog = new AuditLog(employeeId, AuditlogActions.CREATE, System.currentTimeMillis(),
+						creatingUserId,
+						String.format("User id %d Created New Employee With Id of %d", creatingUserId, employeeId),
+						Status.SUCCESS);
+
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(employeeId, AuditlogActions.CREATE, System.currentTimeMillis(),
+						creatingUserId,
+						String.format("User id %d Try to Create New Employee but Failed", creatingUserId),
+						Status.FAILURE);
+
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while creating new User!!", e);
 		}
-		return isRegistred;
+		return employeeId;
 	}
 
 	public int getEmployeeBranch(int userId) throws CustomException {
@@ -128,7 +160,7 @@ public class UserController {
 				System.out.println("Inside Cache(Admin Purpose) User Id : " + userId);
 				return userCache.get(cachePrefix + userId);
 			}
-			try { 
+			try {
 				customerDetails = userDao.getCustomerDetailsById(userId);
 				if (customerDetails != null) {
 					userCache.set(userId, customerDetails);
@@ -170,6 +202,23 @@ public class UserController {
 		}
 		try {
 			isUpdated = userDao.updateCustomerDetails(customer, updatingUserId);
+			if (isUpdated) {
+				AuditLog auditLog = new AuditLog(customer.getUserId(), AuditlogActions.UPDATE,
+						System.currentTimeMillis(), updatingUserId,
+						String.format("User id %d Updates the Details of User Id %d", updatingUserId,
+								customer.getUserId()),
+						Status.SUCCESS);
+
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(customer.getUserId(), AuditlogActions.UPDATE,
+						System.currentTimeMillis(), updatingUserId,
+						String.format("User id %d Try to Updates the Details of User Id %d But Failed", updatingUserId,
+								customer.getUserId()),
+						Status.FAILURE);
+
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Updation Customer Details", e);
 		}
@@ -181,6 +230,17 @@ public class UserController {
 		boolean isPasswordUpdated = false;
 		try {
 			isPasswordUpdated = userDao.updatePassword(userId, password);
+			if (isPasswordUpdated) {
+				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(), userId,
+						String.format("User id %d Updated the Account login Password", userId), Status.SUCCESS);
+
+				auditLogHandler.addAuditData(auditLog);
+			} else {
+				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(), userId,
+						String.format("User id %d Try to Updated the Account login Password but Failed", userId), Status.FAILURE);
+
+				auditLogHandler.addAuditData(auditLog);
+			}
 		} catch (Exception e) {
 			throw new CustomException("Error while Updating Password!!", e);
 		}
@@ -225,7 +285,7 @@ public class UserController {
 	public boolean validateUserIdAndBranchId(int userId, int branchId) throws CustomException {
 		boolean isValidId = isUserExistsInTheBranch(userId, branchId);
 		if (!isValidId) {
-			log.warning("UserID is Not present in this Branch!!");
+
 		}
 		return isValidId;
 	}
@@ -238,26 +298,5 @@ public class UserController {
 			throw new CustomException("Error while Checking Employee Exists!!", e);
 		}
 		return isExixts;
-	}
-
-	public boolean logSessionData(SessionDetails sessionDetails) throws CustomException {
-		InputValidator.isNull(sessionDetails, "Session object cannot be Null");
-		boolean isSessionLogged = false;
-		try {
-			isSessionLogged = auditLogHandler.logLoginSession(sessionDetails);
-		} catch (Exception e) {
-			throw new CustomException("Error while logging session details", e);
-		}
-		return isSessionLogged;
-	}
-
-	public boolean updateLogoutSession(String sessionId, int userId) throws CustomException {
-		boolean isSessionUpdated = false;
-		try {
-			isSessionUpdated = auditLogHandler.updateLogoutSession(sessionId, userId);
-		} catch (Exception e) {
-			throw new CustomException("Error while updating logging session details", e);
-		}
-		return isSessionUpdated;
 	}
 }

@@ -6,14 +6,16 @@ public class AuditLog {
 	private long createdTime;
 	private int userId;
 	private String description;
+	private Status status;
 	
-	public AuditLog(int targetId, AuditlogActions auditlogActions, long createdTime, int userId, String description) {
+	public AuditLog(int targetId, AuditlogActions auditlogActions, long createdTime, int userId, String description,Status status) {
 		super();
 		this.targetId = targetId;
 		this.auditlogActions = auditlogActions;
 		this.createdTime = createdTime;
 		this.userId = userId;
 		this.description = description;
+		this.status = status;
 	}
 
 	public int getTargetId() {
@@ -31,6 +33,15 @@ public class AuditLog {
 	public void setAuditlogActions(int actionId) {
 		AuditlogActions auditlogActions = AuditlogActions.fromValue(actionId);
 		this.auditlogActions = auditlogActions;
+	}
+	
+	public Status getStatus() {
+		return status;
+	}
+	
+	public void setStatus(int statusId) {
+		Status status = Status.fromValue(statusId);
+		this.status = status;
 	}
 
 	public long getCreatedTime() {
@@ -57,4 +68,10 @@ public class AuditLog {
 		this.description = description;
 	}
 
+	@Override
+	public String toString() {
+		return "AuditLog [targetId=" + targetId + ", auditlogActions=" + auditlogActions + ", createdTime="
+				+ createdTime + ", userId=" + userId + ", description=" + description + "]";
+	}
+	
 }
