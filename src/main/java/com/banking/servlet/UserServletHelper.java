@@ -41,7 +41,7 @@ public class UserServletHelper {
 				HttpSession session = request.getSession(true);
 				session.setAttribute("currentUserId", user.getUserId());
 				session.setAttribute("user", user);
-				
+
 				logServiceDao.logLoginSession((getSessionObject(session, user.getUserId(), request)));
 			}
 		} catch (CustomException e) {
@@ -169,31 +169,75 @@ public class UserServletHelper {
 
 	public static void getApiKey(HttpServletRequest request, HttpServletResponse response) {
 		try {
+			HttpSession session = request.getSession(false);
 			int userId = Integer.parseInt(request.getParameter("userId"));
-			Map<Integer,Token> userApiKeys = apiController.getApiKeys(userId);
-			if(userApiKeys.isEmpty()) {
+			int creatingUserId = (int) session.getAttribute("currentUserId");
+			System.out.println(userId);
+			Map<Integer, Token> userApiKeys = apiController.getApiKeys(userId,creatingUserId);
+			if (userApiKeys.isEmpty()) {
 				request.setAttribute("error", "No API Keys Found");
-			}else {
-				System.out.println(userApiKeys);
+			} else {
+				//System.out.println(userApiKeys);
 				request.setAttribute("userApiKeys", userApiKeys);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}
 
-	public static void getCreateApiKey(HttpServletRequest request, HttpServletResponse response) {
+	public static void createApiKey(HttpServletRequest request, HttpServletResponse response) {
 		boolean isKeyCreated = false;
 		try {
+			HttpSession session = request.getSession(false);
 			int userId = Integer.parseInt(request.getParameter("userId"));
-			isKeyCreated = apiController.createApikey(userId);
-			if(isKeyCreated) {
+			int creatingUserId = (int) session.getAttribute("currentUserId");
+			isKeyCreated = apiController.createApikey(userId,creatingUserId);
+			if (isKeyCreated) {
 				request.setAttribute("updatedSuccess", "API Key Create Successfully");
-			}else {
+				
+			} else {
 				request.setAttribute("updationFailed", "API Key Creation Failed");
 			}
-		}catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			request.setAttribute("error", "A problem occured, Try after sometime");
+		}
+	}
+
+	public static void updateApiKey(HttpServletRequest request, HttpServletResponse response) {
+		boolean isKeyUpdated = false;
+		try {
+			HttpSession session = request.getSession(false);
+			int userId = Integer.parseInt(request.getParameter("userId"));
+			int tokenId = Integer.parseInt(request.getParameter("tokenId"));
+			int creatingUserId = (int) session.getAttribute("currentUserId");
+			isKeyUpdated = apiController.updateApikey(tokenId,creatingUserId,userId);
+			if (isKeyUpdated) {
+				request.setAttribute("updatedSuccess", "API Key Updated Successfully");
+			} else {
+				request.setAttribute("updationFailed", "API Key Updation Failed");
+			}
+		} catch (Exception e) {
+			//e.printStackTrace();
+			request.setAttribute("error", "A problem occured, Try after sometime");
+		}
+	}
+
+	public static void deleteApiKey(HttpServletRequest request, HttpServletResponse response) {
+		boolean isKeyDeleted = false;
+		try {
+			HttpSession session = request.getSession(false);
+			int userId = Integer.parseInt(request.getParameter("userId"));
+			int tokenId = Integer.parseInt(request.getParameter("tokenId"));
+			int creatingUserId = (int) session.getAttribute("currentUserId");
+			isKeyDeleted = apiController.deleteApikey(tokenId,creatingUserId,userId);
+			if (isKeyDeleted) {
+				request.setAttribute("updatedSuccess", "API Key Deleted Successfully");
+			} else {
+				request.setAttribute("updationFailed", "API Key Deletion Failed");
+			}
+		} catch (Exception e) {
+			//e.printStackTrace();
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}

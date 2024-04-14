@@ -88,7 +88,7 @@
 			</div>
 		</form>
 	</div>
-	
+
 	<div class="customerlist-container">
 		<table id="table">
 			<c:if test="${not empty userApiKeys}">
@@ -99,7 +99,8 @@
 						<th>Valid Upto</th>
 						<th>Status</th>
 						<th>Token</th>
-						<th>Action</th>
+						<th>Re-Generate</th>
+						<th>Delete</th>
 					</tr>
 				</thead>
 			</c:if>
@@ -113,8 +114,25 @@
 						<td>${tokenObject.tokenStatus}</td>
 						<td>${tokenObject.token}</td>
 						<td>
-							<form action="<%=request.getContextPath()%>/bank/updateAccountStatus"
+							<form
+								action="<%=request.getContextPath()%>/bank/api/updateapikey"
 								method="post">
+								<input type="hidden" name="tokenId"
+									value="${tokenObject.tokenId}" />
+								<input type="hidden" name="userId"
+									value="${tokenObject.userId}" />
+								<button type="submit" class="updateButton">Re-Generate</button>
+							</form>
+						</td>
+						<td>
+							<form
+								action="<%=request.getContextPath()%>/bank/api/deleteapikey"
+								method="post">
+								<input type="hidden" name="tokenId"
+									value="${tokenObject.tokenId}" />
+								<input type="hidden" name="userId"
+									value="${tokenObject.userId}" />
+								<button type="submit" class="updateButton">Delete</button>
 							</form>
 						</td>
 					</tr>

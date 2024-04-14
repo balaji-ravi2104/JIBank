@@ -16,6 +16,8 @@ public class ApiDaoImplementation implements ApiDao {
 
 	private static final String CREATE_API_KEY = "INSERT INTO TokenDB (UserId,token,createdDate,validUpto) VALUES (?,?,?,?);";
 	private static final String GET_API_KEYS = "SELECT * FROM TokenDB WHERE UserId = ?";
+	private static final String UPDATE_API_KEY = "UPDATE TokenDB SET token = ?,createdDate = ?,validUpto = ? WHERE tokenId = ?;";
+	private static final String DELETE_API_KEY = "DELETE FROM TokenDB WHERE tokenId = ?;";
 
 	@Override
 	public boolean createApikey(int userId, String apiToken, long createdTime, long validUpto) throws CustomException {
@@ -43,7 +45,7 @@ public class ApiDaoImplementation implements ApiDao {
 			preparedStatement.setInt(1, userId);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				userApiKeys = new HashMap<Integer, Token>();
-				reteriveApiKeys(resultSet,userApiKeys);
+				reteriveApiKeys(resultSet, userApiKeys);
 			}
 		} catch (Exception e) {
 			throw new CustomException("Error While Creating API Key", e);
@@ -51,11 +53,44 @@ public class ApiDaoImplementation implements ApiDao {
 		return userApiKeys;
 	}
 
+	@Override
+	public boolean updateApiKey(int tokenId, String apiToken, long createdTime, long validUpto) throws CustomException {
+		boolean isKeyUpdated = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_API_KEY)) {
+			preparedStatement.setString(1, apiToken);
+			preparedStatement.setLong(2, createdTime);
+			preparedStatement.setLong(3, validUpto);
+			preparedStatement.setInt(4, tokenId);
+
+			int roesAffected = preparedStatement.executeUpdate();
+			isKeyUpdated = (roesAffected > 0);
+		} catch (Exception e) {
+			throw new CustomException("Error While Updating API Key", e);
+		}
+		return isKeyUpdated;
+	}
+
+	@Override
+	public boolean deleteApiKey(int tokenId) throws CustomException {
+		boolean isKeyDeleted = false;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(DELETE_API_KEY)) {
+			preparedStatement.setInt(1, tokenId);
+
+			int roesAffected = preparedStatement.executeUpdate();
+			isKeyDeleted = (roesAffected > 0);
+		} catch (Exception e) {
+			throw new CustomException("Error While Deleting API Key", e);
+		}
+		return isKeyDeleted;
+	}
+
 	private void reteriveApiKeys(ResultSet resultSet, Map<Integer, Token> userApiKeys) throws SQLException {
 		Token token;
-		while(resultSet.next()) {
+		while (resultSet.next()) {
 			token = new Token();
-			getTokenObject(resultSet,token);
+			getTokenObject(resultSet, token);
 			userApiKeys.put(token.getTokenId(), token);
 		}
 	}

@@ -265,7 +265,17 @@ public class MainServlet extends HttpServlet {
 			dispatcher.forward(request, response);
 			break;
 		case "/api/createapikey":
-			UserServletHelper.getCreateApiKey(request, response);
+			UserServletHelper.createApiKey(request, response);
+			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/api/updateapikey":
+			UserServletHelper.updateApiKey(request,response);
+			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
+			dispatcher.forward(request, response);
+			break;
+		case "/api/deleteapikey":
+			UserServletHelper.deleteApiKey(request,response);
 			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
 			dispatcher.forward(request, response);
 			break;
