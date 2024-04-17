@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.banking.dao.ApiDao;
 import com.banking.model.Token;
+import com.banking.model.TokenStatus;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 
@@ -16,7 +17,7 @@ public class ApiDaoImplementation implements ApiDao {
 
 	private static final String CREATE_API_KEY = "INSERT INTO TokenDB (UserId,token,createdDate,validUpto) VALUES (?,?,?,?);";
 	private static final String GET_API_KEYS = "SELECT * FROM TokenDB WHERE UserId = ?";
-	private static final String UPDATE_API_KEY = "UPDATE TokenDB SET token = ?,createdDate = ?,validUpto = ? WHERE tokenId = ?;";
+	private static final String UPDATE_API_KEY = "UPDATE TokenDB SET token = ?,createdDate = ?,validUpto = ?,statusId = ? WHERE tokenId = ?;";
 	private static final String DELETE_API_KEY = "DELETE FROM TokenDB WHERE tokenId = ?;";
 
 	@Override
@@ -32,6 +33,7 @@ public class ApiDaoImplementation implements ApiDao {
 			int roesAffected = preparedStatement.executeUpdate();
 			isKeyCreated = (roesAffected > 0);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new CustomException("Error While Creating API Key", e);
 		}
 		return isKeyCreated;
@@ -61,7 +63,8 @@ public class ApiDaoImplementation implements ApiDao {
 			preparedStatement.setString(1, apiToken);
 			preparedStatement.setLong(2, createdTime);
 			preparedStatement.setLong(3, validUpto);
-			preparedStatement.setInt(4, tokenId);
+			preparedStatement.setInt(4, TokenStatus.ACTIVE.getValue());
+			preparedStatement.setInt(5, tokenId);
 
 			int roesAffected = preparedStatement.executeUpdate();
 			isKeyUpdated = (roesAffected > 0);

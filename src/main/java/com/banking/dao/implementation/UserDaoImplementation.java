@@ -69,7 +69,7 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
-	private static final String GET_USER_TOKEN = "SELECT token from TokenDB WHERE userId = ?";
+	private static final String GET_TOKEN_STATUS = "SELECT statusId from TokenDB WHERE userId = ? AND token = ?;";
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -189,20 +189,21 @@ public class UserDaoImplementation implements UserDao {
 	}
 	
 	@Override
-	public String getToken(int userId) throws CustomException {
-		String token = null;
+	public int getTokenStatus(int userId,String userToken) throws CustomException {
+		int status = 0;
 		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(GET_USER_TOKEN)) {
+				PreparedStatement preparedStatement = connection.prepareStatement(GET_TOKEN_STATUS)) {
 			preparedStatement.setInt(1, userId);
+			preparedStatement.setString(2, userToken);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
-					token = resultSet.getString(1);
+					status = resultSet.getInt(1);
 				}
 			}
 		} catch (SQLException e) {
 			throw new CustomException("Error While Checking User Exists", e);
 		}
-		return token;
+		return status;
 	}
 
 	@Override

@@ -172,7 +172,6 @@ public class UserServletHelper {
 			HttpSession session = request.getSession(false);
 			int userId = Integer.parseInt(request.getParameter("userId"));
 			int creatingUserId = (int) session.getAttribute("currentUserId");
-			System.out.println(userId);
 			Map<Integer, Token> userApiKeys = apiController.getApiKeys(userId,creatingUserId);
 			if (userApiKeys.isEmpty()) {
 				request.setAttribute("error", "No API Keys Found");
@@ -218,7 +217,6 @@ public class UserServletHelper {
 				request.setAttribute("updationFailed", "API Key Updation Failed");
 			}
 		} catch (Exception e) {
-			//e.printStackTrace();
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}

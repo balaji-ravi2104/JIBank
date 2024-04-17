@@ -19,6 +19,7 @@ import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.model.Account;
 import com.banking.model.AccountStatus;
 import com.banking.model.Customer;
+import com.banking.model.TokenStatus;
 import com.banking.model.User;
 import com.banking.utils.CustomException;
 
@@ -31,11 +32,12 @@ public class APIServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String path = request.getPathInfo();
-
+		System.out.println("In Side Get :"+path);
 		JSONObject jsonResponse = new JSONObject();
 		if (path.startsWith("/user/")) {
 			String token = request.getHeader("Authorization");
 			int accessUserId = Integer.parseInt(request.getHeader("accessUserId"));
+			System.out.println(token+" "+accessUserId);
 			if (!isValidToken(accessUserId, token)) {
 				jsonResponse.put("status", "error");
 				jsonResponse.put("message", "Invalid Token, Please Provide a Valid Token");
@@ -68,6 +70,78 @@ public class APIServlet extends HttpServlet {
 		writeJsonResponse(response, jsonResponse);
 	}
 
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String path = request.getPathInfo();
+		System.out.println("Inside Post :"+path);
+		switch (path) {
+		case "/login": 
+			JSONObject jsonResponse = new JSONObject();
+			JSONObject rootObject = getRootObject(request);
+			try {
+				//System.out.println("Root Object : " + rootObject);
+				int userId = rootObject.optInt("userId");
+				String password = rootObject.getString("password");
+				User user = userController.login(userId, password);
+				if (user == null) {
+					jsonResponse.put("status", "error");
+					jsonResponse.put("message", "Invalid User Id or Password");
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				} else if (user.getStatus() == AccountStatus.INACTIVE) {
+					jsonResponse.put("status", "error");
+					jsonResponse.put("message", "Your Account is InActive");
+					response.setStatus(HttpServletResponse.SC_OK);
+				} else {
+					jsonResponse.put("status", "success");
+					jsonResponse.put("message", "Welcome to JI Bank " + user.getFirstName());   
+					response.setStatus(HttpServletResponse.SC_OK);
+				}
+			} catch (Exception e) {
+				jsonResponse.put("status", "error");
+				jsonResponse.put("message", "A problem occurred, Try after sometime");
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+			writeJsonResponse(response, jsonResponse);
+			break;
+		default:
+			System.out.println("Default");
+			break;
+		}
+	}
+
+	private JSONObject getRootObject(HttpServletRequest request) {
+		JSONObject rootObject = null;
+		try {
+			BufferedReader reader = request.getReader();
+			StringBuilder jsonRequestBuilder = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				jsonRequestBuilder.append(line);
+			}
+			String jsonRequest = jsonRequestBuilder.toString();
+			rootObject = new JSONObject(jsonRequest);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return rootObject;
+	}
+
+	public void writeJsonResponse(HttpServletResponse response, JSONObject jsonResponse) throws IOException {
+		response.setContentType("application/json");
+		try (PrintWriter out = response.getWriter()) {
+			out.print(jsonResponse);
+		}
+	}
+
+	private boolean isValidToken(int accessUserId, String token) {
+		try {
+			int tokenStatus = userDao.getTokenStatus(accessUserId,token);
+			return  tokenStatus!= 0 && TokenStatus.fromValue(tokenStatus) == TokenStatus.ACTIVE;
+		} catch (CustomException e) {
+			return false;
+		}
+	}
+	
 	private void getCustomerAccounts(int userId, int branchId, JSONObject jsonResponse, HttpServletResponse response) {
 		try {
 			Map<String, Account> customerAccounts = accountController.getCustomerAccountsInBranch(userId, branchId);
@@ -101,76 +175,6 @@ public class APIServlet extends HttpServlet {
 			jsonResponse.put("status", "error");
 			jsonResponse.put("message", "A problem occurred, Try after sometime");
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		String path = request.getPathInfo();
-		switch (path) {
-		case "/login": 
-			JSONObject jsonResponse = new JSONObject();
-			JSONObject rootObject = getRootObject(request);
-			try {
-				// System.out.println("Root Object : " + rootObject);
-				int userId = rootObject.optInt("userId");
-				String password = rootObject.getString("password");
-				User user = userController.login(userId, password);
-				if (user == null) {
-					jsonResponse.put("status", "error");
-					jsonResponse.put("message", "Invalid User Id or Password");
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				} else if (user.getStatus() == AccountStatus.INACTIVE) {
-					jsonResponse.put("status", "error");
-					jsonResponse.put("message", "Your Account is InActive");
-					response.setStatus(HttpServletResponse.SC_OK);
-				} else {
-					jsonResponse.put("status", "success");
-					jsonResponse.put("message", "Welcome to JI Bank " + user.getFirstName());
-					response.setStatus(HttpServletResponse.SC_OK);
-				}
-			} catch (Exception e) {
-				jsonResponse.put("status", "error");
-				jsonResponse.put("message", "A problem occurred, Try after sometime");
-				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			}
-			writeJsonResponse(response, jsonResponse);
-			break;
-		default:
-			break;
-		}
-	}
-
-	private JSONObject getRootObject(HttpServletRequest request) {
-		JSONObject rootObject = null;
-		try {
-			BufferedReader reader = request.getReader();
-			StringBuilder jsonRequestBuilder = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				jsonRequestBuilder.append(line);
-			}
-			String jsonRequest = jsonRequestBuilder.toString();
-			rootObject = new JSONObject(jsonRequest);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return rootObject;
-	}
-
-	public void writeJsonResponse(HttpServletResponse response, JSONObject jsonResponse) throws IOException {
-		response.setContentType("application/json");
-		try (PrintWriter out = response.getWriter()) {
-			out.print(jsonResponse);
-		}
-	}
-
-	private boolean isValidToken(int accessUserId, String token) {
-		try {
-			String realToken = userDao.getToken(accessUserId);
-			return realToken != null && realToken.equals(token);
-		} catch (CustomException e) {
-			return false;
 		}
 	}
 }
