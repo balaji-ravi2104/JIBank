@@ -25,7 +25,7 @@ public class HttpGetExample {
 			int responseCode = connection.getResponseCode();
 			System.out.println("Response Code :" + responseCode);
 
-			if (responseCode == HttpsURLConnection.HTTP_OK) {
+			if (responseCode == HttpsURLConnection.HTTP_OK) {  
 
 				StringBuilder sb = new StringBuilder();
 				Scanner scanner = new Scanner(connection.getInputStream());
