@@ -24,9 +24,6 @@ public class TransactionController {
 
 	private static final Logger logger = LoggerProvider.getLogger();
 
-	private static final Object accountCacheLock = new Object();
-	private static final Object listOfAccountsLock = new Object();
-
 	public TransactionController() {
 		this.accountDao = new AccountDaoImplementation();
 		this.transactionDao = new TransactionDaoImplementation();
@@ -37,20 +34,17 @@ public class TransactionController {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isDepositeSuccess = false;
 
-		synchronized (accountCacheLock) {
+		synchronized (account.getAccountNumber()) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
-		}
-		synchronized (listOfAccountsLock) {
 			AccountController.listOfAccounts.rem(AccountController.listAccountCachePrefix + account.getUserId());
-		}
-
-		try {
-			isDepositeSuccess = transactionDao.deposit(account, amountToDeposite, description, userId);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Depositing Money", e);
-			throw new CustomException("Exception Occured While Depositing Money", e);
-		} finally {
-			AuditLogUtils.logAmountDeposit(userId, account, isDepositeSuccess ? Status.SUCCESS : Status.FAILURE);
+			try {
+				isDepositeSuccess = transactionDao.deposit(account, amountToDeposite, description, userId);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception Occured While Depositing Money", e);
+				throw new CustomException("Exception Occured While Depositing Money", e);
+			} finally {
+				AuditLogUtils.logAmountDeposit(userId, account, isDepositeSuccess ? Status.SUCCESS : Status.FAILURE);
+			}
 		}
 		return isDepositeSuccess;
 	}
@@ -60,20 +54,17 @@ public class TransactionController {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isWithdrawSuccess = false;
 
-		synchronized (accountCacheLock) {
+		synchronized (account.getAccountNumber()) {
 			AccountController.accountCache.rem(AccountController.accountCachePrefix + account.getAccountNumber());
-		}
-		synchronized (listOfAccountsLock) {
 			AccountController.listOfAccounts.rem(AccountController.listAccountCachePrefix + account.getUserId());
-		}
-
-		try {
-			isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw, description, userId);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Withdrawing Money", e);
-			throw new CustomException("Exception Occured While Withdrawing Money", e);
-		} finally {
-			AuditLogUtils.logAmountWithdraw(userId, account, isWithdrawSuccess ? Status.SUCCESS : Status.FAILURE);
+			try {
+				isWithdrawSuccess = transactionDao.withdraw(account, amountToWithdraw, description, userId);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception Occured While Withdrawing Money", e);
+				throw new CustomException("Exception Occured While Withdrawing Money", e);
+			} finally {
+				AuditLogUtils.logAmountWithdraw(userId, account, isWithdrawSuccess ? Status.SUCCESS : Status.FAILURE);
+			}
 		}
 		return isWithdrawSuccess;
 	}
@@ -85,29 +76,27 @@ public class TransactionController {
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
 
-		synchronized (accountCacheLock) {
+		synchronized (accountFromTransfer.getAccountNumber()) {
 			AccountController.accountCache
 					.rem(AccountController.accountCachePrefix + accountFromTransfer.getAccountNumber());
 			AccountController.accountCache
 					.rem(AccountController.accountCachePrefix + accountToTransfer.getAccountNumber());
-		}
 
-		synchronized (listOfAccountsLock) {
 			AccountController.listOfAccounts
 					.rem(AccountController.listAccountCachePrefix + accountFromTransfer.getUserId());
 			AccountController.listOfAccounts
 					.rem(AccountController.listAccountCachePrefix + accountToTransfer.getUserId());
-		}
 
-		try {
-			isTransactionSuccess = transactionDao.transferMoneyWithinBank(accountFromTransfer, accountToTransfer,
-					amountToTransfer, remark);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Transferring Money Within Bank", e);
-			throw new CustomException("Exception Occured While Transferring Money Within Bank", e);
-		} finally {
-			AuditLogUtils.logAmountTransfer(accountFromTransfer, accountToTransfer.getAccountNumber(),
-					isTransactionSuccess ? Status.SUCCESS : Status.FAILURE);
+			try {
+				isTransactionSuccess = transactionDao.transferMoneyWithinBank(accountFromTransfer, accountToTransfer,
+						amountToTransfer, remark);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception Occured While Transferring Money Within Bank", e);
+				throw new CustomException("Exception Occured While Transferring Money Within Bank", e);
+			} finally {
+				AuditLogUtils.logAmountTransfer(accountFromTransfer, accountToTransfer.getAccountNumber(),
+						isTransactionSuccess ? Status.SUCCESS : Status.FAILURE);
+			}
 		}
 		return isTransactionSuccess;
 	}
@@ -119,23 +108,22 @@ public class TransactionController {
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
 
-		synchronized (accountCacheLock) {
+		synchronized (accountFromTransfer.getAccountNumber()) {
 			AccountController.accountCache
 					.rem(AccountController.accountCachePrefix + accountFromTransfer.getAccountNumber());
-		}
-		synchronized (listOfAccountsLock) {
+
 			AccountController.listOfAccounts
 					.rem(AccountController.listAccountCachePrefix + accountFromTransfer.getUserId());
-		}
-		try {
-			isTransactionSuccess = transactionDao.transferMoneyWithOtherBank(accountFromTransfer,
-					accountNumberToTransfer, amountToTransferWithOtherBank, remark);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Transferring Money With Other Bank", e);
-			throw new CustomException("Exception Occured While Transferring Money With Other Bank", e);
-		} finally {
-			AuditLogUtils.logAmountTransfer(accountFromTransfer, accountNumberToTransfer,
-					isTransactionSuccess ? Status.SUCCESS : Status.FAILURE);
+			try {
+				isTransactionSuccess = transactionDao.transferMoneyWithOtherBank(accountFromTransfer,
+						accountNumberToTransfer, amountToTransferWithOtherBank, remark);
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception Occured While Transferring Money With Other Bank", e);
+				throw new CustomException("Exception Occured While Transferring Money With Other Bank", e);
+			} finally {
+				AuditLogUtils.logAmountTransfer(accountFromTransfer, accountNumberToTransfer,
+						isTransactionSuccess ? Status.SUCCESS : Status.FAILURE);
+			}
 		}
 		return isTransactionSuccess;
 	}

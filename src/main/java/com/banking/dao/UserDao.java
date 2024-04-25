@@ -41,5 +41,5 @@ public interface UserDao {
 	
 	boolean isValidCustomer(int userId) throws CustomException;
 
-	int getTokenStatus(int userId,String token) throws CustomException;
+	int getTokenStatus(String token) throws CustomException;
 }

@@ -71,7 +71,7 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String GET_PASSWORD = "SELECT Password FROM Users WHERE UserId = ?";
 
-	private static final String GET_TOKEN_STATUS = "SELECT statusId from TokenDB WHERE userId = ? AND token = ?;";
+	private static final String GET_TOKEN_STATUS = "SELECT statusId from TokenDB WHERE token = ?;";
 
 	@Override
 	public User authendicateUser(int userID) throws CustomException {
@@ -196,12 +196,11 @@ public class UserDaoImplementation implements UserDao {
 	}
 	
 	@Override
-	public int getTokenStatus(int userId,String userToken) throws CustomException {
+	public int getTokenStatus(String userToken) throws CustomException {
 		int status = 0;
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(GET_TOKEN_STATUS)) {
-			preparedStatement.setInt(1, userId);
-			preparedStatement.setString(2, userToken);
+			preparedStatement.setString(1, userToken);
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				if (resultSet.next()) {
 					status = resultSet.getInt(1);

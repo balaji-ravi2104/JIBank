@@ -8,7 +8,6 @@ import javax.net.ssl.HttpsURLConnection;
 public class HttpGetExample {
 	private static final String GET_USER_URL = "https://localhost:8443/JIBank/api/user/1013";
 	private static final String AUTH_TOKEN = "Ct40cqqcv2VIBIw1pJ1gan9l5zmIYFIb";
-	private static final String USER = "1001";
 
 	public static void main(String[] args) {
 		try {
@@ -20,7 +19,6 @@ public class HttpGetExample {
 
 			connection.setRequestMethod("GET");	
 			connection.setRequestProperty("Authorization", AUTH_TOKEN);
-			connection.setRequestProperty("accessUserId", USER);
 
 			int responseCode = connection.getResponseCode();
 			System.out.println("Response Code :" + responseCode);

@@ -25,8 +25,6 @@ public class AccountController {
 	public static final String accountCachePrefix = "Account";
 	public static final String listAccountCachePrefix = "ListAccount";
 
-	private final Object getAccountDetailsLock = new Object();
-	private final Object getAccountsOfCustomerLock = new Object();
 
 	private static final Logger logger = LoggerProvider.getLogger();
 	public static final Cache<String, Account> accountCache = new RedisCache<String, Account>(6379, accountCachePrefix);
@@ -42,7 +40,7 @@ public class AccountController {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		boolean isPrimary = false;
-		synchronized ("" + account.getUserId()) {
+		synchronized (account.getUserId()+"") {
 			listOfAccounts.rem(listAccountCachePrefix + account.getUserId());
 			if (!accountDao.customerHasAccount(account.getUserId())) {
 				isPrimary = true;
@@ -78,36 +76,32 @@ public class AccountController {
 	public Account getAccountDetails(String accountNumber) throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		Account account = null;
-		synchronized (getAccountDetailsLock) {
-			if (accountCache.get(accountCachePrefix + accountNumber) != null) {
-				return accountCache.get(accountCachePrefix + accountNumber);
+		if (accountCache.get(accountCachePrefix + accountNumber) != null) {
+			return accountCache.get(accountCachePrefix + accountNumber);
+		}
+		try {
+			account = accountDao.getAccountDetail(accountNumber);
+			if (account != null) {
+				accountCache.set(accountNumber, account);
 			}
-			try {
-				account = accountDao.getAccountDetail(accountNumber);
-				if (account != null) {
-					accountCache.set(accountNumber, account);
-				}
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception Occured While Reterving Account Details", e);
-				throw new CustomException("Exception Occured While Reterving Account Details", e);
-			}
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving Account Details", e);
+			throw new CustomException("Exception Occured While Reterving Account Details", e);
 		}
 		return account;
 	}
 
 	public List<Account> getAccountsOfCustomer(int userId) throws CustomException {
 		List<Account> accounts = null;
-		synchronized (getAccountsOfCustomerLock) {
-			if (listOfAccounts.get(listAccountCachePrefix + userId) != null) {
-				return listOfAccounts.get(listAccountCachePrefix + (userId));
-			}
-			try {
-				accounts = accountDao.getAllAccountsOfCustomer(userId);
-				listOfAccounts.set(userId, accounts);
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception Occured While Reterving All Account of a Customer", e);
-				throw new CustomException("Exception Occured While Reterving All Account of a Customer", e);
-			}
+		if (listOfAccounts.get(listAccountCachePrefix + userId) != null) {
+			return listOfAccounts.get(listAccountCachePrefix + (userId));
+		}
+		try {
+			accounts = accountDao.getAllAccountsOfCustomer(userId);
+			listOfAccounts.set(userId, accounts);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving All Account of a Customer", e);
+			throw new CustomException("Exception Occured While Reterving All Account of a Customer", e);
 		}
 		return accounts;
 	}
@@ -140,7 +134,7 @@ public class AccountController {
 		int userId = 0;
 		try {
 			isAccountStatusChanged = accountDao.changeAccountStatus(accountNumber, status, updatingUserId);
-			if(isAccountStatusChanged) {
+			if (isAccountStatusChanged) {
 				userId = getAccountDetails(accountNumber).getUserId();
 			}
 		} catch (Exception e) {

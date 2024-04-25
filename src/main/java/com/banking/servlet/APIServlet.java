@@ -36,9 +36,8 @@ public class APIServlet extends HttpServlet {
 		JSONObject jsonResponse = new JSONObject();
 		if (path.startsWith("/user/")) {
 			String token = request.getHeader("Authorization");
-			int accessUserId = Integer.parseInt(request.getHeader("accessUserId"));
-			System.out.println(token+" "+accessUserId);
-			if (!isValidToken(accessUserId, token)) {
+			System.out.println(token);
+			if (!isValidToken(token)) {
 				jsonResponse.put("status", "error");
 				jsonResponse.put("message", "Invalid Token, Please Provide a Valid Token");
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -131,9 +130,9 @@ public class APIServlet extends HttpServlet {
 		}
 	}
 
-	private boolean isValidToken(int accessUserId, String token) {
+	private boolean isValidToken(String token) {
 		try {
-			int tokenStatus = userDao.getTokenStatus(accessUserId,token);
+			int tokenStatus = userDao.getTokenStatus(token);
 			return  tokenStatus!= 0 && TokenStatus.fromValue(tokenStatus) == TokenStatus.ACTIVE;
 		} catch (CustomException e) {
 			return false;
