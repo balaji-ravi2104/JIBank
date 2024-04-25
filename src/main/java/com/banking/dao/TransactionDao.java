@@ -19,8 +19,6 @@ public interface TransactionDao {
 	boolean transferMoneyWithOtherBank(Account accountFromTransfer, String accountNumberToTransfer,
 			double amountToTransferWithOtherBank, String remark) throws CustomException;
 
-	List<Transaction> getUsersStatement(Account account, int numberOfMonths) throws CustomException;
-
 	List<Transaction> getCustomerTransactionHistory(String accountNumber, int month) throws CustomException;
 
 	Map<String, List<Transaction>> getAllTransactionHistory(int userId, int branchId, int month) throws CustomException;

@@ -19,9 +19,6 @@ public interface UserDao {
 
 	boolean checkCustomerIdPresentInBranch(int userId, int branchId) throws CustomException;
 
-	<K extends Enum<K>, V> boolean updateCustomerDetails(int userIdToUpdate, Map<K, V> fieldsToUpdate)
-			throws CustomException;
-
 	boolean updatePassword(int userId, String password) throws CustomException;
 
 	boolean checkEmployeeExists(int employeeId) throws CustomException;

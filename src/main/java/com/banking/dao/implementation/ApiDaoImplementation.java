@@ -6,12 +6,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.ApiDao;
 import com.banking.model.Token;
 import com.banking.model.TokenStatus;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
+import com.banking.utils.LoggerProvider;
 
 public class ApiDaoImplementation implements ApiDao {
 
@@ -19,6 +22,8 @@ public class ApiDaoImplementation implements ApiDao {
 	private static final String GET_API_KEYS = "SELECT * FROM TokenDB WHERE UserId = ?";
 	private static final String UPDATE_API_KEY = "UPDATE TokenDB SET token = ?,createdDate = ?,validUpto = ?,statusId = ? WHERE tokenId = ?;";
 	private static final String DELETE_API_KEY = "DELETE FROM TokenDB WHERE tokenId = ?;";
+	
+	private static final Logger logger = LoggerProvider.getLogger();
 
 	@Override
 	public boolean createApikey(int userId, String apiToken, long createdTime, long validUpto) throws CustomException {
@@ -34,7 +39,8 @@ public class ApiDaoImplementation implements ApiDao {
 			isKeyCreated = (roesAffected > 0);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new CustomException("Error While Creating API Key", e);
+			logger.log(Level.WARNING,"Exception Occured While Creating Api Key",e);
+			throw new CustomException("Exception Occured While Creating Api Key", e);
 		}
 		return isKeyCreated;
 	}
@@ -50,7 +56,8 @@ public class ApiDaoImplementation implements ApiDao {
 				reteriveApiKeys(resultSet, userApiKeys);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error While Creating API Key", e);
+			logger.log(Level.WARNING,"Exception Occured While Getting Api Key",e);
+			throw new CustomException("Exception Occured While Getting Api Key", e);
 		}
 		return userApiKeys;
 	}
@@ -69,7 +76,8 @@ public class ApiDaoImplementation implements ApiDao {
 			int roesAffected = preparedStatement.executeUpdate();
 			isKeyUpdated = (roesAffected > 0);
 		} catch (Exception e) {
-			throw new CustomException("Error While Updating API Key", e);
+			logger.log(Level.WARNING,"Exception Occured While Updating Api Key",e);
+			throw new CustomException("Exception Occured While Updating Api Key", e);
 		}
 		return isKeyUpdated;
 	}
@@ -84,7 +92,8 @@ public class ApiDaoImplementation implements ApiDao {
 			int roesAffected = preparedStatement.executeUpdate();
 			isKeyDeleted = (roesAffected > 0);
 		} catch (Exception e) {
-			throw new CustomException("Error While Deleting API Key", e);
+			logger.log(Level.WARNING,"Exception Occured While Deleting Api Key",e);
+			throw new CustomException("Exception Occured While Deleting Api Key", e);
 		}
 		return isKeyDeleted;
 	}

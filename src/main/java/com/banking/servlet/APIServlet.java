@@ -61,7 +61,7 @@ public class APIServlet extends HttpServlet {
 					jsonResponse.put("message", "Invalid URL. Please provide a valid URL.");
 					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 				}
-			} catch (NumberFormatException e) {
+			} catch (Exception e) {
 				jsonResponse.put("status", "error");
 				jsonResponse.put("message", "Invalid URL. Please provide a valid URL."); 
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -104,15 +104,13 @@ public class APIServlet extends HttpServlet {
 			writeJsonResponse(response, jsonResponse);
 			break;
 		default:
-			System.out.println("Default");
 			break;
 		}
 	}
 
 	private JSONObject getRootObject(HttpServletRequest request) {
 		JSONObject rootObject = null;
-		try {
-			BufferedReader reader = request.getReader();
+		try(BufferedReader reader = request.getReader()){
 			StringBuilder jsonRequestBuilder = new StringBuilder();
 			String line;
 			while ((line = reader.readLine()) != null) {

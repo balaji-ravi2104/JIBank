@@ -3,11 +3,12 @@ package com.banking.dao.implementation;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.AccountDao;
 import com.banking.model.Account;
@@ -15,8 +16,11 @@ import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
+import com.banking.utils.LoggerProvider;
 
 public class AccountDaoImplementation implements AccountDao {
+
+	private static final Logger logger = LoggerProvider.getLogger();
 
 	private static final String CREATE_NEW_ACCOUNT = "INSERT INTO Accounts (user_id, account_number, "
 			+ "branch_id,balance,primaryAccount,TypeId,CreatedBy,ModifiedBy) VALUES (?,?,?,?,?,?,?,?);";
@@ -40,7 +44,6 @@ public class AccountDaoImplementation implements AccountDao {
 
 	private static final String IS_ACCOUNT_PRESENT = "SELECT COUNT(*) AS account_count FROM Accounts WHERE account_number = ?;";
 
-
 	@Override
 	public boolean createAccount(Account account, boolean isPrimary, int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
@@ -62,9 +65,9 @@ public class AccountDaoImplementation implements AccountDao {
 			if (rowsAffected > 0) {
 				isAccountCreated = true;
 			}
-
-		} catch (SQLException e) {
-			throw new CustomException("Error While Creating new Account!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Creating new Account", e);
+			throw new CustomException("Exception Occured While Creating new Account", e);
 		}
 		return isAccountCreated;
 	}
@@ -84,9 +87,9 @@ public class AccountDaoImplementation implements AccountDao {
 					isAccountExists = (count > 0);
 				}
 			}
-
-		} catch (SQLException e) {
-			throw new CustomException("Error While Checking Account Existing!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Checking Account Exists in Branch", e);
+			throw new CustomException("Exception Occured While Checking Account Exists in Branch", e);
 		}
 		return isAccountExists;
 	}
@@ -102,8 +105,9 @@ public class AccountDaoImplementation implements AccountDao {
 					isAccountExists = (resultSet.getInt(1) > 0);
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Checking Account Existing!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Checking Account Exists", e);
+			throw new CustomException("Exception Occured While Checking Account Exists", e);
 		}
 		return isAccountExists;
 	}
@@ -121,8 +125,9 @@ public class AccountDaoImplementation implements AccountDao {
 					getAccount(resultSet, accountDetails);
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving Account!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving Account Details", e);
+			throw new CustomException("Exception Occured While Reterving Account Details", e);
 		}
 		return accountDetails;
 	}
@@ -141,8 +146,9 @@ public class AccountDaoImplementation implements AccountDao {
 				getAccounts(resultSet, customerAccounts);
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving Account!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving Account Details", e);
+			throw new CustomException("Exception Occured While Reterving Account Details", e);
 		}
 		return customerAccounts;
 	}
@@ -159,8 +165,9 @@ public class AccountDaoImplementation implements AccountDao {
 				getAccountsByBranch(resultSet, allAccounts);
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving All Account of a Customer!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving All Account Details", e);
+			throw new CustomException("Exception Occured While Reterving All Account Details", e);
 		}
 		return allAccounts;
 	}
@@ -182,8 +189,9 @@ public class AccountDaoImplementation implements AccountDao {
 				}
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error while Checking Bank Account Type Exists!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving Account Type Details", e);
+			throw new CustomException("Exception Occured While Reterving Account Type Details", e);
 		}
 		return isAccountPresent;
 	}
@@ -204,14 +212,15 @@ public class AccountDaoImplementation implements AccountDao {
 				}
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error while Checking Bank Account Exists!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured while Checking Account Exists", e);
+			throw new CustomException("Exception Occured while Checking Account Exists", e);
 		}
 		return isAccountPresent;
 	}
 
 	private void getAccountsByBranch(ResultSet resultSet, Map<Integer, Map<String, Account>> allAccounts)
-			throws SQLException {
+			throws Exception {
 		Account account;
 		while (resultSet.next()) {
 			account = new Account();
@@ -237,8 +246,9 @@ public class AccountDaoImplementation implements AccountDao {
 				getAllAccounts(resultSet, accounts);
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving All Account of a Customer!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Reterving All Account of a Customer", e);
+			throw new CustomException("Exception Occured While Reterving All Account of a Customer", e);
 		}
 		return accounts;
 	}
@@ -257,13 +267,14 @@ public class AccountDaoImplementation implements AccountDao {
 			if (rowsAffected > 0) {
 				isAccountStatusChanged = true;
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Updating Bank Account Status", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Updating Bank Account Status", e);
+			throw new CustomException("Exception Occured While Updating Bank Account Status", e);
 		}
 		return isAccountStatusChanged;
 	}
 
-	private void getAccounts(ResultSet resultSet, Map<String, Account> customerAccounts) throws SQLException {
+	private void getAccounts(ResultSet resultSet, Map<String, Account> customerAccounts) throws Exception {
 		Account account;
 		while (resultSet.next()) {
 			account = new Account();
@@ -272,7 +283,7 @@ public class AccountDaoImplementation implements AccountDao {
 		}
 	}
 
-	private void getAllAccounts(ResultSet resultSet, List<Account> accounts) throws SQLException {
+	private void getAllAccounts(ResultSet resultSet, List<Account> accounts) throws Exception {
 		Account account;
 		while (resultSet.next()) {
 			account = new Account();
@@ -291,13 +302,14 @@ public class AccountDaoImplementation implements AccountDao {
 					accountCount = resultSet.getInt(1);
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error getting account count for branch ID: " + branchId, e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured Whilegetting account count of branch", e);
+			throw new CustomException("Exception Occured While getting account count of branch", e);
 		}
 		return accountCount;
 	}
 
-	private void getAccount(ResultSet resultSet, Account account) throws SQLException {
+	private void getAccount(ResultSet resultSet, Account account) throws Exception {
 		account.setAccountId(resultSet.getInt(1));
 		account.setUserId(resultSet.getInt(2));
 		account.setAccountNumber(resultSet.getString(3));

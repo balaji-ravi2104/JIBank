@@ -2,6 +2,8 @@ package com.banking.dao.implementation;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.LogServiceDao;
 import com.banking.model.AuditLog;
@@ -10,6 +12,7 @@ import com.banking.model.SessionDetails;
 import com.banking.model.Status;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
+import com.banking.utils.LoggerProvider;
 
 public class LogServiceDaoImplementation implements LogServiceDao {
 
@@ -19,6 +22,8 @@ public class LogServiceDaoImplementation implements LogServiceDao {
 
 	private static final String AUDIT_LOG = "INSERT INTO AuditLog (TargetID,ActionId,CreatedBy,UserId,Description,StatusId) VALUES (?,?,?,?,?,?);";
 
+	private static final Logger logger = LoggerProvider.getLogger();
+	
 	public void logAuditTable(AuditLog auditLog) throws CustomException {
 		try (Connection connection = DatabaseConnection.getConnection();
 				PreparedStatement preparedStatement = connection.prepareStatement(AUDIT_LOG)) {
@@ -31,8 +36,9 @@ public class LogServiceDaoImplementation implements LogServiceDao {
 
 			preparedStatement.executeUpdate();
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new CustomException("Error While Logging Audit Details");
+			//e.printStackTrace();
+			logger.log(Level.WARNING,"Exception Occured While Logging Audit Details",e);
+			throw new CustomException("Exception Occured While Logging Audit Details", e);
 		}
 	}
 
@@ -52,10 +58,10 @@ public class LogServiceDaoImplementation implements LogServiceDao {
 						String.format("User id %d logged into the website", sessionDetails.getUserId()),Status.SUCCESS);
 				logAuditTable(auditLog);
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new CustomException("Error While Logging User Session Details");
+			//e.printStackTrace();
+			logger.log(Level.WARNING,"Exception Occured While Logging User Session Details",e);
+			throw new CustomException("Exception Occured While Logging User Session Details", e);
 		}
 	}
 
@@ -73,9 +79,9 @@ public class LogServiceDaoImplementation implements LogServiceDao {
 						String.format("User id %d logged out the website", userId),Status.SUCCESS);
 				logAuditTable(auditLog);
 			}
-
 		} catch (Exception e) {
-			throw new CustomException("Error While Logging User Session Details");
+			logger.log(Level.WARNING,"Exception Occured While Logging User Session Logout Details",e);
+			throw new CustomException("Exception Occured While Logging User Session Logout Details", e);
 		}
 	}
 }

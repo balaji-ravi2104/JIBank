@@ -18,7 +18,6 @@ import com.banking.model.SessionDetails;
 import com.banking.model.Token;
 import com.banking.model.User;
 import com.banking.model.UserType;
-import com.banking.utils.CustomException;
 import com.banking.utils.DateUtils;
 
 public class UserServletHelper {
@@ -44,7 +43,7 @@ public class UserServletHelper {
 
 				logServiceDao.logLoginSession((getSessionObject(session, user.getUserId(), request)));
 			}
-		} catch (CustomException e) {
+		} catch (Exception e) {
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
 	}
@@ -82,7 +81,7 @@ public class UserServletHelper {
 				request.setAttribute("DOB", date);
 				request.setAttribute("customerDetails", customer);
 			}
-		} catch (CustomException e) {
+		} catch (Exception e) {
 			request.setAttribute("error", "An Error Occured, Try Again");
 		}
 	}
@@ -114,7 +113,7 @@ public class UserServletHelper {
 					}
 				}
 			}
-		} catch (CustomException e) {
+		} catch (Exception e) {
 			request.setAttribute("userCreationFailed", "User Creation Failed!! Try Again!!");
 		}
 	}
@@ -133,7 +132,7 @@ public class UserServletHelper {
 					request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 				}
 			}
-		} catch (CustomException e) {
+		} catch (Exception e) {
 			request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 		}
 	}
@@ -149,7 +148,7 @@ public class UserServletHelper {
 			} else {
 				request.setAttribute("failed", "Password Updation Failed");
 			}
-		} catch (CustomException e) {
+		} catch (Exception e) {
 			request.setAttribute("failed", "Password Updation Failed");
 		}
 	}

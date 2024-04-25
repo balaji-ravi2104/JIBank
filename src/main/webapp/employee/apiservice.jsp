@@ -18,14 +18,14 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-	<%-- <%
+	<%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
 		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
-	%> --%>
+	%>
 	<div class="navbar-home">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">

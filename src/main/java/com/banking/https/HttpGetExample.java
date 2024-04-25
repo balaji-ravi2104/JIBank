@@ -18,7 +18,7 @@ public class HttpGetExample {
 			URL urlObj = new URL(GET_USER_URL);
 			HttpsURLConnection connection = (HttpsURLConnection) urlObj.openConnection();
 
-			connection.setRequestMethod("GET");
+			connection.setRequestMethod("GET");	
 			connection.setRequestProperty("Authorization", AUTH_TOKEN);
 			connection.setRequestProperty("accessUserId", USER);
 

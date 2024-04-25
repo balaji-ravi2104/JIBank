@@ -1,6 +1,8 @@
 package com.banking.controller;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.ApiDao;
 import com.banking.dao.implementation.ApiDaoImplementation;
@@ -10,12 +12,15 @@ import com.banking.model.AuditlogActions;
 import com.banking.model.Status;
 import com.banking.model.Token;
 import com.banking.utils.CustomException;
+import com.banking.utils.LoggerProvider;
 import com.banking.utils.TokenGenerator;
 
 public class ApiController {
 	private ApiDao apiDao;
 	private AuditLogHandler auditLogHandler;
 
+	private static final Logger logger = LoggerProvider.getLogger();
+	
 	public ApiController() {
 		this.apiDao = new ApiDaoImplementation();
 		this.auditLogHandler = new AuditLogHandler();
@@ -44,7 +49,8 @@ public class ApiController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error While Creating Api Token", e);
+			logger.log(Level.WARNING,"Exception Occured While Creating Api Key",e);
+			throw new CustomException("Exception Occured While Creating Api Key", e);
 		}
 		return isKeyCreated;
 	}
@@ -60,7 +66,8 @@ public class ApiController {
 
 			auditLogHandler.addAuditData(auditLog);
 		} catch (Exception e) {
-			throw new CustomException("Error While Getting Api Token", e);
+			logger.log(Level.WARNING,"Exception Occured While Getting Api Key",e);
+			throw new CustomException("Exception Occured While Getting Api Key", e);
 		}
 		return userApiKeys;
 	}
@@ -88,7 +95,8 @@ public class ApiController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error While Updating Api Token", e);
+			logger.log(Level.WARNING,"Exception Occured While Updating Api Key",e);
+			throw new CustomException("Exception Occured While Updating Api Key", e);
 		}
 		return isKeyUpdated;
 
@@ -114,7 +122,8 @@ public class ApiController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error While Deleting Api Token", e);
+			logger.log(Level.WARNING,"Exception Occured While Deleting Api Key",e);
+			throw new CustomException("Exception Occured While Deleting Api Key", e);
 		}
 		return isKeyDeleted;
 	}

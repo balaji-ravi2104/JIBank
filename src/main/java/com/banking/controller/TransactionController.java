@@ -1,7 +1,8 @@
 package com.banking.controller;
 
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.AccountDao;
 import com.banking.dao.TransactionDao;
@@ -16,28 +17,22 @@ import com.banking.model.Transaction;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
-import com.banking.view.TransactionView;
+import com.banking.utils.LoggerProvider;
 
 public class TransactionController {
 
 	private TransactionDao transactionDao;
 	private AccountDao accountDao;
-	private AccountController accountController;
-	private BranchController branchController;
-	private UserController userController;
-	private TransactionView transactionView;
 	private AuditLogHandler auditLogHandler;
 
+	private static final Logger logger = LoggerProvider.getLogger(); 
+	
 	private static final Object accountCacheLock = new Object();
 	private static final Object listOfAccountsLock = new Object();
 
 	public TransactionController() {
-		this.accountController = new AccountController();
 		this.accountDao = new AccountDaoImplementation();
 		this.transactionDao = new TransactionDaoImplementation();
-		this.userController = new UserController();
-		this.branchController = new BranchController();
-		this.transactionView = new TransactionView();
 		this.auditLogHandler = new AuditLogHandler();
 	}
 
@@ -71,7 +66,8 @@ public class TransactionController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error while Depositing Money!!", e);
+			logger.log(Level.WARNING,"Exception Occured While Depositing Money",e);
+			throw new CustomException("Exception Occured While Depositing Money", e);
 		}
 		return isDepositeSuccess;
 	}
@@ -106,7 +102,8 @@ public class TransactionController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error while Depositing Money!!", e);
+			logger.log(Level.WARNING,"Exception Occured While Withdrawing Money",e);
+			throw new CustomException("Exception Occured While Withdrawing Money", e);
 		}
 		return isWithdrawSuccess;
 	}
@@ -153,7 +150,8 @@ public class TransactionController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error while Transferring Money!! " + e.getMessage(), e);
+			logger.log(Level.WARNING,"Exception Occured While Transferring Money Within Bank",e);
+			throw new CustomException("Exception Occured While Transferring Money Within Bank", e);
 		}
 		return isTransactionSuccess;
 	}
@@ -164,10 +162,6 @@ public class TransactionController {
 		InputValidator.isNull(accountNumberToTransfer, ErrorMessages.INPUT_NULL_MESSAGE);
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
-		if (!validateAmount(amountToTransferWithOtherBank)
-				|| !validateWithdrawAmount(accountFromTransfer, amountToTransferWithOtherBank)) {
-			return isTransactionSuccess;
-		}
 
 		synchronized (accountCacheLock) {
 			AccountController.accountCache
@@ -198,53 +192,10 @@ public class TransactionController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error while Transferring Money!! " + e.getMessage(), e);
+			logger.log(Level.WARNING,"Exception Occured While Transferring Money With Other Bank",e);
+			throw new CustomException("Exception Occured While Transferring Money With Other Bank", e);
 		}
 		return isTransactionSuccess;
-	}
-
-	public List<Transaction> getStatement(Account account, int numberOfMonths) throws CustomException {
-		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
-		List<Transaction> statement = null;
-		if (!validateMonths(numberOfMonths)) {
-			return statement;
-		}
-		try {
-			statement = transactionDao.getUsersStatement(account, numberOfMonths);
-		} catch (Exception e) {
-			throw new CustomException("Error while Getting Transaction!!!", e);
-		}
-		return statement;
-	}
-
-	public List<Transaction> getCustomerTransaction(String accountNumber, int branchId, int months)
-			throws CustomException {
-		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
-		List<Transaction> transactionHistory = null;
-		if (!validateMonths(months) || !branchController.validateBranchId(branchId)
-				|| !accountController.validateAccountAndBranch(accountNumber, branchId)) {
-			return transactionHistory;
-		}
-		try {
-			transactionHistory = transactionDao.getCustomerTransactionHistory(accountNumber, months);
-		} catch (Exception e) {
-			throw new CustomException("Error while Getting Transaction History!!!", e);
-		}
-		return transactionHistory;
-	}
-
-	public Map<String, List<Transaction>> getAllTransactionsOfCustomer(int userId, int branchId, int month)
-			throws CustomException {
-		Map<String, List<Transaction>> transactions = null;
-		if (!validateMonths(month) || !userController.validateUserIdAndBranchId(userId, branchId)) {
-			return transactions;
-		}
-		try {
-			transactions = transactionDao.getAllTransactionHistory(userId, branchId, month);
-		} catch (Exception e) {
-			throw new CustomException("Error while Getting Transaction History!!!", e);
-		}
-		return transactions;
 	}
 
 	public List<Transaction> getTransactions(String accountNumber, String startDate, String endDate, int userId)
@@ -269,37 +220,10 @@ public class TransactionController {
 				auditLogHandler.addAuditData(auditLog);
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error while Getting Transaction History!!!", e);
+			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return transactions;
-	}
-
-	private boolean validateAmount(double amountToDeposite) {
-		boolean isValid = true;
-		if (amountToDeposite <= 0) {
-			transactionView
-					.transactionMessages("Deposite or Withdrawal or Transfer Amount Should be greater than ZERO!!");
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	private boolean validateWithdrawAmount(Account account, double amountToWithdraw) {
-		boolean isValid = true;
-		if (amountToWithdraw > account.getBalance()) {
-			transactionView.transactionMessages("Insufficient Balance!! Can't able to Tranfer or Withdraw!!!");
-			isValid = false;
-		}
-		return isValid;
-	}
-
-	private boolean validateMonths(int numberOfMonths) {
-		boolean isValid = true;
-		if (numberOfMonths <= 0 || numberOfMonths > 6) {
-			transactionView.transactionMessages("Please Enter the Valid Month.. From 1 to 6..");
-			isValid = false;
-		}
-		return isValid;
 	}
 
 }

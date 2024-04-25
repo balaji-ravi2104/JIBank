@@ -4,12 +4,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.BranchDao;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
+import com.banking.utils.LoggerProvider;
 
 public class BranchDaoImplementation implements BranchDao {
+	private static final Logger logger = LoggerProvider.getLogger();
+	
 	private static final String BRANCH_ID_EXISTS = "SELECT COUNT(*) FROM Branches WHERE branchid = ?";
 
 	@Override
@@ -26,7 +31,8 @@ public class BranchDaoImplementation implements BranchDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Checking Branch Details!!", e);
+			logger.log(Level.WARNING,"Exception Occured While Checking Branch Details",e);
+			throw new CustomException("Exception Occured While Checking Branch Details", e);
 		}
 		return isValidId;
 	}

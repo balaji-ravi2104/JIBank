@@ -3,11 +3,12 @@ package com.banking.dao.implementation;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.TransactionDao;
 import com.banking.model.Account;
@@ -18,18 +19,17 @@ import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
+import com.banking.utils.LoggerProvider;
 
 public class TransactionDaoImplementation implements TransactionDao {
+	
+	private static final Logger logger = LoggerProvider.getLogger();
 
 	private static final String UPDATE_QUERY = "UPDATE Accounts SET balance = ? WHERE account_number = ?;";
 
 	private static final String TRANSACTION_LOG = "INSERT INTO Transaction (user_id, viewer_account_number, "
 			+ "transacted_account_number, TypeId, transaction_amount, balance, transaction_date, "
 			+ "remark, StatusId,reference_id,CreatedBy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?);";
-
-	private static final String GET_STATEMENT = "SELECT transaction_date, TypeId,transaction_amount, "
-			+ "balance FROM Transaction WHERE viewer_account_number = ? AND FROM_UNIXTIME(transaction_date / 1000) >= "
-			+ "DATE_SUB(CURRENT_DATE(), INTERVAL ? MONTH) order by transaction_id DESC";
 
 	private static final String GET_TRANSACTION_HISTORY = "select * From Transaction WHERE viewer_account_number = ? AND "
 			+ "FROM_UNIXTIME(transaction_date / 1000) >= DATE_SUB(CURRENT_DATE(), INTERVAL ? MONTH) ORDER BY transaction_id DESC;";
@@ -67,8 +67,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 					connection.rollback();
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Depositing Money", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Depositing Money",e);
+			throw new CustomException("Exception Occured While Depositing Money", e);
 		}
 		return isAmountDepositedAndLoggedInTransaction;
 	}
@@ -95,8 +96,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 					connection.rollback();
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Withdrawing Money", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Withdrawing Money",e);
+			throw new CustomException("Exception Occured While Withdrawing Money", e);
 		}
 		return isAmountWithdrawnAndLoggedInTransaction;
 	}
@@ -143,8 +145,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 			} else {
 				connection.rollback();
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Transferring Money", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Transferring Money Within Bank",e);
+			throw new CustomException("Exception Occured While Transferring Money Within Bank", e);
 		}
 		return isTransferSuccess;
 	}
@@ -177,28 +180,11 @@ public class TransactionDaoImplementation implements TransactionDao {
 					connection.rollback();
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Transferring Money With Other Bank",e);
+			throw new CustomException("Exception Occured While Transferring Money With Other Bank", e);
 		}
 		return isTransferSuccess;
-	}
-
-	@Override
-	public List<Transaction> getUsersStatement(Account account, int numberOfMonths) throws CustomException {
-		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
-		List<Transaction> statements = null;
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(GET_STATEMENT)) {
-
-			preparedStatement.setString(1, account.getAccountNumber());
-			preparedStatement.setInt(2, numberOfMonths);
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				statements = new ArrayList<Transaction>();
-				getStatementDetails(resultSet, statements);
-			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving Transaction!!!", e);
-		}
-		return statements;
 	}
 
 	@Override
@@ -213,8 +199,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 				historyList = new ArrayList<Transaction>();
 				getCustomerTransactionDetail(resultSet, historyList);
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving Transaction!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return historyList;
 	}
@@ -233,8 +220,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 				transactionMap = new HashMap<String, List<Transaction>>();
 				getCustomersTransactionDetail(resultSet, transactionMap);
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving Transaction!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return transactionMap;
 	}
@@ -253,21 +241,22 @@ public class TransactionDaoImplementation implements TransactionDao {
 				historyList = new ArrayList<Transaction>();
 				getCustomerTransactionDetail(resultSet, historyList);
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			// e.printStackTrace();
-			throw new CustomException("Error While Reterving Transaction!!!", e);
+			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return historyList;
 	}
 
-	private void getCustomerTransactionDetail(ResultSet resultSet, List<Transaction> historyList) throws SQLException {
+	private void getCustomerTransactionDetail(ResultSet resultSet, List<Transaction> historyList) throws Exception {
 		while (resultSet.next()) {
 			historyList.add(getTransactionDetail(resultSet));
 		}
 	}
 
 	private void getCustomersTransactionDetail(ResultSet resultSet, Map<String, List<Transaction>> transactionList)
-			throws SQLException {
+			throws Exception {
 		while (resultSet.next()) {
 			Transaction transaction = getTransactionDetail(resultSet);
 			String accountNumber = transaction.getViewerAccount();
@@ -275,7 +264,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 		}
 	}
 
-	private Transaction getTransactionDetail(ResultSet resultSet) throws SQLException {
+	private Transaction getTransactionDetail(ResultSet resultSet) throws Exception {
 		Transaction transaction = new Transaction();
 		transaction.setTransactionId(resultSet.getInt(1));
 		transaction.setUserId(resultSet.getInt(2));
@@ -289,19 +278,6 @@ public class TransactionDaoImplementation implements TransactionDao {
 		transaction.setStatus(resultSet.getInt(10));
 		transaction.setReferenceId(resultSet.getLong(11));
 		return transaction;
-	}
-
-	private void getStatementDetails(ResultSet resultSet, List<Transaction> statements) throws SQLException {
-		Transaction transaction;
-		while (resultSet.next()) {
-			transaction = new Transaction();
-			transaction.setDateOfTransaction(resultSet.getLong(1));
-			transaction.setTransactionType(resultSet.getInt(2));
-			transaction.setTransactedAmount(resultSet.getDouble(3));
-			transaction.setBalance(resultSet.getDouble(4));
-
-			statements.add(transaction);
-		}
 	}
 
 	private boolean logTransaction(Account viewerAccount, String transactedAccountNumber, double amount, String remark,
@@ -325,8 +301,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 
 			isLoggedSuccessfully = (rowsAffected > 0);
 
-		} catch (SQLException e) {
-			throw new CustomException("Error While Logging Details fIn Transaction", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Logging The Transaction Details",e);
+			throw new CustomException("Exception Occured While Logging The Transaction Details", e);
 		}
 		return isLoggedSuccessfully;
 	}
@@ -345,8 +322,9 @@ public class TransactionDaoImplementation implements TransactionDao {
 				account.setBalance(amountToUpdate);
 				isBalanceUpdated = true;
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Updating Balance!!!", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Updating Account Balance",e);
+			throw new CustomException("Exception Occured While Updating Account Balance", e);
 		}
 		return isBalanceUpdated;
 	}

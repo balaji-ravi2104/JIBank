@@ -9,21 +9,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.banking.controller.UserController;
 import com.banking.model.User;
 import com.banking.model.UserType;
 
 public class MainServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public UserController userController;
 	public static int employeeBranchId;
 
 	public MainServlet() {
 		super();
-	}
-
-	public void init() {
-		this.userController = new UserController();
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -270,12 +264,12 @@ public class MainServlet extends HttpServlet {
 			dispatcher.forward(request, response);
 			break;
 		case "/api/updateapikey":
-			UserServletHelper.updateApiKey(request,response);
+			UserServletHelper.updateApiKey(request, response);
 			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
 			dispatcher.forward(request, response);
 			break;
 		case "/api/deleteapikey":
-			UserServletHelper.deleteApiKey(request,response);
+			UserServletHelper.deleteApiKey(request, response);
 			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
 			dispatcher.forward(request, response);
 			break;

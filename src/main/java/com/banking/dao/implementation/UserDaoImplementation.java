@@ -5,21 +5,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.banking.dao.UserDao;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.User;
-import com.banking.utils.CommonUtils.Field;
 import com.banking.utils.CustomException;
 import com.banking.utils.DatabaseConnection;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
+import com.banking.utils.LoggerProvider;
 
 public class UserDaoImplementation implements UserDao {
+	
+	private static final Logger logger = LoggerProvider.getLogger();
 
 	private static final String GET_USER = "SELECT * FROM Users u WHERE u.userId = ?";
 
@@ -36,7 +39,6 @@ public class UserDaoImplementation implements UserDao {
 
 	private static final String CHECK_CUSTOMER_ID_EXISTS_QUERY_IN_BRANCH = "SELECT COUNT(*) FROM Users u JOIN "
 			+ "Accounts a ON u.UserId = a.user_id WHERE u.UserId = ? AND a.branch_id = ? AND u.TypeId = 1;";
-	
 
 	private static final String GET_CUSTOMER_DETAIL_BY_ACCOUNT_NUMBER = "SELECT u.UserId, u.FirstName, u.LastName, u.Gender, "
 			+ "u.Email,u.ContactNumber,u.Address,u.DateOfBirth,u.StatusId,c.Pan, c.Aadhar FROM Users u "
@@ -86,7 +88,9 @@ public class UserDaoImplementation implements UserDao {
 			}
 
 		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+			logger.log(Level.WARNING,"Exception While Authendicating User Details",e);
+			throw new CustomException("Exception While Authendicating User Details", e);
+			
 		}
 		return user;
 	}
@@ -126,7 +130,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error Creating new User", e);
+			logger.log(Level.WARNING,"Exception Occured While Creating new Customer",e);
+			throw new CustomException("Exception Occured While Creating new Customer", e);
 		}
 		return customerUserId;
 	}
@@ -166,7 +171,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error Creating new User", e);
+			logger.log(Level.WARNING,"Exception Occured While Creating new Employee",e);
+			throw new CustomException("Exception Occured While Creating new Employee", e);
 		}
 		return employeeId;
 	}
@@ -183,7 +189,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error Creating new User", e);
+			logger.log(Level.WARNING,"Exception Occured While Getting Employee Branch",e);
+			throw new CustomException("Exception Occured While Getting Employee Branch", e);
 		}
 		return branchId;
 	}
@@ -201,7 +208,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Exists", e);
+			logger.log(Level.WARNING,"Exception Occured While Getting API Token",e);
+			throw new CustomException("Exception Occured While Getting API Token", e);
 		}
 		return status;
 	}
@@ -218,8 +226,9 @@ public class UserDaoImplementation implements UserDao {
 					isValid = (count > 0);
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Exists", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Validating Customer",e);
+			throw new CustomException("Exception Occured While Validating Customer", e);
 		}
 		return isValid;
 	}
@@ -237,7 +246,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Exists", e);
+			logger.log(Level.WARNING,"Exception Occured While Checking Customer Exists",e);
+			throw new CustomException("Exception Occured While Checking Customer Exists", e);
 		}
 		return userExists;
 	}
@@ -257,7 +267,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Details", e);
+			logger.log(Level.WARNING,"Exception Occured While Checking Customer Exists In Branch",e);
+			throw new CustomException("Exception Occured While Checking Customer Exists In Branch", e);
 		}
 		return userIdExists;
 	}
@@ -276,7 +287,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+			logger.log(Level.WARNING,"Exception Occured While Reterving Customer Details",e);
+			throw new CustomException("Exception Occured While Reterving Customer Details", e);
 		}
 		return customerDetails;
 	}
@@ -294,39 +306,12 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+			logger.log(Level.WARNING,"Exception Occured While Reterving Customer Details",e);
+			throw new CustomException("Exception Occured While Reterving Customer Details", e);
 		}
 		return customerDetails;
 	}
 
-	@Override
-	public <K extends Enum<K>, V> boolean updateCustomerDetails(int userIdToUpdate, Map<K, V> fieldsToUpdate)
-			throws CustomException {
-		String updateQuery = generateUpdateQuery(fieldsToUpdate);
-		boolean isUpdated = false;
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-			int index = 1;
-			for (Map.Entry<K, V> entry : fieldsToUpdate.entrySet()) {
-				if (entry.getKey().equals(Field.Pan) || entry.getKey().equals(Field.Aadhar)) {
-					continue;
-				}
-				preparedStatement.setObject(index++, entry.getValue());
-			}
-			if (fieldsToUpdate.containsKey(Field.Pan)) {
-				preparedStatement.setObject(index++, fieldsToUpdate.get(Field.Pan));
-			}
-			if (fieldsToUpdate.containsKey(Field.Aadhar)) {
-				preparedStatement.setObject(index++, fieldsToUpdate.get(Field.Aadhar));
-			}
-			preparedStatement.setInt(index++, userIdToUpdate);
-			int rowsAffected = preparedStatement.executeUpdate();
-			isUpdated = (rowsAffected > 0);
-		} catch (SQLException e) {
-			throw new CustomException("Error While Updating User Details", e);
-		}
-		return isUpdated;
-	}
 
 	@Override
 	public boolean updateCustomerDetails(Customer customer, int updatingUserId) throws CustomException {
@@ -352,7 +337,8 @@ public class UserDaoImplementation implements UserDao {
 				isUpdated = true;
 			}
 		} catch (Exception e) {
-			throw new CustomException("Error While Updating User Details", e);
+			logger.log(Level.WARNING,"Exception Occured While Updating Customer Details",e);
+			throw new CustomException("Exception Occured While Updating Customer Details", e);
 		}
 		return isUpdated;
 	}
@@ -375,8 +361,9 @@ public class UserDaoImplementation implements UserDao {
 				isPasswordUpdated = true;
 			}
 
-		} catch (SQLException e) {
-			throw new CustomException("Error While Updating User Details", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Updating Password",e);
+			throw new CustomException("Exception Occured While Updating Password", e);
 		}
 		return isPasswordUpdated;
 	}
@@ -393,8 +380,9 @@ public class UserDaoImplementation implements UserDao {
 					employeeIdExists = (count > 0);
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Checking User Details", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Checking Employee Details",e);
+			throw new CustomException("Exception Occured While Checking Employee Details", e);
 		}
 		return employeeIdExists;
 	}
@@ -413,7 +401,8 @@ public class UserDaoImplementation implements UserDao {
 				}
 			}
 		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+			logger.log(Level.WARNING,"Exception Occured While Reterving Employee Details",e);
+			throw new CustomException("Exception Occured While Reterving Employee Details", e);
 		}
 		return employeeDetails;
 	}
@@ -429,8 +418,9 @@ public class UserDaoImplementation implements UserDao {
 				employeeList = new TreeMap<Integer, Employee>();
 				getAllEmployeesDetail(resultSet, employeeList);
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving Employee Details",e);
+			throw new CustomException("Exception Occured While Reterving Employee Details", e);
 		}
 		return employeeList;
 	}
@@ -445,8 +435,9 @@ public class UserDaoImplementation implements UserDao {
 				employeeList = new TreeMap<Integer, Map<Integer, Employee>>();
 				getAllEmployeeDetailsByBranch(resultSet, employeeList);
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Details", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving Employee Details",e);
+			throw new CustomException("Exception Occured While Reterving Employee Details", e);
 		}
 		return employeeList;
 	}
@@ -465,8 +456,9 @@ public class UserDaoImplementation implements UserDao {
 					}
 				}
 			}
-		} catch (SQLException e) {
-			throw new CustomException("Error While Reterving User Password", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving User Password",e);
+			throw new CustomException("Exception Occured While Reterving User Password", e);
 		}
 		return password;
 	}
@@ -480,7 +472,8 @@ public class UserDaoImplementation implements UserDao {
 
 			int rowsAfftected = createCustomerStatement.executeUpdate();
 			return rowsAfftected;
-		} catch (SQLException e) {
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Reterving User Password",e);
 			throw new CustomException("Error While Creating Customer ", e);
 		}
 	}
@@ -492,39 +485,10 @@ public class UserDaoImplementation implements UserDao {
 			createCustomerStatement.setInt(2, employee.getBranchId());
 
 			return createCustomerStatement.executeUpdate();
-		} catch (SQLException e) {
-			throw new CustomException("Error While Creating Employee ", e);
+		} catch (Exception e) {
+			logger.log(Level.WARNING,"Exception Occured While Adding Employee into Employee Table",e);
+			throw new CustomException("Exception Occured While Adding Employee into Employee Table", e);
 		}
-	}
-
-	private <K extends Enum<K>, V> String generateUpdateQuery(Map<K, V> fieldsToUpdate) {
-		StringBuilder queryBuilder = new StringBuilder("UPDATE Users u JOIN Customer c ON u.UserId = c.User_id SET ");
-		Iterator<Map.Entry<K, V>> iterator = fieldsToUpdate.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Map.Entry<K, V> entry = iterator.next();
-			K key = entry.getKey();
-			if (key.equals(Field.Pan) || key.equals(Field.Aadhar)) {
-				continue;
-			}
-			queryBuilder.append("u.").append(key.name()).append(" = ?");
-			if (iterator.hasNext()) {
-				queryBuilder.append(", ");
-			}
-		}
-		if (fieldsToUpdate.containsKey(Field.Pan) || fieldsToUpdate.containsKey(Field.Aadhar)) {
-			queryBuilder.append("c.");
-			if (fieldsToUpdate.containsKey(Field.Pan)) {
-				queryBuilder.append(Field.Pan + " = ?");
-			}
-			if (fieldsToUpdate.containsKey(Field.Aadhar)) {
-				if (fieldsToUpdate.containsKey(Field.Pan)) {
-					queryBuilder.append(", ");
-				}
-				queryBuilder.append(Field.Aadhar + " = ?");
-			}
-		}
-		queryBuilder.append(" WHERE u.UserId = ?");
-		return queryBuilder.toString();
 	}
 
 	private void getAllEmployeesDetail(ResultSet resultSet, Map<Integer, Employee> employeesList) throws SQLException {
