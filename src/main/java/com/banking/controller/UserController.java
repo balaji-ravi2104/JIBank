@@ -1,5 +1,6 @@
 package com.banking.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -7,7 +8,6 @@ import java.util.logging.Logger;
 import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.UserDao;
-import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.model.Customer;
 import com.banking.model.Employee;
 import com.banking.model.Status;
@@ -17,13 +17,10 @@ import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
 import com.banking.utils.LoggerProvider;
-import com.banking.view.UserView;
 
 public class UserController {
 
 	private UserDao userDao;
-	private BranchController branchController;
-	private UserView userView;
 	public static final String cachePrefix = "Customer";
 
 	public static final Cache<Integer, Customer> userCache = new RedisCache<Integer, Customer>(6379, cachePrefix);
@@ -31,9 +28,13 @@ public class UserController {
 	private static final Logger logger = LoggerProvider.getLogger();
 
 	public UserController() {
-		this.userDao = new UserDaoImplementation();
-		this.branchController = new BranchController();
-		this.userView = new UserView();
+		try {
+			Class<?> clazz = Class.forName("com.banking.dao.implementation.UserDaoImplementation");
+			this.userDao = (UserDao) clazz.getDeclaredConstructor().newInstance();
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public User login(int userId, String password) throws CustomException {
@@ -157,17 +158,13 @@ public class UserController {
 			logger.log(Level.WARNING, "Exception Occured While Updating Password", e);
 			throw new CustomException("Exception Occured While Updating Password", e);
 		} finally {
-			AuditLogUtils.logPasswordUpdation(userId,isPasswordUpdated ? Status.SUCCESS:Status.FAILURE);
+			AuditLogUtils.logPasswordUpdation(userId, isPasswordUpdated ? Status.SUCCESS : Status.FAILURE);
 		}
 		return isPasswordUpdated;
 	}
 
 	public Employee getEmployeeDetails(int employeeId) throws CustomException {
 		Employee employee = null;
-		if (!isEmployeeExists(employeeId)) {
-			userView.displayInvalidEmployeeId();
-			return employee;
-		}
 		try {
 			employee = userDao.getEmployeeDetails(employeeId);
 		} catch (Exception e) {
@@ -179,9 +176,6 @@ public class UserController {
 
 	public Map<Integer, Employee> getEmployeeFromOneBranch(int branchId) throws CustomException {
 		Map<Integer, Employee> allEmployee = null;
-		if (!branchController.isBranchExists(branchId)) {
-			return allEmployee;
-		}
 		try {
 			allEmployee = userDao.getEmployeesInBranch(branchId);
 		} catch (Exception e) {
@@ -200,14 +194,4 @@ public class UserController {
 		}
 	}
 
-	private boolean isEmployeeExists(int employeeId) throws CustomException {
-		boolean isExixts = false;
-		try {
-			isExixts = userDao.checkEmployeeExists(employeeId);
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Checking Employee Details", e);
-			throw new CustomException("Exception Occured While Checking Employee Details", e);
-		}
-		return isExixts;
-	}
 }

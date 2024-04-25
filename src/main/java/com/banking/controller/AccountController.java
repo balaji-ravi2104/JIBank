@@ -1,5 +1,6 @@
 package com.banking.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -8,7 +9,6 @@ import java.util.logging.Logger;
 import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.AccountDao;
-import com.banking.dao.implementation.AccountDaoImplementation;
 import com.banking.model.Account;
 import com.banking.model.Status;
 import com.banking.utils.AuditLogUtils;
@@ -20,11 +20,9 @@ import com.banking.utils.LoggerProvider;
 public class AccountController {
 
 	private AccountDao accountDao;
-	private BranchController branchController;
 
 	public static final String accountCachePrefix = "Account";
 	public static final String listAccountCachePrefix = "ListAccount";
-
 
 	private static final Logger logger = LoggerProvider.getLogger();
 	public static final Cache<String, Account> accountCache = new RedisCache<String, Account>(6379, accountCachePrefix);
@@ -32,28 +30,31 @@ public class AccountController {
 			listAccountCachePrefix);
 
 	public AccountController() {
-		this.accountDao = new AccountDaoImplementation();
-		this.branchController = new BranchController();
+		try {
+			Class<?> clazz = Class.forName("com.banking.dao.implementation.AccountDaoImplementation");
+			this.accountDao = (AccountDao) clazz.getDeclaredConstructor().newInstance();
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public boolean createAccount(Account account, int creatingUserId) throws CustomException {
 		InputValidator.isNull(account, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountCreated = false;
 		boolean isPrimary = false;
-		synchronized (account.getUserId()+"") {
-			listOfAccounts.rem(listAccountCachePrefix + account.getUserId());
-			if (!accountDao.customerHasAccount(account.getUserId())) {
-				isPrimary = true;
-			}
-			try {
-				isAccountCreated = accountDao.createAccount(account, isPrimary, creatingUserId);
-			} catch (Exception e) {
-				logger.log(Level.WARNING, "Exception Occured While Creating new Account", e);
-				throw new CustomException("Exception Occured While Creating new Account", e);
-			} finally {
-				AuditLogUtils.logAccountCreation(account.getUserId(), creatingUserId,
-						isAccountCreated ? Status.SUCCESS : Status.FAILURE);
-			}
+		listOfAccounts.rem(listAccountCachePrefix + account.getUserId());
+		if (!accountDao.customerHasAccount(account.getUserId())) {
+			isPrimary = true;
+		}
+		try {
+			isAccountCreated = accountDao.createAccount(account, isPrimary, creatingUserId);
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Creating new Account", e);
+			throw new CustomException("Exception Occured While Creating new Account", e);
+		} finally {
+			AuditLogUtils.logAccountCreation(account.getUserId(), creatingUserId,
+					isAccountCreated ? Status.SUCCESS : Status.FAILURE);
 		}
 		return isAccountCreated;
 	}
@@ -61,9 +62,6 @@ public class AccountController {
 	public boolean isAccountExistsInTheBranch(String accountNumber, int branchId) throws CustomException {
 		InputValidator.isNull(accountNumber, "Account Number Cannot be Null!!!");
 		boolean isAccountExists = false;
-		if (validateAccountNumber(accountNumber) || !branchController.isBranchExists(branchId)) {
-			return isAccountExists;
-		}
 		try {
 			isAccountExists = accountDao.checkAccountExists(accountNumber, branchId);
 		} catch (Exception e) {
@@ -132,17 +130,20 @@ public class AccountController {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountStatusChanged = false;
 		int userId = 0;
-		try {
-			isAccountStatusChanged = accountDao.changeAccountStatus(accountNumber, status, updatingUserId);
-			if (isAccountStatusChanged) {
-				userId = getAccountDetails(accountNumber).getUserId();
+		synchronized (accountNumber) {
+			accountCache.rem(accountCachePrefix + accountNumber);
+			try {
+				isAccountStatusChanged = accountDao.changeAccountStatus(accountNumber, status, updatingUserId);
+				if (isAccountStatusChanged) {
+					userId = getAccountDetails(accountNumber).getUserId();
+				}
+			} catch (Exception e) {
+				logger.log(Level.WARNING, "Exception Occured While Updating Bank Account Status", e);
+				throw new CustomException("Exception Occured While Updating Bank Account Status", e);
+			} finally {
+				AuditLogUtils.logAccountStatusChange(userId, accountNumber, updatingUserId,
+						isAccountStatusChanged ? Status.SUCCESS : Status.FAILURE);
 			}
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Updating Bank Account Status", e);
-			throw new CustomException("Exception Occured While Updating Bank Account Status", e);
-		} finally {
-			AuditLogUtils.logAccountStatusChange(userId, accountNumber, updatingUserId,
-					isAccountStatusChanged ? Status.SUCCESS : Status.FAILURE);
 		}
 		return isAccountStatusChanged;
 	}
@@ -169,11 +170,4 @@ public class AccountController {
 		return isAccountPresent;
 	}
 
-	private boolean validateAccountNumber(String accountNumber) throws CustomException {
-		boolean isValid = false;
-		if (InputValidator.validateString(accountNumber)) {
-			isValid = true;
-		}
-		return isValid;
-	}
 }

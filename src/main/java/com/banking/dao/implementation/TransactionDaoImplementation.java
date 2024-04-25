@@ -22,7 +22,7 @@ import com.banking.utils.InputValidator;
 import com.banking.utils.LoggerProvider;
 
 public class TransactionDaoImplementation implements TransactionDao {
-	
+
 	private static final Logger logger = LoggerProvider.getLogger();
 
 	private static final String UPDATE_QUERY = "UPDATE Accounts SET balance = ? WHERE account_number = ?;";
@@ -45,6 +45,8 @@ public class TransactionDaoImplementation implements TransactionDao {
 			+ "t.statusId,t.reference_id FROM Transaction t WHERE t.viewer_account_number = ? AND "
 			+ "FROM_UNIXTIME(transaction_date / 1000) BETWEEN ? AND ? ORDER BY t.transaction_id DESC;";
 
+	private static final String GET_CURRENT_BALANCE = "SELECT balance FROM Accounts WHERE account_number = ?;";
+
 	@Override
 	public boolean deposit(Account account, double amountToDeposit, String description, int userId)
 			throws CustomException {
@@ -55,7 +57,8 @@ public class TransactionDaoImplementation implements TransactionDao {
 			if (amountToDeposit <= 0) {
 				throw new CustomException("Amount to be Deposited Should be Greater than ZERO!!!");
 			}
-			double newBalance = account.getBalance() + amountToDeposit;
+			double oldBalance = getCurrentBalance(account.getAccountNumber());
+			double newBalance = oldBalance + amountToDeposit;
 			boolean isBalanceUpdated = updateAccountBalance(connection, account, newBalance);
 			if (isBalanceUpdated) {
 				isAmountDepositedAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
@@ -68,10 +71,30 @@ public class TransactionDaoImplementation implements TransactionDao {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Depositing Money",e);
+			logger.log(Level.WARNING, "Exception Occured While Depositing Money", e);
 			throw new CustomException("Exception Occured While Depositing Money", e);
 		}
 		return isAmountDepositedAndLoggedInTransaction;
+	}
+
+	private double getCurrentBalance(String accountNumber) throws CustomException {
+		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
+		double balance = 0;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(GET_CURRENT_BALANCE)) {
+
+			preparedStatement.setString(1, accountNumber);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					balance = resultSet.getDouble(1);
+				}
+			}
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Getting Balance", e);
+			throw new CustomException("Exception Occured While Getting Balance", e);
+		}
+		return balance;
 	}
 
 	@Override
@@ -81,10 +104,11 @@ public class TransactionDaoImplementation implements TransactionDao {
 		boolean isAmountWithdrawnAndLoggedInTransaction = false;
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			connection.setAutoCommit(false);
-			if (account.getBalance() < amountToWithdraw) {
+			double oldBalance = getCurrentBalance(account.getAccountNumber());
+			if (oldBalance < amountToWithdraw) {
 				throw new CustomException("Insufficient Balance");
 			}
-			double newBalance = account.getBalance() - amountToWithdraw;
+			double newBalance = oldBalance - amountToWithdraw;
 			boolean isBalanceUpdated = updateAccountBalance(connection, account, newBalance);
 			if (isBalanceUpdated) {
 				isAmountWithdrawnAndLoggedInTransaction = logTransaction(account, account.getAccountNumber(),
@@ -97,7 +121,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Withdrawing Money",e);
+			logger.log(Level.WARNING, "Exception Occured While Withdrawing Money", e);
 			throw new CustomException("Exception Occured While Withdrawing Money", e);
 		}
 		return isAmountWithdrawnAndLoggedInTransaction;
@@ -115,12 +139,14 @@ public class TransactionDaoImplementation implements TransactionDao {
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			connection.setAutoCommit(false);
 
-			double newBalanceOfFromAccount = accountFromTransfer.getBalance() - amountToTransfer;
+			double oldBalanceOfFromAccount = getCurrentBalance(accountFromTransfer.getAccountNumber());
+			double newBalanceOfFromAccount = oldBalanceOfFromAccount - amountToTransfer;
 			boolean isFromAccountBalanceUpdated = updateAccountBalance(connection, accountFromTransfer,
 					newBalanceOfFromAccount);
 
 			if (isFromAccountBalanceUpdated) {
-				double newBalanceOfToAccount = accountToTransfer.getBalance() + amountToTransfer;
+				double oldBalanceOfAccountToTransfer = getCurrentBalance(accountToTransfer.getAccountNumber());
+				double newBalanceOfToAccount = oldBalanceOfAccountToTransfer + amountToTransfer;
 				boolean isToAccountBalanceUpdated = updateAccountBalance(connection, accountToTransfer,
 						newBalanceOfToAccount);
 
@@ -146,7 +172,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				connection.rollback();
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Transferring Money Within Bank",e);
+			logger.log(Level.WARNING, "Exception Occured While Transferring Money Within Bank", e);
 			throw new CustomException("Exception Occured While Transferring Money Within Bank", e);
 		}
 		return isTransferSuccess;
@@ -164,7 +190,8 @@ public class TransactionDaoImplementation implements TransactionDao {
 		boolean isTransferSuccess = false;
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			connection.setAutoCommit(false);
-			double newBalanceOfFromAccount = accountFromTransfer.getBalance() - amountToTransferWithOtherBank;
+			double oldBalance = getCurrentBalance(accountFromTransfer.getAccountNumber());
+			double newBalanceOfFromAccount = oldBalance - amountToTransferWithOtherBank;
 
 			boolean isFromAccountBalanceUpdated = updateAccountBalance(connection, accountFromTransfer,
 					newBalanceOfFromAccount);
@@ -181,7 +208,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Transferring Money With Other Bank",e);
+			logger.log(Level.WARNING, "Exception Occured While Transferring Money With Other Bank", e);
 			throw new CustomException("Exception Occured While Transferring Money With Other Bank", e);
 		}
 		return isTransferSuccess;
@@ -200,7 +227,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				getCustomerTransactionDetail(resultSet, historyList);
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			logger.log(Level.WARNING, "Exception Occured While Reterving Transaction Details", e);
 			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return historyList;
@@ -221,7 +248,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 				getCustomersTransactionDetail(resultSet, transactionMap);
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			logger.log(Level.WARNING, "Exception Occured While Reterving Transaction Details", e);
 			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return transactionMap;
@@ -243,7 +270,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 			}
 		} catch (Exception e) {
 			// e.printStackTrace();
-			logger.log(Level.WARNING,"Exception Occured While Reterving Transaction Details",e);
+			logger.log(Level.WARNING, "Exception Occured While Reterving Transaction Details", e);
 			throw new CustomException("Exception Occured While Reterving Transaction Details", e);
 		}
 		return historyList;
@@ -302,7 +329,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 			isLoggedSuccessfully = (rowsAffected > 0);
 
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Logging The Transaction Details",e);
+			logger.log(Level.WARNING, "Exception Occured While Logging The Transaction Details", e);
 			throw new CustomException("Exception Occured While Logging The Transaction Details", e);
 		}
 		return isLoggedSuccessfully;
@@ -319,11 +346,10 @@ public class TransactionDaoImplementation implements TransactionDao {
 
 			int rowsAffected = preparedStatement.executeUpdate();
 			if (rowsAffected > 0) {
-				account.setBalance(amountToUpdate);
 				isBalanceUpdated = true;
 			}
 		} catch (Exception e) {
-			logger.log(Level.WARNING,"Exception Occured While Updating Account Balance",e);
+			logger.log(Level.WARNING, "Exception Occured While Updating Account Balance", e);
 			throw new CustomException("Exception Occured While Updating Account Balance", e);
 		}
 		return isBalanceUpdated;

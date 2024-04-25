@@ -1,13 +1,12 @@
 package com.banking.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.banking.dao.AccountDao;
 import com.banking.dao.TransactionDao;
-import com.banking.dao.implementation.AccountDaoImplementation;
-import com.banking.dao.implementation.TransactionDaoImplementation;
 import com.banking.model.Account;
 import com.banking.model.Status;
 import com.banking.model.Transaction;
@@ -25,8 +24,18 @@ public class TransactionController {
 	private static final Logger logger = LoggerProvider.getLogger();
 
 	public TransactionController() {
-		this.accountDao = new AccountDaoImplementation();
-		this.transactionDao = new TransactionDaoImplementation();
+		try {
+			Class<?> clazz1 = Class.forName("com.banking.dao.implementation.TransactionDaoImplementation");
+			this.transactionDao = (TransactionDao) clazz1.getDeclaredConstructor().newInstance();
+
+			Class<?> clazz2 = Class.forName("com.banking.dao.implementation.AccountDaoImplementation");
+			this.accountDao = (AccountDao) clazz2.getDeclaredConstructor().newInstance();
+			
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public boolean depositAmount(Account account, double amountToDeposite, String description, int userId)
@@ -75,7 +84,6 @@ public class TransactionController {
 		InputValidator.isNull(accountToTransfer, ErrorMessages.INPUT_NULL_MESSAGE);
 		InputValidator.isNull(remark, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isTransactionSuccess = false;
-
 		synchronized (accountFromTransfer.getAccountNumber()) {
 			AccountController.accountCache
 					.rem(AccountController.accountCachePrefix + accountFromTransfer.getAccountNumber());

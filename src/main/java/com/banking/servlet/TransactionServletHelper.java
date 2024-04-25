@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.banking.controller.AccountController;
 import com.banking.controller.TransactionController;
 import com.banking.model.Account;
 import com.banking.model.Transaction;
@@ -14,6 +15,7 @@ import com.banking.utils.CustomException;
 public class TransactionServletHelper {
 
 	private static final TransactionController transactionController = new TransactionController();
+	private static final AccountController accountController = new AccountController();
 
 	public static void getTransactions(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
@@ -84,17 +86,20 @@ public class TransactionServletHelper {
 		Account receiverAccount = (Account) request.getAttribute("receiverAccount");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String remark = request.getParameter("message");
+		
 		try {
 			boolean isAmountTransfered = transactionController.transferWithinBank(senderAccount, receiverAccount,
 					amount, remark);
 			if (isAmountTransfered) {
 				request.setAttribute("success", "Amount Transfered Successfully");
+				HttpSession session = request.getSession(false);
+				session.setAttribute("currentAccount", accountController.getAccountDetails(senderAccount.getAccountNumber()));
 			} else {
 				request.setAttribute("failed", "Amount Transaction Failed");
 			}
 		} catch (Exception e) {
 			request.setAttribute("failed", "Amount Transaction Failed");
-			// e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
@@ -104,11 +109,13 @@ public class TransactionServletHelper {
 		Account senderAccount = (Account) request.getAttribute("senderAccount");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String remark = request.getParameter("message");
+		HttpSession session = request.getSession(false);
 		try {
 			boolean isAmountTransfered = transactionController.transferWithOtherBank(senderAccount,
 					receiverAccountNumber, amount, remark);
 			if (isAmountTransfered) {
 				request.setAttribute("success", "Amount Transfered Successfully");
+				session.setAttribute("currentAccount", accountController.getAccountDetails(senderAccount.getAccountNumber()));
 			} else {
 				request.setAttribute("failed", "Amount Transaction Failed");
 			}

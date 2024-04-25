@@ -62,10 +62,10 @@ public class AccountServletHelper {
 						break;
 					}
 				}
-				request.getSession(true).setAttribute("accountsList", accounts);
+				request.getSession(true).setAttribute("accountsCount", accounts.size());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			request.setAttribute("noaccounts", "No Account Found");
 		}
 	}
 
@@ -83,8 +83,7 @@ public class AccountServletHelper {
 				AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
 				int value = accountStatus.getValue();
 				int updatingUserId = (int) session.getAttribute("currentUserId");
-				boolean isUpdated = accountController.changeAccountStatus(accountNumber, value,
-						updatingUserId);
+				boolean isUpdated = accountController.changeAccountStatus(accountNumber, value, updatingUserId);
 				if (isUpdated) {
 					request.setAttribute("updatedSuccess", "Account Status Updated");
 				} else {
@@ -96,33 +95,23 @@ public class AccountServletHelper {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static void changeAccount(HttpServletRequest request, HttpServletResponse response) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			String accountNumber = (String) request.getParameter("accountNumber");
-			List<Account> accounts = (List<Account>) session.getAttribute("accountsList");
-			for (Account account : accounts) {
-				if (account.getAccountNumber().equals(accountNumber)) {
-					session.setAttribute("currentAccount", account);
-					break;
+			int userId = (int) session.getAttribute("currentUserId");
+			List<Account> accounts;
+			try {
+				accounts = accountController.getAccountsOfCustomer(userId);
+				for (Account account : accounts) {
+					if (account.getAccountNumber().equals(accountNumber)) {
+						session.setAttribute("currentAccount", account);
+						break;
+					}
 				}
+			} catch (CustomException e) {
+				e.printStackTrace();
 			}
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public static Account isReceiverIsSame(String accountNumber, HttpServletRequest request,
-			HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			List<Account> accounts = (List<Account>) session.getAttribute("accountsList");
-			for (Account account : accounts) {
-				if (account.getAccountNumber().equals(accountNumber)) {
-					return account;
-				}
-			}
-		}
-		return null;
 	}
 }

@@ -1,6 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="java.util.List"%>
+<%@ page import="com.banking.utils.CustomException"%>
+<%@ page import="com.banking.model.Account"%>
+<%@ page import="com.banking.controller.AccountController"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,7 +26,20 @@
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
-		response.sendRedirect(request.getContextPath()+"/bank/login");
+		response.sendRedirect(request.getContextPath() + "/bank/login");
+	}
+	%>
+
+	<%
+	int userId = (int) session.getAttribute("currentUserId");
+
+	AccountController accountController = new AccountController();
+	List<Account> accountsList = null;
+
+	try {
+		accountsList = accountController.getAccountsOfCustomer(userId);
+	} catch (CustomException e) {
+		e.printStackTrace();
 	}
 	%>
 	<div class="navbar-home">
@@ -30,16 +47,18 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/account"
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/account"
 				class="active">Accounts</a></li>
 			<li><a
 				href="<%=request.getContextPath()%>/bank/customer/transaction">Transactions</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
 			<li><a
 				href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
-					method="post">
+				<form id="logoutForm"
+					action="<%=request.getContextPath()%>/bank/logout" method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
 						<i class="fa fa-sign-out" aria-hidden="true"
@@ -51,12 +70,13 @@
 	</div>
 	<div class="switchaccount-container">
 		<c:set var="accountNumber" value="1" />
-		<c:forEach var="accounts" items="${accountsList}">
+		<c:forEach var="accounts" items="<%=accountsList%>">
 			<div class="account-details"
 				onclick="submitForm('${accounts.accountNumber}')">
 				<h3>Account ${accountNumber}</h3>
 				<div class="account-logo">
-					<img src="<%=request.getContextPath()%>/images/AccountLogo.png" alt="Account Logo">
+					<img src="<%=request.getContextPath()%>/images/AccountLogo.png"
+						alt="Account Logo">
 				</div>
 				<table>
 					<tr>
@@ -89,7 +109,8 @@
 					</tr>
 				</table>
 				<form id="form${accounts.accountNumber}"
-					action="<%=request.getContextPath()%>/bank/changeAccount" method="post">
+					action="<%=request.getContextPath()%>/bank/changeAccount"
+					method="post">
 					<input type="hidden" name="accountNumber"
 						value="${accounts.accountNumber}">
 				</form>

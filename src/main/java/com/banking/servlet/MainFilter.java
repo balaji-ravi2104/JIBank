@@ -14,9 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.banking.dao.AccountDao;
+import com.banking.controller.AccountController;
 import com.banking.dao.UserDao;
-import com.banking.dao.implementation.AccountDaoImplementation;
 import com.banking.dao.implementation.UserDaoImplementation;
 import com.banking.model.Account;
 import com.banking.model.AccountStatus;
@@ -30,11 +29,11 @@ import com.banking.utils.PasswordGenerator;
 public class MainFilter implements Filter {
 
 	UserDao userDao;
-	AccountDao AccountDao;
+	AccountController accountController;
 
 	public void init(FilterConfig fConfig) throws ServletException {
 		this.userDao = new UserDaoImplementation();
-		this.AccountDao = new AccountDaoImplementation();
+		this.accountController = new AccountController();
 	}
 
 	public void destroy() {
@@ -251,7 +250,7 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				if (AccountDao.isCustomerAlreadyHasAccount(customerId, accountType, branchId)) {
+				if (accountController.isUserAlreadyHasAccount(customerId, accountType, branchId)) {
 					request.setAttribute("accountExists", "Account Already Present in the Branch");
 					httpRequest.getRequestDispatcher("/employee/accountform.jsp").forward(httpRequest, httpResponse);
 					return;
@@ -276,7 +275,7 @@ public class MainFilter implements Filter {
 				String toDate = request.getParameter("toDate");
 
 				if (accountNumber.length() < 12 || accountNumber.length() > 12
-						|| !AccountDao.isAccountPresent(accountNumber)) {
+						|| !accountController.isAccountPresent(accountNumber)) {
 					request.setAttribute("error", "Invalid Account Number");
 					httpRequest.getRequestDispatcher("/employee/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
@@ -303,7 +302,7 @@ public class MainFilter implements Filter {
 				request.setAttribute("submitType", "Deposit");
 				boolean flag = false;
 				if (accountNumber.length() < 12 || accountNumber.length() > 12
-						|| !AccountDao.isAccountPresent(accountNumber)) {
+						|| !accountController.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -322,7 +321,7 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				Account Account = AccountDao.getAccountDetail(accountNumber);
+				Account Account = accountController.getAccountDetails(accountNumber);
 
 				if (Account.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "The Account is InActive");
@@ -343,7 +342,7 @@ public class MainFilter implements Filter {
 				request.setAttribute("submitType", "Withdraw");
 				boolean flag = false;
 				if (accountNumber.length() < 12 || accountNumber.length() > 12
-						|| !AccountDao.isAccountPresent(accountNumber)) {
+						|| !accountController.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -362,7 +361,7 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				Account Account = AccountDao.getAccountDetail(accountNumber);
+				Account Account = accountController.getAccountDetails(accountNumber);
 
 				if (Account.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "The Account is InActive");
@@ -390,6 +389,7 @@ public class MainFilter implements Filter {
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
+				
 
 				if (senderAccount == null) {
 					request.setAttribute("inactiveAccount", "You don't have Any Accounts");
@@ -404,7 +404,7 @@ public class MainFilter implements Filter {
 				}
 
 				if (accountNumber.length() < 12 || accountNumber.length() > 12
-						|| !AccountDao.isAccountPresent(accountNumber)) {
+						|| !accountController.isAccountPresent(accountNumber)) {
 					flag = true;
 					request.setAttribute("invalidAccount", "Invalid Account Number");
 				}
@@ -422,12 +422,8 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				Account receiverAccount = AccountServletHelper.isReceiverIsSame(accountNumber, httpRequest,
-						httpResponse);
-
-				if (receiverAccount == null) {
-					receiverAccount = AccountDao.getAccountDetail(accountNumber);
-				}
+				
+				Account receiverAccount = accountController.getAccountDetails(accountNumber);
 
 				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
 					request.setAttribute("inactiveAccount", "Receiver Account is InActive");
@@ -446,10 +442,11 @@ public class MainFilter implements Filter {
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
-
+				
 				request.setAttribute("receiverAccount", receiverAccount);
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
+				e.printStackTrace();
 				request.setAttribute("failed", "Amount Transaction Failed");
 			}
 			break;

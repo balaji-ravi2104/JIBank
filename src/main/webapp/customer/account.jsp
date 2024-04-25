@@ -90,7 +90,7 @@
 								<td>${currentAccount.accountStatus}</td>
 							</tr>
 						</table>
-						<c:if test="${accountsList.size()>1}">
+						<c:if test="${accountsCount>1}">
 							<div class="Switch-account-button">
 								<form action="<%=request.getContextPath()%>/bank/switchAccount"
 									method="post">
