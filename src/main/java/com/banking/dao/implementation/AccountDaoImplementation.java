@@ -254,7 +254,7 @@ public class AccountDaoImplementation implements AccountDao {
 	}
 
 	@Override
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status, int updatingUserId)
+	public boolean changeAccountStatus(String accountNumber, int status, int updatingUserId)
 			throws CustomException {
 		boolean isAccountStatusChanged = false;
 		try (Connection connection = DatabaseConnection.getConnection();

@@ -9,11 +9,9 @@ import com.banking.cache.Cache;
 import com.banking.cache.RedisCache;
 import com.banking.dao.AccountDao;
 import com.banking.dao.implementation.AccountDaoImplementation;
-import com.banking.logservice.AuditLogHandler;
 import com.banking.model.Account;
-import com.banking.model.AuditLog;
-import com.banking.model.AuditlogActions;
 import com.banking.model.Status;
+import com.banking.utils.AuditLogUtils;
 import com.banking.utils.CustomException;
 import com.banking.utils.ErrorMessages;
 import com.banking.utils.InputValidator;
@@ -23,15 +21,13 @@ public class AccountController {
 
 	private AccountDao accountDao;
 	private BranchController branchController;
-	private AuditLogHandler auditLogHandler;
 
 	public static final String accountCachePrefix = "Account";
 	public static final String listAccountCachePrefix = "ListAccount";
 
-	
 	private final Object getAccountDetailsLock = new Object();
 	private final Object getAccountsOfCustomerLock = new Object();
-	
+
 	private static final Logger logger = LoggerProvider.getLogger();
 	public static final Cache<String, Account> accountCache = new RedisCache<String, Account>(6379, accountCachePrefix);
 	public static final Cache<Integer, List<Account>> listOfAccounts = new RedisCache<Integer, List<Account>>(6379,
@@ -40,7 +36,6 @@ public class AccountController {
 	public AccountController() {
 		this.accountDao = new AccountDaoImplementation();
 		this.branchController = new BranchController();
-		this.auditLogHandler = new AuditLogHandler();
 	}
 
 	public boolean createAccount(Account account, int creatingUserId) throws CustomException {
@@ -54,24 +49,12 @@ public class AccountController {
 			}
 			try {
 				isAccountCreated = accountDao.createAccount(account, isPrimary, creatingUserId);
-				if (isAccountCreated) {
-					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.CREATE,
-							System.currentTimeMillis(), creatingUserId,
-							String.format("User Id %d Created the new Account for User Id %d ", creatingUserId,
-									account.getUserId()),
-							Status.SUCCESS);
-					auditLogHandler.addAuditData(auditLog);
-				} else {
-					AuditLog auditLog = new AuditLog(account.getUserId(), AuditlogActions.CREATE,
-							System.currentTimeMillis(), creatingUserId,
-							String.format("User Id %d Created the new Account for User Id %d but Failed",
-									creatingUserId, account.getUserId()),
-							Status.FAILURE);
-					auditLogHandler.addAuditData(auditLog);
-				}
 			} catch (Exception e) {
 				logger.log(Level.WARNING, "Exception Occured While Creating new Account", e);
 				throw new CustomException("Exception Occured While Creating new Account", e);
+			} finally {
+				AuditLogUtils.logAccountCreation(account.getUserId(), creatingUserId,
+						isAccountCreated ? Status.SUCCESS : Status.FAILURE);
 			}
 		}
 		return isAccountCreated;
@@ -151,30 +134,21 @@ public class AccountController {
 		return customerAccounts;
 	}
 
-	public boolean activateDeactivateCustomerAccount(String accountNumber, int status, int updatingUserId)
-			throws CustomException {
+	public boolean changeAccountStatus(String accountNumber, int status, int updatingUserId) throws CustomException {
 		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
 		boolean isAccountStatusChanged = false;
+		int userId = 0;
 		try {
-			isAccountStatusChanged = accountDao.activateDeactivateCustomerAccount(accountNumber, status,
-					updatingUserId);
-			int userId = accountDao.getAccountDetail(accountNumber).getUserId();
-			if (isAccountStatusChanged) {
-				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(),
-						updatingUserId, String.format("User Id %d Updated the Account %s of User Id %d ",
-								updatingUserId, accountNumber, userId),
-						Status.SUCCESS);
-				auditLogHandler.addAuditData(auditLog);
-			} else {
-				AuditLog auditLog = new AuditLog(userId, AuditlogActions.UPDATE, System.currentTimeMillis(),
-						updatingUserId, String.format("User Id %d Updated the Account %s of User Id %d but Failed",
-								updatingUserId, accountNumber, userId),
-						Status.FAILURE);
-				auditLogHandler.addAuditData(auditLog);
+			isAccountStatusChanged = accountDao.changeAccountStatus(accountNumber, status, updatingUserId);
+			if(isAccountStatusChanged) {
+				userId = getAccountDetails(accountNumber).getUserId();
 			}
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Exception Occured While Updating Bank Account Status", e);
 			throw new CustomException("Exception Occured While Updating Bank Account Status", e);
+		} finally {
+			AuditLogUtils.logAccountStatusChange(userId, accountNumber, updatingUserId,
+					isAccountStatusChanged ? Status.SUCCESS : Status.FAILURE);
 		}
 		return isAccountStatusChanged;
 	}

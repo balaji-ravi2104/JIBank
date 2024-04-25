@@ -16,7 +16,7 @@ public interface AccountDao {
 
 	List<Account> getAllAccountsOfCustomer(int userId) throws CustomException;
 
-	boolean activateDeactivateCustomerAccount(String accountNumber, int status,int updatingUserId) throws CustomException;
+	boolean changeAccountStatus(String accountNumber, int status,int updatingUserId) throws CustomException;
 
 	Map<String, Account> getCustomerAccounts(int userId, int branchId) throws CustomException;
 

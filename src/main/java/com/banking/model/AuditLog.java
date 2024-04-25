@@ -8,6 +8,10 @@ public class AuditLog {
 	private String description;
 	private Status status;
 	
+	public AuditLog() {
+		
+	}
+	
 	public AuditLog(int targetId, AuditlogActions auditlogActions, long createdTime, int userId, String description,Status status) {
 		super();
 		this.targetId = targetId;

@@ -83,7 +83,7 @@ public class AccountServletHelper {
 				AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
 				int value = accountStatus.getValue();
 				int updatingUserId = (int) session.getAttribute("currentUserId");
-				boolean isUpdated = accountController.activateDeactivateCustomerAccount(accountNumber, value,
+				boolean isUpdated = accountController.changeAccountStatus(accountNumber, value,
 						updatingUserId);
 				if (isUpdated) {
 					request.setAttribute("updatedSuccess", "Account Status Updated");
