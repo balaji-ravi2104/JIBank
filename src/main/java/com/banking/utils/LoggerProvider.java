@@ -8,19 +8,20 @@ import java.util.logging.SimpleFormatter;
 
 public class LoggerProvider {
 
-	static Logger gLogger;
+	private static Logger logger;
+
 	public static Logger getLogger() {
-		if(gLogger != null) {
-			return gLogger;
+		if (logger != null) {
+			return logger;
 		}
-		Logger logger = null;
 		synchronized (LoggerProvider.class) {
-			if(gLogger != null) {
-				return gLogger;
+			if (logger != null) {
+				return logger;
 			}
 			try {
 				logger = Logger.getLogger("Bank_Logger");
-				FileHandler fileHandler = new FileHandler("/home/bala-pt-7360//eclipse-workspace/JIBank/logs/jiBankLogger.txt", true);
+				FileHandler fileHandler = new FileHandler(
+						"/home/bala-pt-7360//eclipse-workspace/JIBank/logs/jiBankLogger.txt", true);
 				fileHandler.setFormatter(new SimpleFormatter());
 				logger.addHandler(fileHandler);
 				logger.setLevel(Level.ALL);
@@ -28,7 +29,7 @@ public class LoggerProvider {
 				e.printStackTrace();
 			}
 		}
-		return gLogger = logger;
+		return logger;
 	}
 
 }

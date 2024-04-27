@@ -117,7 +117,6 @@
 			<c:if test="${not empty customerAccounts}">
 				<thead>
 					<tr>
-						<th>User Id</th>
 						<th>Account Id</th>
 						<th>Account Number</th>
 						<th>Branch Id</th>
@@ -133,7 +132,6 @@
 				<c:forEach var="accountEntry" items="${customerAccounts}">
 					<tr>
 						<c:set var="account" value="${accountEntry.value}" />
-						<td>${account.userId}</td>
 						<td>${account.accountId}</td>
 						<td>${account.accountNumber}</td>
 						<td>${account.branchId}</td>

@@ -18,10 +18,24 @@ public class InputValidator {
 
 	private static final Pattern AADHAR_NUMBER_PATTERN = Pattern.compile("^\\d{12}$");
 
+	private static final Pattern FIRSTNAME_VALIDATE = Pattern.compile("^[a-zA-Z]{3,}$");
+
+	private static final Pattern LASTNAME_VALIDATE = Pattern.compile("^([a-zA-Z]+\\s?)+$");
+	
 	public static void isNull(Object object, String ErrorMessage) throws CustomException {
 		if (object == null) {
 			throw new CustomException(ErrorMessage);
 		}
+	}
+
+	public static boolean validateFirstName(String password) throws CustomException, PatternSyntaxException {
+		isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
+		return FIRSTNAME_VALIDATE.matcher(password).matches();
+	}
+	
+	public static boolean validateLastName(String password) throws CustomException, PatternSyntaxException {
+		isNull(password, ErrorMessages.INPUT_NULL_MESSAGE);
+		return LASTNAME_VALIDATE.matcher(password).matches();
 	}
 
 	public static boolean validatePassword(String password) throws CustomException, PatternSyntaxException {

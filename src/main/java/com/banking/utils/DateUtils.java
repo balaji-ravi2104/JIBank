@@ -7,13 +7,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateUtils {
-
-
+	
 	public static String longToDate(long millis) {
 		Instant instant = Instant.ofEpochMilli(millis);
 		ZonedDateTime time = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
- 
+
 		return time.format(formatter);
 	}
 
@@ -27,10 +26,6 @@ public class DateUtils {
 
 	public static LocalDate formatDateString(String dateString) throws CustomException {
 		InputValidator.isNull(dateString, "Date of birth Cannot be Null!!");
-//		if (!InputValidator.validateDateOfBirth(dateString)) {
-//			userView.displayInvalidDateOfBirth();
-//			return null;
-//		}
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate date = LocalDate.parse(dateString, formatter);
 		return date;

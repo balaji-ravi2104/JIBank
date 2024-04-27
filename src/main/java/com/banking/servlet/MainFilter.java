@@ -75,6 +75,17 @@ public class MainFilter implements Filter {
 					String address = request.getParameter("address");
 					String dob = request.getParameter("dateOfBirth");
 					long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
+					
+
+					if (!InputValidator.validateFirstName(firstName)) {
+						flag = true;
+						request.setAttribute("invalidFirstName", "Invalid FirstName");
+					}
+
+					if (!InputValidator.validateLastName(lastName)) {
+						flag = true;
+						request.setAttribute("invalidLastName", "Invalid LastName");
+					}
 
 					if (!InputValidator.validateEmail(email)) {
 						flag = true;
@@ -84,6 +95,11 @@ public class MainFilter implements Filter {
 					if (!InputValidator.validateMobileNumber(contactNumber)) {
 						flag = true;
 						request.setAttribute("invalidMobile", "Invalid Contact Number");
+					}
+					
+					if(dateOfBirth > System.currentTimeMillis()) {
+						flag = true;
+						request.setAttribute("invalidDOB", "Invalid Date of Birth");
 					}
 
 					String date = DateUtils.longToDate(dateOfBirth);
@@ -170,6 +186,16 @@ public class MainFilter implements Filter {
 				int status = Integer.parseInt(request.getParameter("status"));
 				String dob = request.getParameter("dateOfBirth");
 
+				if (!InputValidator.validateFirstName(firstName)) {
+					flag = true;
+					request.setAttribute("invalidFirstName", "Invalid FirstName");
+				}
+
+				if (!InputValidator.validateLastName(lastName)) {
+					flag = true;
+					request.setAttribute("invalidLastName", "Invalid LastName");
+				}
+				
 				if (!InputValidator.validateEmail(email)) {
 					flag = true;
 					request.setAttribute("invalidEmail", "Invalid Email Id");
@@ -186,6 +212,11 @@ public class MainFilter implements Filter {
 				}
 
 				long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
+				
+				if(dateOfBirth > System.currentTimeMillis()) {
+					flag = true;
+					request.setAttribute("invalidDOB", "Invalid Date of Birth");
+				}
 
 				Customer customer = new Customer();
 				customer.setUserId(customerId);
@@ -311,9 +342,9 @@ public class MainFilter implements Filter {
 					request.setAttribute("invalidBalance", "Balance Should be Greater than Zero");
 				}
 
-				if (amount > 10000000) {
+				if (amount < 100 || amount > 100000) {
 					flag = true;
-					request.setAttribute("invalidBalance", "Amount Should be less than 10000000");
+					request.setAttribute("invalidBalance", "Amount Should be greater than 100 and less than 100000");
 				}
 
 				if (flag) {
@@ -351,9 +382,9 @@ public class MainFilter implements Filter {
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
 
-				if (amount > 10000000) {
+				if (amount < 100 || amount > 100000) {
 					flag = true;
-					request.setAttribute("invalidBalance", "Amount Should be less than 10000000");
+					request.setAttribute("invalidBalance", "Amount Should be greater than 100 and less than 100000");
 				}
 
 				if (flag) {
@@ -389,7 +420,6 @@ public class MainFilter implements Filter {
 				HttpSession session = ((HttpServletRequest) request).getSession(false);
 
 				Account senderAccount = (Account) session.getAttribute("currentAccount");
-				
 
 				if (senderAccount == null) {
 					request.setAttribute("inactiveAccount", "You don't have Any Accounts");
@@ -412,9 +442,9 @@ public class MainFilter implements Filter {
 					flag = true;
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
-				if (amount > 10000000) {
+				if (amount <100 || amount > 100000) {
 					flag = true;
-					request.setAttribute("invalidBalance", "Amount Should be Less than 10000000");
+					request.setAttribute("invalidBalance", "Amount Should be Greater than 100 and Less than 100000");
 				}
 
 				if (flag) {
@@ -422,7 +452,6 @@ public class MainFilter implements Filter {
 					return;
 				}
 
-				
 				Account receiverAccount = accountController.getAccountDetails(accountNumber);
 
 				if (receiverAccount.getAccountStatus() == AccountStatus.INACTIVE) {
@@ -442,7 +471,7 @@ public class MainFilter implements Filter {
 					httpRequest.getRequestDispatcher("/customer/transaction.jsp").forward(httpRequest, httpResponse);
 					return;
 				}
-				
+
 				request.setAttribute("receiverAccount", receiverAccount);
 				request.setAttribute("senderAccount", senderAccount);
 			} catch (Exception e) {
@@ -480,9 +509,9 @@ public class MainFilter implements Filter {
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
 
-				if (amount > 10000000) {
+				if (amount < 100 || amount > 100000) {
 					flag = true;
-					request.setAttribute("invalidBalance", "Amount Should be Less than 10000000");
+					request.setAttribute("invalidBalance", "Amount Should be greater than 100 and Less than 100000");
 				}
 
 				if (flag) {

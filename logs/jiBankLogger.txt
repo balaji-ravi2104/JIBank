@@ -9,7 +9,7 @@ java.sql.SQLSyntaxErrorException: Table 'Banking_Application.User' doesn't exist
 	at com.banking.controller.UserController.login(UserController.java:47)
 	at com.banking.servlet.UserServletHelper.loginUser(UserServletHelper.java:34)
 	at com.banking.servlet.MainServlet.doPost(MainServlet.java:86)
-	at javax.servlet.http.HttpServlet.service(HttpServlet.java:515)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:515) 
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:583)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:212)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:156)

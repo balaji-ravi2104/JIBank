@@ -7,7 +7,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class HttpGetExample {
 	private static final String GET_USER_URL = "https://localhost:8443/JIBank/api/user/1013";
-	private static final String AUTH_TOKEN = "Ct40cqqcv2VIBIw1pJ1gan9l5zmIYFIb";
+	private static final String AUTH_TOKEN = "41XQLQeGOHS7uQyeZmg3gtZTclv1hfPw";
 
 	public static void main(String[] args) {
 		try {

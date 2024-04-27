@@ -1014,6 +1014,7 @@ input[type="text"], input[type="number"], input[type="date"], input[type="email"
 
 .invalid-accountnumber-error i {
 	margin-right: 5px;
+	margin-bottom: 25px;
 }
 
 .password-font {

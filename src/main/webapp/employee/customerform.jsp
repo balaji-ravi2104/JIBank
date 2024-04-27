@@ -30,17 +30,21 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/bank/employee/customer"
+			<li><a
+				href="<%=request.getContextPath()%>/bank/employee/customer"
 				class="active">Users</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/employee/account">Accounts</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/employee/transaction">Transactions</a></li>
 			<c:if test="${user.typeOfUser == 'ADMIN'}">
 				<li><a
-					href="<%=request.getContextPath()%>/bank/employee/apiservice">API Service</a></li>
+					href="<%=request.getContextPath()%>/bank/employee/apiservice">API
+						Service</a></li>
 			</c:if>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
-					method="post">
+				<form id="logoutForm"
+					action="<%=request.getContextPath()%>/bank/logout" method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
 						<i class="fa fa-sign-out" aria-hidden="true"
@@ -93,6 +97,11 @@
 										required>
 								</c:otherwise>
 							</c:choose>
+							<c:if test="${not empty invalidFirstName}">
+								<div class="customer-form-error">
+									<p>${invalidFirstName}</p>
+								</div>
+							</c:if>
 						</div>
 						<div class="form-group">
 							<label for="lastname">Last Name</label>
@@ -108,6 +117,11 @@
 										required>
 								</c:otherwise>
 							</c:choose>
+							<c:if test="${not empty invalidLastName}">
+								<div class="customer-form-error">
+									<p>${invalidLastName}</p>
+								</div>
+							</c:if>
 						</div>
 					</div>
 					<div class="form-row">
@@ -157,6 +171,11 @@
 										required>
 								</c:otherwise>
 							</c:choose>
+							<c:if test="${not empty invalidMobile}">
+								<div class="customer-form-error">
+									<p>${invalidMobile}</p>
+								</div>
+							</c:if>
 						</div>
 						<div class="form-group">
 							<label for="dateOfBirth">Date of Birth</label>
@@ -172,18 +191,23 @@
 										required>
 								</c:otherwise>
 							</c:choose>
+							<c:if test="${not empty invalidDOB}">
+								<div class="customer-form-error">
+									<p>${invalidDOB}</p>
+								</div>
+							</c:if>
 						</div>
 					</div>
-					<c:if test="${not empty invalidMobile}">
+					<%-- <c:if test="${not empty invalidMobile}">
 						<div class="customer-form-error">
 							<p>${invalidMobile}</p>
 						</div>
-					</c:if>
-					<c:if test="${not empty invalidDOB}">
+					</c:if> --%>
+					<%-- <c:if test="${not empty invalidDOB}">
 						<div class="customer-form-error">
 							<p>${invalidDOB}</p>
 						</div>
-					</c:if>
+					</c:if> --%>
 					<c:if test="${not empty customerDetails}">
 						<div class="form-row">
 							<div class="form-group wider">
@@ -228,8 +252,9 @@
 							</div>
 						</c:if>
 						<label for="aadharnumber">Aadhar Number</label>
-						<input type="text" name="aadharnumber" 
-							placeholder="Enter the Aadhar Number" pattern="\d{12}" maxlength="12"
+						<input type="text" name="aadharnumber"
+							placeholder="Enter the Aadhar Number" pattern="\d{12}"
+							maxlength="12"
 							value="<c:choose><c:when test='${not empty userCreationSuccess}'>${''}</c:when><c:otherwise>${empty param.aadharnumber ? '' : param.aadharnumber}</c:otherwise></c:choose>"
 							required>
 						<c:if test="${not empty invalidAadhar}">
