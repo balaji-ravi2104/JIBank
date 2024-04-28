@@ -77,26 +77,6 @@ public class TransactionDaoImplementation implements TransactionDao {
 		return isAmountDepositedAndLoggedInTransaction;
 	}
 
-	private double getCurrentBalance(String accountNumber) throws CustomException {
-		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
-		double balance = 0;
-		try (Connection connection = DatabaseConnection.getConnection();
-				PreparedStatement preparedStatement = connection.prepareStatement(GET_CURRENT_BALANCE)) {
-
-			preparedStatement.setString(1, accountNumber);
-
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				if (resultSet.next()) {
-					balance = resultSet.getDouble(1);
-				}
-			}
-		} catch (Exception e) {
-			logger.log(Level.WARNING, "Exception Occured While Getting Balance", e);
-			throw new CustomException("Exception Occured While Getting Balance", e);
-		}
-		return balance;
-	}
-
 	@Override
 	public boolean withdraw(Account account, double amountToWithdraw, String description, int userId)
 			throws CustomException {
@@ -353,5 +333,25 @@ public class TransactionDaoImplementation implements TransactionDao {
 			throw new CustomException("Exception Occured While Updating Account Balance", e);
 		}
 		return isBalanceUpdated;
+	}
+	
+	private double getCurrentBalance(String accountNumber) throws CustomException {
+		InputValidator.isNull(accountNumber, ErrorMessages.INPUT_NULL_MESSAGE);
+		double balance = 0;
+		try (Connection connection = DatabaseConnection.getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(GET_CURRENT_BALANCE)) {
+
+			preparedStatement.setString(1, accountNumber);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					balance = resultSet.getDouble(1);
+				}
+			}
+		} catch (Exception e) {
+			logger.log(Level.WARNING, "Exception Occured While Getting Balance", e);
+			throw new CustomException("Exception Occured While Getting Balance", e);
+		}
+		return balance;
 	}
 }

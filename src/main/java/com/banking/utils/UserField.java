@@ -1,5 +1,0 @@
-package com.banking.utils;
-
-public enum UserField {
-	PASSWORD, FIRSTNAME, LASTNAME, GENDER, EMAIL, CONTACT_NUMBER, ADDRESS, DATEOFBIRTH, PAN, AADHAR
-}
