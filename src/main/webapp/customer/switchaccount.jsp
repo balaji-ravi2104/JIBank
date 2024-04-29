@@ -5,6 +5,7 @@
 <%@ page import="com.banking.utils.CustomException"%>
 <%@ page import="com.banking.model.Account"%>
 <%@ page import="com.banking.controller.AccountController"%>
+<%@ page import="com.banking.utils.CookieEncryption"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,25 +22,43 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-	<%
+	<%-- <%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
 		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
-	%>
-
+	%> --%>
 	<%
-	int userId = (int) session.getAttribute("currentUserId");
-
-	AccountController accountController = new AccountController();
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	String UserId = null;
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals("userId")) {
+		UserId = cookie.getValue();
+			}
+		}
+	}
 	List<Account> accountsList = null;
+	if (UserId == null) {
+		response.sendRedirect(request.getContextPath() + "/bank/login");
+	} else {
+		try {
+			String decryptUserId = CookieEncryption.decrypt(UserId);
+			if (decryptUserId == null) {
+				response.sendRedirect(request.getContextPath() + "/bank/login");
+			}
+			int userId = Integer.parseInt(decryptUserId);
 
-	try {
-		accountsList = accountController.getAccountsOfCustomer(userId);
-	} catch (CustomException e) {
-		e.printStackTrace();
+			AccountController accountController = new AccountController();
+			accountsList = accountController.getAccountsOfCustomer(userId);
+		} catch (CustomException e) {
+			e.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/bank/login");
+		}
 	}
 	%>
 	<div class="navbar-home">
@@ -53,9 +72,9 @@
 			<li><a
 				href="<%=request.getContextPath()%>/bank/customer/transaction">Transactions</a></li>
 			<li><a
-				href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
-			<li><a
 				href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
 			<li>
 				<form id="logoutForm"
 					action="<%=request.getContextPath()%>/bank/logout" method="post">

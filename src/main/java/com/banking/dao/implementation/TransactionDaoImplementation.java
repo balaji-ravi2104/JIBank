@@ -326,6 +326,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 
 			int rowsAffected = preparedStatement.executeUpdate();
 			if (rowsAffected > 0) {
+				account.setBalance(amountToUpdate);
 				isBalanceUpdated = true;
 			}
 		} catch (Exception e) {

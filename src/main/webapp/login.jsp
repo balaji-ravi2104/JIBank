@@ -19,7 +19,7 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-	<%
+	<%-- <%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
@@ -31,7 +31,7 @@
 			response.sendRedirect(request.getContextPath() + "/bank/employee/customer");	
 		}
 	}
-	%>
+	%> --%>
 	<div class="navbar">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">

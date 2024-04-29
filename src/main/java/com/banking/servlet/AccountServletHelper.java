@@ -20,6 +20,7 @@ public class AccountServletHelper {
 			throws IOException {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		int branchId = Integer.parseInt(request.getParameter("branchId"));
+		System.out.println(userId+" "+branchId);
 		try {
 			Map<String, Account> customerAccounts = accountController.getCustomerAccountsInBranch(userId, branchId);
 			if (customerAccounts.isEmpty()) {

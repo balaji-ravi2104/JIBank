@@ -17,11 +17,27 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-	<%
+	<%-- <%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
+		response.sendRedirect(request.getContextPath() + "/bank/login");
+	}
+	%> --%>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	String UserId = null;
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals("userId")) {
+		UserId = cookie.getValue();
+			}
+		}
+	}
+	if (UserId == null) {
 		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>
@@ -30,14 +46,18 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/transaction"
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/account">Accounts</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/transaction"
 				class="active">Transactions</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/profile">Profile</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
-					method="post">
+				<form id="logoutForm"
+					action="<%=request.getContextPath()%>/bank/logout" method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
 						<i class="fa fa-sign-out" aria-hidden="true"
@@ -112,7 +132,8 @@
 					</c:if>
 					<c:if test="${outSideBank}">
 						<label for="ifsc">IFSC Code</label>
-						<input type="text" name="ifsc" placeholder="Enter the IFSC Code" required>
+						<input type="text" name="ifsc" placeholder="Enter the IFSC Code"
+							required>
 					</c:if>
 					<label for="amount">Transfer Amount</label>
 					<c:choose>

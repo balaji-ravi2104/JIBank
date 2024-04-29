@@ -17,11 +17,27 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-	<%
+	<%-- <%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
+		response.sendRedirect(request.getContextPath() + "/bank/login");
+	}
+	%> --%>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	String UserId = null;
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals("userId")){
+				UserId = cookie.getValue();	
+			}
+		}
+	}
+	if (UserId == null){
 		response.sendRedirect(request.getContextPath() + "/bank/login");
 	}
 	%>

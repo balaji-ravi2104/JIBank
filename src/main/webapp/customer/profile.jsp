@@ -2,6 +2,10 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page import="com.banking.utils.DateUtils"%>
+<%@ page import="com.banking.model.User"%>
+<%@ page import="com.banking.utils.CustomException"%>
+<%@ page import="com.banking.controller.UserController"%>
+<%@ page import="com.banking.utils.CookieEncryption"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,12 +22,42 @@
 	href="<%=request.getContextPath()%>/css/style.css">
 </head>
 <body>
-	<%
+	<%-- <%
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 
 	if (session.getAttribute("user") == null) {
 		response.sendRedirect(request.getContextPath() + "/bank/login");
+	}
+	%>  --%>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	String UserId = null;
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals("userId")) {
+		UserId = cookie.getValue();
+			}
+		}
+	}
+	if (UserId == null) {
+		response.sendRedirect(request.getContextPath() + "/bank/login");
+	} else {
+		/* int userId = (int) session.getAttribute("currentUserId"); */
+		try {
+			String decryptUserId = CookieEncryption.decrypt(UserId);
+			if (decryptUserId == null) {
+				response.sendRedirect(request.getContextPath() + "/bank/login");
+			}
+			int userId = Integer.parseInt(decryptUserId);
+			UserController userController = new UserController();
+			User user = userController.getCustomerDetailsById(userId);
+		} catch (CustomException e) {
+			e.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/bank/login");
+		}
 	}
 	%>
 	<div class="navbar-home">
@@ -31,14 +65,18 @@
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
 		<div>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/account">Accounts</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/transaction">Transactions</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
-			<li><a href="<%=request.getContextPath()%>/bank/customer/profile"
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/account">Accounts</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/transaction">Transactions</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/Statement">Statements</a></li>
+			<li><a
+				href="<%=request.getContextPath()%>/bank/customer/profile"
 				class="active">Profile</a></li>
 			<li>
-				<form id="logoutForm" action="<%=request.getContextPath()%>/bank/logout"
-					method="post">
+				<form id="logoutForm"
+					action="<%=request.getContextPath()%>/bank/logout" method="post">
 					<button type="submit"
 						style="border: none; background: none; cursor: pointer;">
 						<i class="fa fa-sign-out" aria-hidden="true"
@@ -57,31 +95,31 @@
 			<table>
 				<tr>
 					<th>User Id</th>
-					<td>${user.userId}</td>
+					<td>${user.getUserId()}</td>
 				</tr>
 				<tr>
 					<th>Name</th>
-					<td>${user.firstName} ${user.lastName}</td>
+					<td>${user.getFirstName()}${user.getLastName()}</td>
 				</tr>
 				<tr>
 					<th>Gender</th>
-					<td>${user.gender}</td>
+					<td>${user.getGender()}</td>
 				</tr>
 				<tr>
 					<th>Email</th>
-					<td>${user.email}</td>
+					<td>${user.getEmail()}</td>
 				</tr>
 				<tr>
 					<th>Mobile</th>
-					<td>${user.contactNumber}</td>
+					<td>${user.getContactNumber()}</td>
 				</tr>
 				<tr>
 					<th>DOB</th>
-					<td>${DateUtils.longToDate(user.dateOfBirth)}</td>
+					<td>${DateUtils.longToDate(user.getDateOfBirth())}</td>
 				</tr>
 				<tr>
 					<th>Address</th>
-					<td class="address">${user.address}</td>
+					<td class="address">${user.getAddress()}</td>
 				</tr>
 				<tr>
 					<th></th>
@@ -112,7 +150,7 @@
 								<p>${failed}</p>
 							</div>
 						</c:if>
-						<input type="hidden" id="userId" value="${user.userId}"
+						<input type="hidden" id="userId" value="${user.getUserId()}"
 							name="userId"> <label for="new-password">Old
 							Password</label>
 						<c:choose>
