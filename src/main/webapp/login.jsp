@@ -1,6 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="com.banking.model.User"%>
+<%@ page import="com.banking.model.UserType"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,11 +19,24 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+
+	User user = (User) session.getAttribute("user");
+	if (user != null) {
+		if(user.getTypeOfUser() == UserType.CUSTOMER){
+			response.sendRedirect(request.getContextPath() + "/bank/customer/account");
+		}else{
+			response.sendRedirect(request.getContextPath() + "/bank/employee/customer");	
+		}
+	}
+	%>
 	<div class="navbar">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">
 		</div>
-	</div>	
+	</div>
 
 	<div class="container">
 		<div id="login-image">
@@ -29,8 +44,8 @@
 				alt="Login Images" />
 		</div>
 		<div id="form">
-			<c:if test="${not empty error}"> 
-				<div class="usercreation-message failed login-error">   
+			<c:if test="${not empty error}">
+				<div class="usercreation-message failed login-error">
 					<i class="fa-solid fa-triangle-exclamation"></i>
 					<p>${error}</p>
 				</div>
