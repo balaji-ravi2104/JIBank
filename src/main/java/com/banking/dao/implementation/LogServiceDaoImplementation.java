@@ -72,13 +72,9 @@ public class LogServiceDaoImplementation implements LogServiceDao {
 			preparedStatement.setLong(1, System.currentTimeMillis());
 			preparedStatement.setString(2, SessionKey);
 			preparedStatement.setInt(3, userId);
-
-			int rowsAffected = preparedStatement.executeUpdate();
-			if (rowsAffected > 0) {
-				AuditLog auditLog = new AuditLog(userId, AuditlogActions.LOGOUT, System.currentTimeMillis(), userId,
-						String.format("User id %d logged out the website", userId),Status.SUCCESS);
-				logAuditTable(auditLog);
-			}
+			
+			preparedStatement.executeUpdate();
+			
 		} catch (Exception e) {
 			logger.log(Level.WARNING,"Exception Occured While Logging User Session Logout Details",e);
 			throw new CustomException("Exception Occured While Logging User Session Logout Details", e);

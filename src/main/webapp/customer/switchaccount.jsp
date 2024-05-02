@@ -6,6 +6,9 @@
 <%@ page import="com.banking.model.Account"%>
 <%@ page import="com.banking.controller.AccountController"%>
 <%@ page import="com.banking.utils.CookieEncryption"%>
+<%@ page import="com.banking.model.User"%>
+<%@ page import="com.banking.model.UserType"%>
+<%@ page import="com.banking.controller.UserController"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -49,15 +52,19 @@
 		try {
 			String decryptUserId = CookieEncryption.decrypt(UserId);
 			if (decryptUserId == null) {
-				response.sendRedirect(request.getContextPath() + "/bank/login");
+				response.sendRedirect(request.getContextPath() + "/bank/logout");
 			}
 			int userId = Integer.parseInt(decryptUserId);
-
+			UserController userController = new UserController();
+			User user = userController.getCustomerDetailsById(userId);
+			if(user.getTypeOfUser() != UserType.CUSTOMER){
+				response.sendRedirect(request.getContextPath() + "/bank/404");
+			}
 			AccountController accountController = new AccountController();
 			accountsList = accountController.getAccountsOfCustomer(userId);
 		} catch (CustomException e) {
 			e.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/bank/login");
+			response.sendRedirect(request.getContextPath() + "/bank/logout");
 		}
 	}
 	%>

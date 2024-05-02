@@ -3,6 +3,11 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page import="com.banking.model.User"%>
 <%@ page import="com.banking.model.UserType"%>
+<%@ page import="com.banking.controller.UserController"%>
+<%@ page import="com.banking.utils.CookieEncryption"%>
+<%@ page import="com.banking.utils.CustomException"%>
+<%@ page import="com.banking.servlet.AccountServletHelper" %>
+<%@ page import="com.banking.servlet.UserServletHelper" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,6 +37,43 @@
 		}
 	}
 	%> --%>
+	<%
+	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	String UserId = null;
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals("userId")) {
+				UserId = cookie.getValue();
+			}
+		}
+	}
+	if (UserId != null) {
+		try {
+			String decryptUserId = CookieEncryption.decrypt(UserId);
+			if (decryptUserId == null) {
+				response.sendRedirect(request.getContextPath() + "/bank/login");
+			} else {
+				int userId = Integer.parseInt(decryptUserId);
+				UserController userController = new UserController();
+				User user = userController.getCustomerDetailsById(userId);
+				if (user.getTypeOfUser() == UserType.CUSTOMER) {
+					AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
+					response.sendRedirect(request.getContextPath() + "/bank/customer/account");
+				} else {
+					if(user.getTypeOfUser() == UserType.EMPLOYEE){
+						UserServletHelper.getEmployeeBranch(request, response, user.getUserId());
+					}
+					response.sendRedirect(request.getContextPath() + "/bank/employee/customer");
+				}
+			}
+		} catch (CustomException e) {
+			e.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/bank/logout");
+		}
+	}
+	%>
 	<div class="navbar">
 		<div class="logo">
 			<img src="<%=request.getContextPath()%>/images/logo.png" alt="logo">

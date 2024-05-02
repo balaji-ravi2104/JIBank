@@ -141,4 +141,14 @@ public class AuditLogUtils {
 		auditLogHandler.addAuditData(auditLog);
 	}
 
+	public static void logLogoutDetails(int userId) {
+		AuditLog auditLog = new AuditLog();
+		auditLog.setTargetId(userId);
+		auditLog.setAuditlogActions(AuditlogActions.LOGOUT.getValue());
+		auditLog.setCreatedTime(System.currentTimeMillis());
+		auditLog.setUserId(userId);
+		auditLog.setStatus(Status.SUCCESS.getValue());
+		auditLog.setDescription(String.format("User id %d logged out the website", userId));
+		auditLogHandler.addAuditData(auditLog);
+	}
 }

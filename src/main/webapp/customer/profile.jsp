@@ -3,6 +3,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page import="com.banking.utils.DateUtils"%>
 <%@ page import="com.banking.model.User"%>
+<%@ page import="com.banking.model.UserType"%>
 <%@ page import="com.banking.utils.CustomException"%>
 <%@ page import="com.banking.controller.UserController"%>
 <%@ page import="com.banking.utils.CookieEncryption"%>
@@ -34,6 +35,7 @@
 	response.setHeader("Cache-Control", "no-cache,no-store,must-revalidate");
 	response.setHeader("Pragma", "no-cache");
 	String UserId = null;
+	User user = null;
 	Cookie[] cookies = request.getCookies();
 	if (cookies != null) {
 		for (Cookie cookie : cookies) {
@@ -49,14 +51,18 @@
 		try {
 			String decryptUserId = CookieEncryption.decrypt(UserId);
 			if (decryptUserId == null) {
-				response.sendRedirect(request.getContextPath() + "/bank/login");
+				response.sendRedirect(request.getContextPath() + "/bank/logout");
 			}
 			int userId = Integer.parseInt(decryptUserId);
 			UserController userController = new UserController();
-			User user = userController.getCustomerDetailsById(userId);
+			user = userController.getCustomerDetailsById(userId);
+			request.setAttribute("user", user);
+			if(user.getTypeOfUser() != UserType.CUSTOMER){
+				response.sendRedirect(request.getContextPath() + "/bank/404");
+			}
 		} catch (CustomException e) {
 			e.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/bank/login");
+			response.sendRedirect(request.getContextPath() + "/bank/logout");
 		}
 	}
 	%>

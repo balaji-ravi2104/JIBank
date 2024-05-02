@@ -68,6 +68,18 @@ public class MainServlet extends HttpServlet {
 			dispatcher = request.getRequestDispatcher("/employee/apiservice.jsp");
 			dispatcher.forward(request, response);
 			break;
+		case "/logout":
+			UserServletHelper.updateLogoutSession(request, response);
+			request.getSession().invalidate();
+			Cookie[] cookies = request.getCookies();
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					cookie.setMaxAge(0);
+					response.addCookie(cookie);
+				}
+			}
+			response.sendRedirect(request.getContextPath() + request.getServletPath() + "/login");
+			break;	
 		case "/404":
 			dispatcher = request.getRequestDispatcher("/404.jsp");
 			dispatcher.forward(request, response);
@@ -92,12 +104,11 @@ public class MainServlet extends HttpServlet {
 			} else {
 				HttpSession session = request.getSession(false);
 				if (session != null) {
-					User user = (User) session.getAttribute("user");
+					User user = (User) request.getAttribute("user");
 					if (user != null) {
 						UserType userType = user.getTypeOfUser();
 						switch (userType) {
 						case CUSTOMER:
-							System.out.println("Customer");
 							AccountServletHelper.getCustomerAccounts(user.getUserId(), request, response);
 							response.sendRedirect(
 									request.getContextPath() + request.getServletPath() + "/customer/account");

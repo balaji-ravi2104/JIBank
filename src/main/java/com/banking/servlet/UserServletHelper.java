@@ -19,6 +19,7 @@ import com.banking.model.SessionDetails;
 import com.banking.model.Token;
 import com.banking.model.User;
 import com.banking.model.UserType;
+import com.banking.utils.AuditLogUtils;
 import com.banking.utils.CookieEncryption;
 import com.banking.utils.DateUtils;
 
@@ -40,13 +41,12 @@ public class UserServletHelper {
 				request.setAttribute("error", "Your Account is InActive");
 			} else {
 				HttpSession session = request.getSession(true);
-				session.setAttribute("currentUserId", user.getUserId());
-				session.setAttribute("user", user);
+				request.setAttribute("user", user);
 
+				
 				Cookie cookie = new Cookie("userId", CookieEncryption.encrypt(userId + ""));
 				cookie.setMaxAge(30 * 60);
 				response.addCookie(cookie);
-
 				logServiceDao.logLoginSession((getSessionObject(session, user.getUserId(), request)));
 			}
 		} catch (Exception e) {
@@ -68,7 +68,8 @@ public class UserServletHelper {
 		HttpSession session = request.getSession(false);
 		try {
 			if (session != null) {
-				int userId = (int) session.getAttribute("currentUserId");
+				int userId = getCurrentUserId(request, response);
+				AuditLogUtils.logLogoutDetails(getCurrentUserId(request, response));
 				logServiceDao.updateLogoutSession(session.getId(), userId);
 			}
 		} catch (Exception e) {
@@ -99,7 +100,7 @@ public class UserServletHelper {
 			if (session != null) {
 				Boolean isCustomer = (Boolean) session.getAttribute("customer");
 				Boolean isEmployee = (Boolean) session.getAttribute("employee");
-				int creatingUserId = (int) session.getAttribute("currentUserId");
+				int creatingUserId = getCurrentUserId(request, response);
 
 				if (isCustomer != null && isCustomer) {
 					Customer customer = (Customer) request.getAttribute("customerObject");
@@ -126,18 +127,15 @@ public class UserServletHelper {
 	}
 
 	static void updateCustomer(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
 		try {
-			boolean isUpdated;
-			if (session != null) {
-				int updatingUserId = (int) session.getAttribute("currentUserId");
-				Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
-				isUpdated = userController.updateCustomer(customer, updatingUserId);
-				if (isUpdated) {
-					request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
-				} else {
-					request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
-				}
+			boolean isUpdated = false;
+			int updatingUserId = getCurrentUserId(request, response);
+			Customer customer = (Customer) request.getAttribute("updatedCustomerObject");
+			isUpdated = userController.updateCustomer(customer, updatingUserId);
+			if (isUpdated) {
+				request.setAttribute("userCreationSuccess", "Customer Updated Successfully!!!");
+			} else {
+				request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
 			}
 		} catch (Exception e) {
 			request.setAttribute("userCreationFailed", "Customer Updation Failed!! Try Again!!");
@@ -175,9 +173,8 @@ public class UserServletHelper {
 
 	public static void getApiKey(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			HttpSession session = request.getSession(false);
 			int userId = Integer.parseInt(request.getParameter("userId"));
-			int creatingUserId = (int) session.getAttribute("currentUserId");
+			int creatingUserId = getCurrentUserId(request, response);
 			Map<Integer, Token> userApiKeys = apiController.getApiKeys(userId, creatingUserId);
 			if (userApiKeys.isEmpty()) {
 				request.setAttribute("error", "No API Keys Found");
@@ -193,9 +190,9 @@ public class UserServletHelper {
 	public static void createApiKey(HttpServletRequest request, HttpServletResponse response) {
 		boolean isKeyCreated = false;
 		try {
-			HttpSession session = request.getSession(false);
+
 			int userId = Integer.parseInt(request.getParameter("userId"));
-			int creatingUserId = (int) session.getAttribute("currentUserId");
+			int creatingUserId = getCurrentUserId(request, response);
 			isKeyCreated = apiController.createApikey(userId, creatingUserId);
 			if (isKeyCreated) {
 				request.setAttribute("updatedSuccess", "API Key Create Successfully");
@@ -212,10 +209,10 @@ public class UserServletHelper {
 	public static void updateApiKey(HttpServletRequest request, HttpServletResponse response) {
 		boolean isKeyUpdated = false;
 		try {
-			HttpSession session = request.getSession(false);
+
 			int userId = Integer.parseInt(request.getParameter("userId"));
 			int tokenId = Integer.parseInt(request.getParameter("tokenId"));
-			int creatingUserId = (int) session.getAttribute("currentUserId");
+			int creatingUserId = getCurrentUserId(request, response);
 			isKeyUpdated = apiController.updateApikey(tokenId, creatingUserId, userId);
 			if (isKeyUpdated) {
 				request.setAttribute("updatedSuccess", "API Key Updated Successfully");
@@ -230,10 +227,10 @@ public class UserServletHelper {
 	public static void deleteApiKey(HttpServletRequest request, HttpServletResponse response) {
 		boolean isKeyDeleted = false;
 		try {
-			HttpSession session = request.getSession(false);
+
 			int userId = Integer.parseInt(request.getParameter("userId"));
 			int tokenId = Integer.parseInt(request.getParameter("tokenId"));
-			int creatingUserId = (int) session.getAttribute("currentUserId");
+			int creatingUserId = getCurrentUserId(request, response);
 			isKeyDeleted = apiController.deleteApikey(tokenId, creatingUserId, userId);
 			if (isKeyDeleted) {
 				request.setAttribute("updatedSuccess", "API Key Deleted Successfully");
@@ -244,6 +241,24 @@ public class UserServletHelper {
 			// e.printStackTrace();
 			request.setAttribute("error", "A problem occured, Try after sometime");
 		}
+	}
+
+	public static int getCurrentUserId(HttpServletRequest request, HttpServletResponse response) {
+		int userId = 0;
+		try {
+			Cookie[] cookies = request.getCookies();
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					if (cookie.getName().equals("userId")) {
+						String UserId = CookieEncryption.decrypt(cookie.getValue());
+						userId = Integer.parseInt(UserId);
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return userId;
 	}
 
 }

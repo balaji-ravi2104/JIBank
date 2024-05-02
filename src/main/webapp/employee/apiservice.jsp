@@ -2,6 +2,11 @@
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page import="com.banking.utils.DateUtils"%>
+<%@ page import="com.banking.model.User"%>
+<%@ page import="com.banking.model.UserType"%>
+<%@ page import="com.banking.utils.CustomException"%>
+<%@ page import="com.banking.controller.UserController"%>
+<%@ page import="com.banking.utils.CookieEncryption"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,6 +45,25 @@
 	}
 	if (UserId == null){
 		response.sendRedirect(request.getContextPath() + "/bank/login");
+	}else {
+		/* int userId = (int) session.getAttribute("currentUserId"); */
+		try {
+			String decryptUserId = CookieEncryption.decrypt(UserId);
+			if (decryptUserId == null) {
+				response.sendRedirect(request.getContextPath() + "/bank/logout");
+			}
+			int userId = Integer.parseInt(decryptUserId);
+			UserController userController = new UserController();
+
+			User user = userController.getCustomerDetailsById(userId);
+			request.setAttribute("user", user);
+			if(user.getTypeOfUser() != UserType.EMPLOYEE && user.getTypeOfUser() != UserType.ADMIN){
+				response.sendRedirect(request.getContextPath() + "/bank/404");
+			}
+		} catch (CustomException e) {
+			e.printStackTrace();
+			response.sendRedirect(request.getContextPath() + "/bank/logout");
+		}
 	}
 	%>
 	<div class="navbar-home">

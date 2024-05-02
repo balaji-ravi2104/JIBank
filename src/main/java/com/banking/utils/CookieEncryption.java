@@ -1,12 +1,12 @@
 package com.banking.utils;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 public class CookieEncryption {
-	private static final String AES_KEY = "0123456789abcdef"; // 128-bit key (16 bytes)
+	private static final String AES_KEY = "AYWB1730azhb07FU"; // 128-bit key (16 bytes)
 
 	public static String encrypt(String plaintext) throws CustomException {
 		try {
@@ -33,7 +33,7 @@ public class CookieEncryption {
 	}
 
 //	public static void main(String[] args) throws Exception {
-//		String plaintext = "Sensitive cookie value";
+//		String plaintext = "My name is Balaji";
 //		String encrypted = encrypt(plaintext);
 //		System.out.println("Encrypted cookie value: " + encrypted);
 //		String decrypted = decrypt(encrypted);

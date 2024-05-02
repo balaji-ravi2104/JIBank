@@ -18,14 +18,10 @@ public class TransactionServletHelper {
 	private static final AccountController accountController = new AccountController();
 
 	public static void getTransactions(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
 		String accountNumber = request.getParameter("accountNumber");
 		String fromDate = request.getParameter("fromDate");
 		String toDate = request.getParameter("toDate");
-		int userId = 0;
-		if (session != null) {
-			userId = (int) session.getAttribute("currentUserId");
-		}
+		int userId = UserServletHelper.getCurrentUserId(request, response);
 		try {
 			List<Transaction> transactions = transactionController.getTransactions(accountNumber, fromDate, toDate,userId);
 			if (transactions.isEmpty() || transactions == null) {
@@ -39,14 +35,10 @@ public class TransactionServletHelper {
 	}
 
 	public static void deposit(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
 		Account account = (Account) request.getAttribute("account");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String description = request.getParameter("description");
-		int userId = 0;
-		if (session != null) {
-			userId = (int) session.getAttribute("currentUserId");
-		}
+		int userId = UserServletHelper.getCurrentUserId(request, response);
 		try {
 			boolean isAmountDeposited = transactionController.depositAmount(account, amount, description,userId);
 			if (isAmountDeposited) {
@@ -63,11 +55,8 @@ public class TransactionServletHelper {
 		Account account = (Account) request.getAttribute("account");
 		double amount = Double.parseDouble(request.getParameter("amount"));
 		String description = request.getParameter("description");
-		HttpSession session = request.getSession(false);
-		int userId = 0;
-		if (session != null) {
-			userId = (int) session.getAttribute("currentUserId");
-		}
+		int userId = UserServletHelper.getCurrentUserId(request, response);
+		
 		try {
 			boolean isAmountDeposited = transactionController.withdrawAmount(account, amount, description,userId);
 			if (isAmountDeposited) {

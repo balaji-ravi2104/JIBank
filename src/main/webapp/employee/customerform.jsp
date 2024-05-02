@@ -49,14 +49,18 @@
 		try {
 			String decryptUserId = CookieEncryption.decrypt(UserId);
 			if (decryptUserId == null) {
-				response.sendRedirect(request.getContextPath() + "/bank/login");
+				response.sendRedirect(request.getContextPath() + "/bank/logout");
 			}
 			int userId = Integer.parseInt(decryptUserId);
 			UserController userController = new UserController();
 			User user = userController.getCustomerDetailsById(userId);
+			request.setAttribute("user", user);
+			if(user.getTypeOfUser() != UserType.EMPLOYEE && user.getTypeOfUser() != UserType.ADMIN){
+				response.sendRedirect(request.getContextPath() + "/bank/404");
+			}
 		} catch (CustomException e) {
 			e.printStackTrace();
-			response.sendRedirect(request.getContextPath() + "/bank/login");
+			response.sendRedirect(request.getContextPath() + "/bank/logout");
 		}
 	}
 	%>

@@ -20,7 +20,7 @@ public class AccountServletHelper {
 			throws IOException {
 		int userId = Integer.parseInt(request.getParameter("userId"));
 		int branchId = Integer.parseInt(request.getParameter("branchId"));
-		System.out.println(userId+" "+branchId);
+		System.out.println(userId + " " + branchId);
 		try {
 			Map<String, Account> customerAccounts = accountController.getCustomerAccountsInBranch(userId, branchId);
 			if (customerAccounts.isEmpty()) {
@@ -38,7 +38,7 @@ public class AccountServletHelper {
 		try {
 			if (session != null) {
 				Account account = (Account) request.getAttribute("accountObject");
-				int creatingUserId = (int) request.getSession().getAttribute("currentUserId");
+				int creatingUserId = UserServletHelper.getCurrentUserId(request, response);
 				boolean isAccountCreated = accountController.createAccount(account, creatingUserId);
 				if (isAccountCreated) {
 					request.setAttribute("success", "Account Created Successfully");
@@ -71,25 +71,22 @@ public class AccountServletHelper {
 	}
 
 	public static void updateAccountStatus(HttpServletRequest request, HttpServletResponse response) {
-		HttpSession session = request.getSession(false);
 
 		try {
-			if (session != null) {
-				String accountNumber = request.getParameter("accountNumber");
-				String status = request.getParameter("status");
+			String accountNumber = request.getParameter("accountNumber");
+			String status = request.getParameter("status");
 
-				String oppositeStatus = status.equalsIgnoreCase("ACTIVE") ? AccountStatus.INACTIVE.name()
-						: AccountStatus.ACTIVE.name();
+			String oppositeStatus = status.equalsIgnoreCase("ACTIVE") ? AccountStatus.INACTIVE.name()
+					: AccountStatus.ACTIVE.name();
 
-				AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
-				int value = accountStatus.getValue();
-				int updatingUserId = (int) session.getAttribute("currentUserId");
-				boolean isUpdated = accountController.changeAccountStatus(accountNumber, value, updatingUserId);
-				if (isUpdated) {
-					request.setAttribute("updatedSuccess", "Account Status Updated");
-				} else {
-					request.setAttribute("updationFailed", "Account Updation Failed");
-				}
+			AccountStatus accountStatus = AccountStatus.fromString(oppositeStatus);
+			int value = accountStatus.getValue();
+			int updatingUserId = UserServletHelper.getCurrentUserId(request, response);
+			boolean isUpdated = accountController.changeAccountStatus(accountNumber, value, updatingUserId);
+			if (isUpdated) {
+				request.setAttribute("updatedSuccess", "Account Status Updated");
+			} else {
+				request.setAttribute("updationFailed", "Account Updation Failed");
 			}
 		} catch (Exception e) {
 			request.setAttribute("updationFailed", "Account Updation Failed");
@@ -100,7 +97,7 @@ public class AccountServletHelper {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			String accountNumber = (String) request.getParameter("accountNumber");
-			int userId = (int) session.getAttribute("currentUserId");
+			int userId = UserServletHelper.getCurrentUserId(request, response);
 			List<Account> accounts;
 			try {
 				accounts = accountController.getAccountsOfCustomer(userId);

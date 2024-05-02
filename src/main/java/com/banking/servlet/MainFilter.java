@@ -75,7 +75,6 @@ public class MainFilter implements Filter {
 					String address = request.getParameter("address");
 					String dob = request.getParameter("dateOfBirth");
 					long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
-					
 
 					if (!InputValidator.validateFirstName(firstName)) {
 						flag = true;
@@ -96,8 +95,8 @@ public class MainFilter implements Filter {
 						flag = true;
 						request.setAttribute("invalidMobile", "Invalid Contact Number");
 					}
-					
-					if(dateOfBirth > System.currentTimeMillis()) {
+
+					if (dateOfBirth > System.currentTimeMillis()) {
 						flag = true;
 						request.setAttribute("invalidDOB", "Invalid Date of Birth");
 					}
@@ -195,7 +194,7 @@ public class MainFilter implements Filter {
 					flag = true;
 					request.setAttribute("invalidLastName", "Invalid LastName");
 				}
-				
+
 				if (!InputValidator.validateEmail(email)) {
 					flag = true;
 					request.setAttribute("invalidEmail", "Invalid Email Id");
@@ -212,8 +211,8 @@ public class MainFilter implements Filter {
 				}
 
 				long dateOfBirth = DateUtils.formatDate(DateUtils.formatDateString(dob));
-				
-				if(dateOfBirth > System.currentTimeMillis()) {
+
+				if (dateOfBirth > System.currentTimeMillis()) {
 					flag = true;
 					request.setAttribute("invalidDOB", "Invalid Date of Birth");
 				}
@@ -442,7 +441,7 @@ public class MainFilter implements Filter {
 					flag = true;
 					request.setAttribute("invalidBalance", "Amount Should be Greater than Zero");
 				}
-				if (amount <100 || amount > 100000) {
+				if (amount < 100 || amount > 100000) {
 					flag = true;
 					request.setAttribute("invalidBalance", "Amount Should be Greater than 100 and Less than 100000");
 				}
