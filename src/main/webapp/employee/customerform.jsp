@@ -49,14 +49,14 @@
 		try {
 			String decryptUserId = CookieEncryption.decrypt(UserId);
 			if (decryptUserId == null) {
-				response.sendRedirect(request.getContextPath() + "/bank/logout");
+		response.sendRedirect(request.getContextPath() + "/bank/logout");
 			}
 			int userId = Integer.parseInt(decryptUserId);
 			UserController userController = new UserController();
 			User user = userController.getCustomerDetailsById(userId);
 			request.setAttribute("user", user);
-			if(user.getTypeOfUser() != UserType.EMPLOYEE && user.getTypeOfUser() != UserType.ADMIN){
-				response.sendRedirect(request.getContextPath() + "/bank/404");
+			if (user.getTypeOfUser() != UserType.EMPLOYEE && user.getTypeOfUser() != UserType.ADMIN) {
+		response.sendRedirect(request.getContextPath() + "/bank/404");
 			}
 		} catch (CustomException e) {
 			e.printStackTrace();
@@ -325,5 +325,18 @@
 			</div>
 		</div>
 	</div>
+	<script>
+		var today = new Date();
+		var minDate = new Date(today.getFullYear() - 150, today.getMonth(),
+				today.getDate());
+		var maxDate = new Date(today.getFullYear() - 18, today.getMonth(),
+				today.getDate());
+
+		document.getElementById('dateOfBirth').setAttribute('min',
+				minDate.toISOString().split('T')[0]);
+		document.getElementById('dateOfBirth').setAttribute('max',
+				maxDate.toISOString().split('T')[0]);
+	</script>
+
 </body>
 </html>

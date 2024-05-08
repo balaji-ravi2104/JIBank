@@ -243,7 +243,7 @@ public class TransactionDaoImplementation implements TransactionDao {
 
 			preparedStatement.setString(1, accountNumber);
 			preparedStatement.setString(2, startDate);
-			preparedStatement.setString(3, endDate);
+			preparedStatement.setString(3, endDate+" 23:59:59");
 			try (ResultSet resultSet = preparedStatement.executeQuery()) {
 				historyList = new ArrayList<Transaction>();
 				getCustomerTransactionDetail(resultSet, historyList);
